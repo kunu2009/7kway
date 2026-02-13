@@ -8,10 +8,124 @@ import {
   Dumbbell, CheckCircle2, Trophy, Clock, 
   BookOpen, Music, Share2, Github, Instagram, ExternalLink, Mail,
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
-  ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap
+  ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
+  Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp
 } from 'lucide-react';
-import { Area, AppData, Habit, Project, LogEntry, WidgetType } from './types';
+import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam } from './types';
 import { loadData, saveData } from './db';
+
+const ExamItem = ({ exam, onAddMaterial, onDeleteMaterial }: { 
+  exam: Exam; 
+  onAddMaterial: (id: string, title: string, url: string) => void; 
+  onDeleteMaterial: (examId: string, matId: string) => void;
+}) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [title, setTitle] = useState('');
+  const [url, setUrl] = useState('');
+
+  const daysLeft = Math.ceil((new Date(exam.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  const isUrgent = daysLeft < 7 && daysLeft >= 0;
+  const isPast = daysLeft < 0;
+
+  const handleAdd = () => {
+    if (title.trim() && url.trim()) {
+      onAddMaterial(exam.id, title, url);
+      setTitle('');
+      setUrl('');
+    }
+  };
+
+  return (
+    <div className={`rounded-xl border transition-all duration-300 ${isUrgent ? 'bg-red-500/10 border-red-500/30' : 'bg-slate-900 border-slate-800'}`}>
+      <div 
+        className="flex items-center justify-between p-4 cursor-pointer" 
+        onClick={() => setIsExpanded(!isExpanded)}
+      >
+        <div className="flex items-center gap-3">
+          <div className={`p-2 rounded-lg ${exam.type === 'board' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+            <GraduationCap size={20} />
+          </div>
+          <div>
+            <p className="font-bold text-sm">{exam.subject}</p>
+            <p className="text-[10px] text-slate-400 uppercase">{new Date(exam.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} • {exam.type}</p>
+          </div>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-right">
+            {isPast ? (
+                <span className="text-xs font-bold text-slate-500">Done</span>
+            ) : (
+              <>
+                <p className={`text-xl font-bold ${isUrgent ? 'text-red-400' : 'text-white'}`}>{daysLeft}</p>
+                <p className="text-[10px] text-slate-500">days left</p>
+              </>
+            )}
+          </div>
+          {isExpanded ? <ChevronUp size={16} className="text-slate-500" /> : <ChevronDown size={16} className="text-slate-500" />}
+        </div>
+      </div>
+
+      {isExpanded && (
+        <div className="px-4 pb-4 animate-in slide-in-from-top-2 duration-200">
+          <div className="h-px w-full bg-slate-800 mb-4" />
+          
+          <h5 className="text-xs font-bold text-slate-400 mb-3 flex items-center gap-2">
+            <BookOpen size={14} /> Study Materials
+          </h5>
+
+          <div className="space-y-2 mb-4">
+            {exam.studyMaterials && exam.studyMaterials.length > 0 ? (
+              exam.studyMaterials.map(mat => (
+                <div key={mat.id} className="flex items-center justify-between bg-slate-950/50 p-2 rounded-lg border border-slate-800/50">
+                  <a href={mat.url} target="_blank" rel="noopener noreferrer" className="flex items-center gap-2 text-sm text-teal-400 hover:text-teal-300 truncate max-w-[200px]">
+                    <LinkIcon size={12} />
+                    <span className="truncate">{mat.title}</span>
+                  </a>
+                  <button 
+                    onClick={(e) => { e.stopPropagation(); onDeleteMaterial(exam.id, mat.id); }}
+                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                  >
+                    <Trash2 size={12} />
+                  </button>
+                </div>
+              ))
+            ) : (
+              <p className="text-[10px] text-slate-600 italic">No materials added yet.</p>
+            )}
+          </div>
+
+          <div className="bg-slate-950/50 p-3 rounded-lg border border-slate-800/50">
+            <p className="text-[10px] font-bold text-slate-500 mb-2 uppercase">Add New Resource</p>
+            <div className="flex flex-col gap-2">
+              <input 
+                type="text" 
+                placeholder="Title (e.g., Chapter 1 Notes)" 
+                className="bg-slate-900 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500/50"
+                value={title}
+                onChange={(e) => setTitle(e.target.value)}
+              />
+              <div className="flex gap-2">
+                <input 
+                  type="text" 
+                  placeholder="URL" 
+                  className="flex-1 bg-slate-900 border border-slate-800 rounded px-3 py-2 text-xs text-slate-200 focus:outline-none focus:border-teal-500/50"
+                  value={url}
+                  onChange={(e) => setUrl(e.target.value)}
+                />
+                <button 
+                  onClick={handleAdd}
+                  className="bg-teal-500 hover:bg-teal-400 text-white p-2 rounded transition-colors"
+                >
+                  <Plus size={16} />
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const App: React.FC = () => {
   const [data, setData] = useState<AppData>(loadData());
@@ -64,6 +178,32 @@ const App: React.FC = () => {
       };
     });
   }, []);
+
+  const addStudyMaterial = (examId: string, title: string, url: string) => {
+    setData(prev => ({
+      ...prev,
+      exams: prev.exams.map(e => {
+        if (e.id === examId) {
+          const newMat = { id: Math.random().toString(36).substr(2, 9), title, url };
+          return { ...e, studyMaterials: [...(e.studyMaterials || []), newMat] };
+        }
+        return e;
+      })
+    }));
+    addXP(10, `Added resource: ${title}`);
+  };
+
+  const deleteStudyMaterial = (examId: string, matId: string) => {
+    setData(prev => ({
+      ...prev,
+      exams: prev.exams.map(e => {
+        if (e.id === examId) {
+          return { ...e, studyMaterials: (e.studyMaterials || []).filter(m => m.id !== matId) };
+        }
+        return e;
+      })
+    }));
+  };
 
   // Corrected toggleHabit to handle state updates atomically
   const toggleHabit = (id: string) => {
@@ -219,35 +359,14 @@ const App: React.FC = () => {
         <div key="exams" className="mb-6 space-y-3">
           <SectionHeader title="Exam Countdown" subtitle="Mission Critical Milestones" />
           <div className="grid gap-3">
-            {data.exams.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(exam => {
-              const daysLeft = Math.ceil((new Date(exam.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
-              const isUrgent = daysLeft < 7 && daysLeft >= 0;
-              const isPast = daysLeft < 0;
-              
-              return (
-                <div key={exam.id} className={`flex items-center justify-between p-4 rounded-xl border ${isUrgent ? 'bg-red-500/10 border-red-500/30' : 'bg-slate-900 border-slate-800'}`}>
-                  <div className="flex items-center gap-3">
-                    <div className={`p-2 rounded-lg ${exam.type === 'board' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
-                      <GraduationCap size={20} />
-                    </div>
-                    <div>
-                      <p className="font-bold text-sm">{exam.subject}</p>
-                      <p className="text-[10px] text-slate-400 uppercase">{new Date(exam.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} • {exam.type}</p>
-                    </div>
-                  </div>
-                  <div className="text-right">
-                    {isPast ? (
-                       <span className="text-xs font-bold text-slate-500">Done</span>
-                    ) : (
-                      <>
-                        <p className={`text-xl font-bold ${isUrgent ? 'text-red-400' : 'text-white'}`}>{daysLeft}</p>
-                        <p className="text-[10px] text-slate-500">days left</p>
-                      </>
-                    )}
-                  </div>
-                </div>
-              );
-            })}
+            {data.exams.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(exam => (
+              <ExamItem 
+                key={exam.id} 
+                exam={exam} 
+                onAddMaterial={addStudyMaterial} 
+                onDeleteMaterial={deleteStudyMaterial}
+              />
+            ))}
           </div>
         </div>
       ),

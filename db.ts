@@ -22,10 +22,44 @@ const INITIAL_DATA: AppData = {
   projects: [],
   logs: [],
   exams: [
-    { id: 'e1', subject: 'Political Science', date: '2025-02-18', type: 'board' },
-    { id: 'e2', subject: 'Economics', date: '2025-02-24', type: 'board' },
-    { id: 'e3', subject: 'History', date: '2025-03-15', type: 'board' },
-    { id: 'e4', subject: 'MHCET 5 Year LLB', date: '2025-05-08', type: 'entrance' },
+    { 
+      id: 'e1', 
+      subject: 'Political Science', 
+      date: '2025-02-18', 
+      type: 'board',
+      studyMaterials: [
+        { id: 'sm1', title: 'Chapter 1: Cold War Era Notes', url: 'https://example.com/notes1' },
+        { id: 'sm2', title: 'Imp Questions 2024', url: 'https://example.com/imp-q' }
+      ]
+    },
+    { 
+      id: 'e2', 
+      subject: 'Economics', 
+      date: '2025-02-24', 
+      type: 'board',
+      studyMaterials: [
+        { id: 'sm3', title: 'Macroeconomics Formulas', url: 'https://example.com/macro' },
+        { id: 'sm4', title: 'Indian Eco Development Summary', url: 'https://example.com/ied' }
+      ]
+    },
+    { 
+      id: 'e3', 
+      subject: 'History', 
+      date: '2025-03-15', 
+      type: 'board',
+      studyMaterials: [
+        { id: 'sm5', title: 'Map Work Practice', url: 'https://example.com/maps' }
+      ]
+    },
+    { 
+      id: 'e4', 
+      subject: 'MHCET 5 Year LLB', 
+      date: '2025-05-08', 
+      type: 'entrance',
+      studyMaterials: [
+        { id: 'sm6', title: 'Legal Aptitude Mock', url: 'https://example.com/legal' }
+      ]
+    },
   ],
   settings: {
     dopamineMode: false,
@@ -49,7 +83,10 @@ export const loadData = (): AppData => {
     return {
       ...INITIAL_DATA,
       ...parsed,
-      exams: parsed.exams || INITIAL_DATA.exams, // Ensure exams exist if loading old data
+      exams: parsed.exams?.map((e: any) => ({
+        ...e,
+        studyMaterials: e.studyMaterials || [] 
+      })) || INITIAL_DATA.exams,
       settings: {
         ...INITIAL_DATA.settings,
         ...parsed.settings,

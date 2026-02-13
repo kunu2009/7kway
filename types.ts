@@ -41,11 +41,18 @@ export interface LogEntry {
   label: string;
 }
 
+export interface StudyMaterial {
+  id: string;
+  title: string;
+  url: string;
+}
+
 export interface Exam {
   id: string;
   subject: string;
   date: string; // YYYY-MM-DD
   type: 'board' | 'entrance';
+  studyMaterials?: StudyMaterial[];
 }
 
 export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits' | 'exams' | 'calendar';
