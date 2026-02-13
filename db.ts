@@ -1,7 +1,6 @@
-
 import { AppData, Area } from './types';
 
-const STORAGE_KEY = '7k_ecosystem_growth_v1';
+const STORAGE_KEY = '7k_ecosystem_growth_v2';
 
 const INITIAL_DATA: AppData = {
   stats: {
@@ -25,6 +24,13 @@ const INITIAL_DATA: AppData = {
   settings: {
     dopamineMode: false,
     darkMode: true,
+    activeSections: {
+      physical: true,
+      intelligence: true,
+      skills: true,
+      wealth: true
+    },
+    dashboardLayout: ['welcome', 'stats', 'chart', 'habits']
   },
 };
 
@@ -32,7 +38,21 @@ export const loadData = (): AppData => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return INITIAL_DATA;
   try {
-    return JSON.parse(stored);
+    const parsed = JSON.parse(stored);
+    // Deep merge to ensure compatibility with new fields
+    return {
+      ...INITIAL_DATA,
+      ...parsed,
+      settings: {
+        ...INITIAL_DATA.settings,
+        ...parsed.settings,
+        activeSections: {
+          ...INITIAL_DATA.settings.activeSections,
+          ...parsed.settings?.activeSections
+        },
+        dashboardLayout: parsed.settings?.dashboardLayout || INITIAL_DATA.settings.dashboardLayout
+      }
+    };
   } catch {
     return INITIAL_DATA;
   }

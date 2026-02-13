@@ -1,15 +1,16 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
-  BarChart, Bar, XAxis, YAxis, Tooltip, ResponsiveContainer, 
-  Cell, PieChart, Pie
+  BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, 
+  Cell
 } from 'recharts';
 import { 
   Zap, Brain, Target, DollarSign, Settings, 
   Dumbbell, CheckCircle2, Trophy, Clock, 
   BookOpen, Music, Share2, Github, Instagram, ExternalLink, Mail,
-  LayoutDashboard, Flame, Box, Calendar, AlertCircle, Shield
+  LayoutDashboard, Flame, Box, Calendar, AlertCircle, Shield,
+  ArrowUp, ArrowDown, Eye, EyeOff, GripVertical
 } from 'lucide-react';
-import { Area, AppData, Habit, Project, LogEntry } from './types';
+import { Area, AppData, Habit, Project, LogEntry, WidgetType } from './types';
 import { loadData, saveData } from './db';
 
 const App: React.FC = () => {
@@ -39,27 +40,52 @@ const App: React.FC = () => {
       return {
         ...prev,
         stats: { ...prev.stats, xp: newXp },
-        logs: [newLog, ...prev.logs].slice(0, 100) // Keep last 100 logs
+        logs: [newLog, ...prev.logs].slice(0, 100)
       };
     });
   }, []);
 
+  // Corrected toggleHabit to handle state updates atomically
   const toggleHabit = (id: string) => {
     const today = new Date().toISOString().split('T')[0];
+    
     setData(prev => {
+      let xpChange = 0;
+      let newLog: LogEntry | null = null;
+      
       const newHabits = prev.habits.map(h => {
         if (h.id === id) {
           const isDone = h.completedDates.includes(today);
           if (isDone) {
+            // Unticking: Remove XP
+            xpChange = -h.xpValue;
             return { ...h, completedDates: h.completedDates.filter(d => d !== today) };
           } else {
-            addXP(h.xpValue, `Habit: ${h.name}`);
+            // Ticking: Add XP
+            xpChange = h.xpValue;
+            newLog = {
+              id: Math.random().toString(36).substr(2, 9),
+              timestamp: new Date().toISOString(),
+              type: 'xp',
+              value: h.xpValue,
+              label: `Habit: ${h.name}`
+            };
             return { ...h, completedDates: [...h.completedDates, today] };
           }
         }
         return h;
       });
-      return { ...prev, habits: newHabits };
+
+      // Prevent negative XP
+      const newXp = Math.max(0, prev.stats.xp + xpChange);
+      const newLogs = newLog ? [newLog, ...prev.logs].slice(0, 100) : prev.logs;
+
+      return { 
+        ...prev, 
+        stats: { ...prev.stats, xp: newXp },
+        habits: newHabits,
+        logs: newLogs
+      };
     });
   };
 
@@ -74,6 +100,7 @@ const App: React.FC = () => {
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       priority: 'high'
     };
+    // We can call addXP separately here because it's a distinct action, not dependent on previous state calculation within a map
     setData(prev => ({
       ...prev,
       projects: [newProject, ...prev.projects]
@@ -82,17 +109,25 @@ const App: React.FC = () => {
   };
 
   // UI Components
-  const TabButton = ({ id, icon: Icon, label }: { id: any, icon: any, label: string }) => (
-    <button 
-      onClick={() => setActiveTab(id)}
-      className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all ${
-        activeTab === id ? 'text-teal-400 bg-teal-400/10' : 'text-slate-400 hover:text-slate-200'
-      }`}
-    >
-      <Icon size={20} />
-      <span className="text-[10px] mt-1 font-medium">{label}</span>
-    </button>
-  );
+  const TabButton = ({ id, icon: Icon, label }: { id: any, icon: any, label: string }) => {
+    // Check if section is active (always show Dashboard and Settings)
+    if (id !== 'dashboard' && id !== 'settings') {
+      const sectionKey = id as keyof typeof data.settings.activeSections;
+      if (!data.settings.activeSections[sectionKey]) return null;
+    }
+
+    return (
+      <button 
+        onClick={() => setActiveTab(id)}
+        className={`flex flex-col items-center justify-center p-2 rounded-xl transition-all ${
+          activeTab === id ? 'text-teal-400 bg-teal-400/10' : 'text-slate-400 hover:text-slate-200'
+        }`}
+      >
+        <Icon size={20} />
+        <span className="text-[10px] mt-1 font-medium">{label}</span>
+      </button>
+    );
+  };
 
   const XPHeader = () => (
     <div className="sticky top-0 z-50 bg-slate-950/80 backdrop-blur-md border-b border-slate-800 p-4">
@@ -115,7 +150,7 @@ const App: React.FC = () => {
       </div>
       <div className="h-2 w-full bg-slate-800 rounded-full overflow-hidden">
         <div 
-          className="h-full bg-gradient-to-r from-teal-500 to-emerald-400 transition-all duration-500" 
+          className="h-full bg-gradient-to-r from-teal-500 to-emerald-400 transition-all duration-500 ease-out" 
           style={{ width: `${progressPercent}%` }}
         />
       </div>
@@ -141,14 +176,15 @@ const App: React.FC = () => {
       return data.habits.length > 0 ? (done / data.habits.length) * 100 : 0;
     }, [data.habits]);
 
-    return (
-      <div className="space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-500">
-        <div className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-6 text-center">
+    const widgetComponents = {
+      welcome: (
+        <div key="welcome" className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-6 text-center mb-6">
           <p className="text-teal-400 text-sm font-medium mb-1">Made by 7K Ecosystem</p>
           <h3 className="text-xl font-bold text-white">Focus: Board Exam Peak Performance</h3>
         </div>
-
-        <div className="grid grid-cols-2 gap-4">
+      ),
+      stats: (
+        <div key="stats" className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
             <div className="flex justify-between items-center mb-2">
               <p className="text-slate-400 text-xs">Habit Completion</p>
@@ -164,8 +200,9 @@ const App: React.FC = () => {
             <p className="text-2xl font-bold">4.5</p>
           </div>
         </div>
-
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4">
+      ),
+      chart: (
+        <div key="chart" className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6">
           <p className="text-slate-400 text-xs mb-4">Weekly XP Velocity</p>
           <div className="h-40 w-full">
             <ResponsiveContainer width="100%" height="100%">
@@ -184,9 +221,10 @@ const App: React.FC = () => {
             </ResponsiveContainer>
           </div>
         </div>
-
-        <SectionHeader title="Daily Quest" subtitle="Complete these for a perfect streak" />
-        <div className="space-y-3">
+      ),
+      habits: (
+        <div key="habits" className="space-y-3 mb-6">
+          <SectionHeader title="Daily Quest" subtitle="Complete these for a perfect streak" />
           {data.habits.map(habit => {
             const today = new Date().toISOString().split('T')[0];
             const isDone = habit.completedDates.includes(today);
@@ -218,6 +256,12 @@ const App: React.FC = () => {
             );
           })}
         </div>
+      )
+    };
+
+    return (
+      <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 pb-10">
+        {data.settings.dashboardLayout.map(widgetId => widgetComponents[widgetId])}
       </div>
     );
   };
@@ -424,47 +468,135 @@ const App: React.FC = () => {
     );
   };
 
-  const SettingsSection = () => (
-    <div className="space-y-8 animate-in slide-in-from-right-4 duration-300 pb-20">
-      <SectionHeader title="Settings & Creator" />
-      
-      <div className="space-y-4">
-        <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl">
-          <div>
-            <p className="font-bold text-sm">Dopamine Control Mode</p>
-            <p className="text-[10px] text-slate-400">Blocks non-essential tabs during deep work</p>
-          </div>
-          <div className="w-12 h-6 bg-slate-700 rounded-full relative">
-            <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all"></div>
+  const SettingsSection = () => {
+    // Helper to toggle active sections
+    const toggleSection = (section: keyof typeof data.settings.activeSections) => {
+      setData(prev => ({
+        ...prev,
+        settings: {
+          ...prev.settings,
+          activeSections: {
+            ...prev.settings.activeSections,
+            [section]: !prev.settings.activeSections[section]
+          }
+        }
+      }));
+    };
+
+    // Helper to move dashboard widgets
+    const moveWidget = (index: number, direction: 'up' | 'down') => {
+      const layout = [...data.settings.dashboardLayout];
+      if (direction === 'up' && index > 0) {
+        [layout[index - 1], layout[index]] = [layout[index], layout[index - 1]];
+      } else if (direction === 'down' && index < layout.length - 1) {
+        [layout[index + 1], layout[index]] = [layout[index], layout[index + 1]];
+      }
+      setData(prev => ({
+        ...prev,
+        settings: { ...prev.settings, dashboardLayout: layout }
+      }));
+    };
+
+    return (
+      <div className="space-y-8 animate-in slide-in-from-right-4 duration-300 pb-20">
+        <SectionHeader title="Settings & Customization" />
+        
+        {/* Module Visibility */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <h4 className="font-bold mb-4 flex items-center gap-2">
+             <Eye size={18} className="text-teal-400" /> Focus Modules
+          </h4>
+          <p className="text-xs text-slate-400 mb-4">Toggle sections to reduce clutter and focus on what matters.</p>
+          <div className="space-y-3">
+            {Object.keys(data.settings.activeSections).map(key => {
+               const k = key as keyof typeof data.settings.activeSections;
+               return (
+                <div key={k} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
+                  <span className="capitalize text-sm font-medium">{k}</span>
+                  <button 
+                    onClick={() => toggleSection(k)}
+                    className={`w-12 h-6 rounded-full relative transition-colors ${data.settings.activeSections[k] ? 'bg-teal-500' : 'bg-slate-700'}`}
+                  >
+                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-all ${data.settings.activeSections[k] ? 'left-7' : 'left-1'}`} />
+                  </button>
+                </div>
+               );
+            })}
           </div>
         </div>
-      </div>
 
-      <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-3xl rounded-full -mr-16 -mt-16"></div>
-        <h3 className="text-lg font-bold text-white mb-2">About the Creator</h3>
-        <p className="text-sm font-bold text-teal-400 mb-4">Kunal (Founder of 7K Ecosystem)</p>
+        {/* Dashboard Layout */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <h4 className="font-bold mb-4 flex items-center gap-2">
+             <LayoutDashboard size={18} className="text-teal-400" /> Dashboard Layout
+          </h4>
+          <p className="text-xs text-slate-400 mb-4">Reorder widgets to customize your home screen.</p>
+          <div className="space-y-2">
+            {data.settings.dashboardLayout.map((widget, index) => (
+              <div key={widget} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
+                 <div className="flex items-center gap-3">
+                    <GripVertical size={16} className="text-slate-500" />
+                    <span className="capitalize text-sm font-medium">{widget}</span>
+                 </div>
+                 <div className="flex gap-1">
+                   <button 
+                     onClick={() => moveWidget(index, 'up')}
+                     disabled={index === 0}
+                     className="p-1 hover:bg-slate-700 rounded disabled:opacity-30"
+                   >
+                     <ArrowUp size={16} />
+                   </button>
+                   <button 
+                     onClick={() => moveWidget(index, 'down')}
+                     disabled={index === data.settings.dashboardLayout.length - 1}
+                     className="p-1 hover:bg-slate-700 rounded disabled:opacity-30"
+                   >
+                     <ArrowDown size={16} />
+                   </button>
+                 </div>
+              </div>
+            ))}
+          </div>
+        </div>
+
         <div className="space-y-4">
-          <a href="https://7kc.me" target="_blank" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
-            <ExternalLink size={18} /> <span className="text-sm">Portfolio: 7kc.me</span>
-          </a>
-          <a href="https://instagram.com/" target="_blank" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
-            <Instagram size={18} /> <span className="text-sm">Instagram</span>
-          </a>
-          <a href="https://github.com/" target="_blank" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
-            <Github size={18} /> <span className="text-sm">GitHub</span>
-          </a>
-          <a href="mailto:kunal@7kc.me" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
-            <Mail size={18} /> <span className="text-sm">kunal@7kc.me</span>
-          </a>
+          <div className="flex items-center justify-between p-4 bg-slate-900 border border-slate-800 rounded-2xl">
+            <div>
+              <p className="font-bold text-sm">Dopamine Control Mode</p>
+              <p className="text-[10px] text-slate-400">Blocks non-essential tabs during deep work</p>
+            </div>
+            <div className="w-12 h-6 bg-slate-700 rounded-full relative">
+              <div className="absolute left-1 top-1 w-4 h-4 bg-white rounded-full transition-all"></div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-slate-900 border border-slate-800 rounded-3xl p-6 relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-32 h-32 bg-teal-500/10 blur-3xl rounded-full -mr-16 -mt-16"></div>
+          <h3 className="text-lg font-bold text-white mb-2">About the Creator</h3>
+          <p className="text-sm font-bold text-teal-400 mb-4">Kunal (Founder of 7K Ecosystem)</p>
+          <div className="space-y-4">
+            <a href="https://7kc.me" target="_blank" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
+              <ExternalLink size={18} /> <span className="text-sm">Portfolio: 7kc.me</span>
+            </a>
+            <a href="https://instagram.com/" target="_blank" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
+              <Instagram size={18} /> <span className="text-sm">Instagram</span>
+            </a>
+            <a href="https://github.com/" target="_blank" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
+              <Github size={18} /> <span className="text-sm">GitHub</span>
+            </a>
+            <a href="mailto:kunal@7kc.me" className="flex items-center gap-3 text-slate-300 hover:text-teal-400 transition-colors">
+              <Mail size={18} /> <span className="text-sm">kunal@7kc.me</span>
+            </a>
+          </div>
+        </div>
+
+        <div className="text-center text-slate-500 text-xs">
+          <p>© 2025 7K Ecosystem. All rights reserved.</p>
         </div>
       </div>
-
-      <div className="text-center text-slate-500 text-xs">
-        <p>© 2025 7K Ecosystem. All rights reserved.</p>
-      </div>
-    </div>
-  );
+    );
+  };
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-slate-950 flex flex-col relative pb-20 shadow-2xl shadow-teal-500/5">

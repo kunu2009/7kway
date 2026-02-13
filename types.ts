@@ -41,13 +41,24 @@ export interface LogEntry {
   label: string;
 }
 
+export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits';
+
+export interface AppSettings {
+  dopamineMode: boolean;
+  darkMode: boolean;
+  activeSections: {
+    physical: boolean;
+    intelligence: boolean;
+    skills: boolean;
+    wealth: boolean;
+  };
+  dashboardLayout: WidgetType[];
+}
+
 export interface AppData {
   stats: UserStats;
   habits: Habit[];
   projects: Project[];
   logs: LogEntry[];
-  settings: {
-    dopamineMode: boolean;
-    darkMode: boolean;
-  };
+  settings: AppSettings;
 }
