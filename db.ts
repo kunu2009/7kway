@@ -61,6 +61,12 @@ const INITIAL_DATA: AppData = {
       ]
     },
   ],
+  tasks: [
+    { id: 't1', title: 'Revise Pol Sci Chapter 2', completed: false, isPriority: true, createdAt: new Date().toISOString() },
+    { id: 't2', title: 'Solve 1 Previous Year Paper', completed: false, isPriority: true, createdAt: new Date().toISOString() },
+    { id: 't3', title: 'Organize study desk', completed: true, isPriority: false, createdAt: new Date().toISOString() },
+    { id: 't4', title: 'Review Economics flashcards', completed: false, isPriority: false, createdAt: new Date().toISOString() }
+  ],
   settings: {
     dopamineMode: false,
     darkMode: true,
@@ -70,7 +76,8 @@ const INITIAL_DATA: AppData = {
       skills: true,
       wealth: true
     },
-    dashboardLayout: ['welcome', 'exams', 'calendar', 'stats', 'chart', 'habits']
+    // Updated layout to include priority and tasks
+    dashboardLayout: ['welcome', 'priority', 'exams', 'tasks', 'calendar', 'stats', 'chart', 'habits']
   },
 };
 
@@ -79,14 +86,15 @@ export const loadData = (): AppData => {
   if (!stored) return INITIAL_DATA;
   try {
     const parsed = JSON.parse(stored);
-    // Deep merge to ensure compatibility with new fields
     return {
       ...INITIAL_DATA,
       ...parsed,
+      // Ensure arrays exist when merging old data
       exams: parsed.exams?.map((e: any) => ({
         ...e,
         studyMaterials: e.studyMaterials || [] 
       })) || INITIAL_DATA.exams,
+      tasks: parsed.tasks || INITIAL_DATA.tasks,
       settings: {
         ...INITIAL_DATA.settings,
         ...parsed.settings,

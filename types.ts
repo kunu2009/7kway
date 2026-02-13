@@ -55,7 +55,15 @@ export interface Exam {
   studyMaterials?: StudyMaterial[];
 }
 
-export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits' | 'exams' | 'calendar';
+export interface Task {
+  id: string;
+  title: string;
+  completed: boolean;
+  isPriority: boolean; // true = Priority Board, false = Daily Task
+  createdAt: string;
+}
+
+export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits' | 'exams' | 'calendar' | 'priority' | 'tasks';
 
 export interface AppSettings {
   dopamineMode: boolean;
@@ -75,5 +83,6 @@ export interface AppData {
   projects: Project[];
   logs: LogEntry[];
   exams: Exam[];
+  tasks: Task[];
   settings: AppSettings;
 }

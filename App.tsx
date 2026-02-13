@@ -9,9 +9,9 @@ import {
   BookOpen, Music, Share2, Github, Instagram, ExternalLink, Mail,
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
   ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
-  Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp
+  Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square
 } from 'lucide-react';
-import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam } from './types';
+import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task } from './types';
 import { loadData, saveData } from './db';
 
 const ExamItem = ({ exam, onAddMaterial, onDeleteMaterial }: { 
@@ -196,6 +196,49 @@ const App: React.FC = () => {
     });
   }, []);
 
+  // --- Task Management Functions ---
+  const addTask = (title: string, isPriority: boolean) => {
+    if (!title.trim()) return;
+    setData(prev => ({
+      ...prev,
+      tasks: [
+        { 
+          id: Math.random().toString(36).substr(2, 9), 
+          title, 
+          completed: false, 
+          isPriority, 
+          createdAt: new Date().toISOString() 
+        },
+        ...prev.tasks
+      ]
+    }));
+  };
+
+  const toggleTask = (id: string) => {
+    setData(prev => {
+      const updatedTasks = prev.tasks.map(t => {
+        if (t.id === id) {
+          // If completing, add XP
+          if (!t.completed) {
+            // No direct XP call here to avoid double set state issues, 
+            // but we could architect it differently. For now, simple state update.
+          }
+          return { ...t, completed: !t.completed };
+        }
+        return t;
+      });
+      return { ...prev, tasks: updatedTasks };
+    });
+  };
+
+  const deleteTask = (id: string) => {
+    setData(prev => ({
+      ...prev,
+      tasks: prev.tasks.filter(t => t.id !== id)
+    }));
+  };
+  // -------------------------------
+
   const addStudyMaterial = (examId: string, title: string, url: string) => {
     setData(prev => ({
       ...prev,
@@ -365,6 +408,109 @@ const App: React.FC = () => {
       return data.habits.length > 0 ? (done / data.habits.length) * 100 : 0;
     }, [data.habits]);
 
+    // Widget: Priority Board
+    const PriorityWidget = () => {
+        const [newTask, setNewTask] = useState('');
+        const priorityTasks = data.tasks.filter(t => t.isPriority);
+
+        return (
+            <div key="priority" className="bg-gradient-to-br from-purple-500/10 to-blue-500/10 border border-purple-500/20 rounded-2xl p-5 mb-6 relative overflow-hidden">
+                <div className="absolute top-0 right-0 p-4 opacity-10">
+                    <Flag size={64} className="text-purple-500"/>
+                </div>
+                <div className="relative z-10">
+                    <h4 className="font-bold text-lg text-white mb-1 flex items-center gap-2">
+                        <Flag size={18} className="text-purple-400" /> Priority Board
+                    </h4>
+                    <p className="text-xs text-slate-400 mb-4">Mission critical tasks for today</p>
+                    
+                    <div className="space-y-2 mb-4">
+                        {priorityTasks.length === 0 && <p className="text-xs text-slate-500 italic">No priorities set.</p>}
+                        {priorityTasks.map(task => (
+                            <div key={task.id} className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-xl border border-purple-500/10">
+                                <button onClick={() => toggleTask(task.id)} className="text-purple-400 hover:text-purple-300 transition-colors">
+                                    {task.completed ? <CheckSquare size={20} /> : <Square size={20} />}
+                                </button>
+                                <span className={`flex-1 text-sm font-medium ${task.completed ? 'text-slate-500 line-through' : 'text-slate-100'}`}>
+                                    {task.title}
+                                </span>
+                                <button onClick={() => deleteTask(task.id)} className="text-slate-600 hover:text-red-400">
+                                    <Trash2 size={14} />
+                                </button>
+                            </div>
+                        ))}
+                    </div>
+
+                    <div className="flex gap-2">
+                        <input 
+                            type="text" 
+                            placeholder="Add priority task..." 
+                            className="flex-1 bg-slate-900/80 border border-purple-500/20 rounded-lg px-3 py-2 text-xs text-white focus:outline-none focus:border-purple-500"
+                            value={newTask}
+                            onChange={(e) => setNewTask(e.target.value)}
+                            onKeyDown={(e) => e.key === 'Enter' && (addTask(newTask, true), setNewTask(''))}
+                        />
+                        <button 
+                            onClick={() => { addTask(newTask, true); setNewTask(''); }}
+                            className="bg-purple-600 hover:bg-purple-500 text-white p-2 rounded-lg"
+                        >
+                            <Plus size={16} />
+                        </button>
+                    </div>
+                </div>
+            </div>
+        );
+    };
+
+    // Widget: Daily Tasks
+    const TasksWidget = () => {
+        const [newTask, setNewTask] = useState('');
+        const normalTasks = data.tasks.filter(t => !t.isPriority);
+
+        return (
+            <div key="tasks" className="bg-slate-900 border border-slate-800 rounded-2xl p-5 mb-6">
+                <h4 className="font-bold text-sm text-white mb-4 flex items-center gap-2">
+                    <CheckCircle2 size={16} className="text-teal-400" /> Daily Operations
+                </h4>
+                
+                <div className="space-y-2 mb-4">
+                     {normalTasks.length === 0 && <p className="text-xs text-slate-500 italic">No tasks pending.</p>}
+                     {normalTasks.map(task => (
+                        <div key={task.id} className="flex items-center gap-3 p-2 hover:bg-slate-800/50 rounded-lg transition-colors group">
+                            <button onClick={() => toggleTask(task.id)} className="text-slate-400 hover:text-teal-400 transition-colors">
+                                {task.completed ? <CheckSquare size={18} /> : <Square size={18} />}
+                            </button>
+                            <span className={`flex-1 text-sm ${task.completed ? 'text-slate-500 line-through' : 'text-slate-300'}`}>
+                                {task.title}
+                            </span>
+                            <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-opacity">
+                                <Trash2 size={14} />
+                            </button>
+                        </div>
+                    ))}
+                </div>
+
+                <div className="flex gap-2 items-center mt-2 border-t border-slate-800 pt-3">
+                    <Plus size={14} className="text-slate-500" />
+                    <input 
+                        type="text" 
+                        placeholder="Add new task..." 
+                        className="flex-1 bg-transparent border-none text-xs text-white focus:outline-none placeholder:text-slate-600"
+                        value={newTask}
+                        onChange={(e) => setNewTask(e.target.value)}
+                        onKeyDown={(e) => e.key === 'Enter' && (addTask(newTask, false), setNewTask(''))}
+                    />
+                     <button 
+                        onClick={() => { addTask(newTask, false); setNewTask(''); }}
+                        className="text-xs font-bold text-teal-400 uppercase"
+                    >
+                        Add
+                    </button>
+                </div>
+            </div>
+        );
+    };
+
     const widgetComponents = {
       welcome: (
         <div key="welcome" className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-6 text-center mb-6">
@@ -372,6 +518,8 @@ const App: React.FC = () => {
           <h3 className="text-xl font-bold text-white">Focus: Board Exam Peak Performance</h3>
         </div>
       ),
+      priority: <PriorityWidget />,
+      tasks: <TasksWidget />,
       exams: (
         <div key="exams" className="mb-6 space-y-3">
           <SectionHeader title="Exam Countdown" subtitle="Mission Critical Milestones" />
