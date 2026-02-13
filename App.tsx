@@ -11,7 +11,7 @@ import {
   ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
   Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
   RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2, RefreshCw,
-  Droplets, Moon, Utensils, TrendingUp, Scale, Minus
+  Droplets, Moon, Utensils, TrendingUp, Scale, Minus, UserCircle, ScanFace, Ruler, Weight
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task, StudyMaterial } from './types';
 import { loadData, saveData } from './db';
@@ -20,6 +20,216 @@ import { loadData, saveData } from './db';
 type UndoAction = 
   | { type: 'TASK_DELETE'; payload: Task }
   | { type: 'MATERIAL_DELETE'; payload: { examId: string; material: StudyMaterial } };
+
+// --- Onboarding Component ---
+const OnboardingOverlay = ({ onComplete }: { onComplete: (userData: any) => void }) => {
+  const [step, setStep] = useState(0);
+  const [formData, setFormData] = useState({
+    name: '',
+    age: '',
+    height: '',
+    weight: '',
+    faceType: ''
+  });
+
+  const handleNext = () => {
+    if (step === 0) {
+      // Validation for step 0
+      if (!formData.name || !formData.age) {
+        alert("Please enter your name and age to continue.");
+        return;
+      }
+    }
+    setStep(s => s + 1);
+  };
+
+  const handleFinish = () => {
+    onComplete(formData);
+  };
+
+  const slides = [
+    {
+      title: "Identity Setup",
+      content: (
+        <div className="space-y-4 animate-in slide-in-from-right duration-300">
+           <div className="space-y-2">
+             <label className="text-xs text-teal-400 font-bold uppercase ml-1">Codename / Name</label>
+             <div className="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3">
+               <UserCircle className="text-slate-400" size={20} />
+               <input 
+                 type="text" 
+                 placeholder="e.g. Neo" 
+                 className="bg-transparent border-none focus:outline-none text-white w-full"
+                 value={formData.name}
+                 onChange={(e) => setFormData({...formData, name: e.target.value})}
+               />
+             </div>
+           </div>
+
+           <div className="grid grid-cols-2 gap-4">
+             <div className="space-y-2">
+               <label className="text-xs text-slate-400 font-bold uppercase ml-1">Age</label>
+               <div className="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3">
+                 <Clock className="text-slate-400" size={18} />
+                 <input 
+                   type="number" 
+                   placeholder="18" 
+                   className="bg-transparent border-none focus:outline-none text-white w-full"
+                   value={formData.age}
+                   onChange={(e) => setFormData({...formData, age: e.target.value})}
+                 />
+               </div>
+             </div>
+             <div className="space-y-2">
+               <label className="text-xs text-slate-400 font-bold uppercase ml-1">Face Shape</label>
+               <div className="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3">
+                 <ScanFace className="text-slate-400" size={18} />
+                 <input 
+                   type="text" 
+                   placeholder="Oval" 
+                   className="bg-transparent border-none focus:outline-none text-white w-full"
+                   value={formData.faceType}
+                   onChange={(e) => setFormData({...formData, faceType: e.target.value})}
+                 />
+               </div>
+             </div>
+           </div>
+
+           <div className="grid grid-cols-2 gap-4">
+             <div className="space-y-2">
+               <label className="text-xs text-slate-400 font-bold uppercase ml-1">Height (cm)</label>
+               <div className="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3">
+                 <Ruler className="text-slate-400" size={18} />
+                 <input 
+                   type="number" 
+                   placeholder="175" 
+                   className="bg-transparent border-none focus:outline-none text-white w-full"
+                   value={formData.height}
+                   onChange={(e) => setFormData({...formData, height: e.target.value})}
+                 />
+               </div>
+             </div>
+             <div className="space-y-2">
+               <label className="text-xs text-slate-400 font-bold uppercase ml-1">Weight (kg)</label>
+               <div className="flex items-center gap-3 bg-slate-800/50 border border-slate-700 rounded-xl px-4 py-3">
+                 <Weight className="text-slate-400" size={18} />
+                 <input 
+                   type="number" 
+                   placeholder="70" 
+                   className="bg-transparent border-none focus:outline-none text-white w-full"
+                   value={formData.weight}
+                   onChange={(e) => setFormData({...formData, weight: e.target.value})}
+                 />
+               </div>
+             </div>
+           </div>
+        </div>
+      )
+    },
+    {
+      title: "System Overview",
+      content: (
+        <div className="text-center space-y-6 animate-in slide-in-from-right duration-300">
+           <div className="w-24 h-24 bg-teal-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-teal-500/20 shadow-[0_0_30px_rgba(20,184,166,0.2)]">
+              <LayoutDashboard size={40} className="text-teal-400" />
+           </div>
+           <p className="text-slate-300 text-sm leading-relaxed">
+             Welcome to the <span className="text-teal-400 font-bold">7K Ecosystem</span>. This is not just a to-do list; it is a character sheet for your life.
+           </p>
+           <ul className="text-left space-y-3 text-sm text-slate-400 bg-slate-900/50 p-4 rounded-xl border border-slate-800">
+              <li className="flex gap-2"><CheckCircle2 size={16} className="text-teal-500 shrink-0"/> Track Exams & Study Materials</li>
+              <li className="flex gap-2"><CheckCircle2 size={16} className="text-teal-500 shrink-0"/> Bio-Hack your Physical Stats</li>
+              <li className="flex gap-2"><CheckCircle2 size={16} className="text-teal-500 shrink-0"/> Build Wealth & Skills</li>
+           </ul>
+        </div>
+      )
+    },
+    {
+      title: "Gamification",
+      content: (
+        <div className="text-center space-y-6 animate-in slide-in-from-right duration-300">
+           <div className="w-24 h-24 bg-purple-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-purple-500/20 shadow-[0_0_30px_rgba(168,85,247,0.2)]">
+              <Trophy size={40} className="text-purple-400" />
+           </div>
+           <p className="text-slate-300 text-sm leading-relaxed">
+             Everything you do earns <span className="text-purple-400 font-bold">XP</span>.
+           </p>
+           <div className="grid grid-cols-2 gap-3 text-left">
+              <div className="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                <span className="text-xs text-slate-500 uppercase">Habits</span>
+                <p className="text-teal-400 font-bold">+50 XP</p>
+              </div>
+              <div className="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                <span className="text-xs text-slate-500 uppercase">Workouts</span>
+                <p className="text-teal-400 font-bold">+100 XP</p>
+              </div>
+              <div className="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                <span className="text-xs text-slate-500 uppercase">Study</span>
+                <p className="text-teal-400 font-bold">+80 XP</p>
+              </div>
+              <div className="bg-slate-900 p-3 rounded-lg border border-slate-800">
+                <span className="text-xs text-slate-500 uppercase">Projects</span>
+                <p className="text-teal-400 font-bold">+200 XP</p>
+              </div>
+           </div>
+        </div>
+      )
+    },
+    {
+      title: "Ready?",
+      content: (
+        <div className="text-center space-y-6 animate-in slide-in-from-right duration-300">
+           <div className="w-24 h-24 bg-emerald-500/10 rounded-full flex items-center justify-center mx-auto mb-4 border border-emerald-500/20 shadow-[0_0_30px_rgba(16,185,129,0.2)]">
+              <Zap size={40} className="text-emerald-400" />
+           </div>
+           <h3 className="text-xl font-bold text-white">Protocol Initiated.</h3>
+           <p className="text-slate-400 text-sm">
+             Your stats have been initialized. <br/> It is time to level up.
+           </p>
+           <button 
+             onClick={handleFinish}
+             className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold py-4 rounded-xl shadow-lg shadow-teal-500/20 hover:scale-[1.02] transition-transform"
+           >
+             Enter System
+           </button>
+        </div>
+      )
+    }
+  ];
+
+  return (
+    <div className="fixed inset-0 z-[9999] bg-[#020617] flex flex-col items-center justify-center p-6">
+      <div className="w-full max-w-md">
+        {/* Progress Bar */}
+        <div className="flex gap-2 mb-8 justify-center">
+           {slides.map((_, i) => (
+             <div 
+                key={i} 
+                className={`h-1 rounded-full transition-all duration-300 ${i === step ? 'w-8 bg-teal-500' : 'w-2 bg-slate-800'}`} 
+             />
+           ))}
+        </div>
+
+        <h1 className="text-3xl font-black text-center mb-2 bg-gradient-to-r from-teal-400 to-emerald-400 bg-clip-text text-transparent">
+          {slides[step].title}
+        </h1>
+        
+        <div className="min-h-[300px] flex flex-col justify-center my-6">
+          {slides[step].content}
+        </div>
+
+        {step < slides.length - 1 && (
+          <button 
+            onClick={handleNext}
+            className="w-full bg-slate-800 text-white font-bold py-4 rounded-xl border border-slate-700 hover:bg-slate-700 transition-colors flex items-center justify-center gap-2"
+          >
+            Continue <ChevronRight size={20} />
+          </button>
+        )}
+      </div>
+    </div>
+  );
+};
 
 const ExamItem = ({ exam, onAddMaterial, onDeleteMaterial }: { 
   exam: Exam; 
@@ -143,6 +353,16 @@ const App: React.FC = () => {
   const [undoStack, setUndoStack] = useState<UndoAction | null>(null);
   const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
 
+  // Auto-Update Logic: Detect Service Worker updates and force reload
+  useEffect(() => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.addEventListener('controllerchange', () => {
+        // This triggers when the new service worker takes control
+        window.location.reload();
+      });
+    }
+  }, []);
+
   // Handle Loading Screen (Splash)
   useEffect(() => {
     // Add a small delay to simulate loading or ensure splash is seen
@@ -190,6 +410,24 @@ const App: React.FC = () => {
     } else {
       window.location.reload();
     }
+  };
+
+  const handleOnboardingComplete = (userData: any) => {
+      setData(prev => ({
+          ...prev,
+          user: {
+              ...prev.user,
+              ...userData,
+              age: parseInt(userData.age) || 0,
+              height: parseInt(userData.height) || 0,
+              weight: parseInt(userData.weight) || 0
+          },
+          physical: {
+            ...prev.physical,
+            weight: parseInt(userData.weight) || prev.physical.weight // Sync weight
+          },
+          onboardingCompleted: true
+      }));
   };
 
   // Sync data to localStorage on change
@@ -615,7 +853,7 @@ const App: React.FC = () => {
     const widgetComponents = {
       welcome: (
         <div key="welcome" className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-6 text-center mb-6">
-          <p className="text-teal-400 text-sm font-medium mb-1">Made by 7K Ecosystem</p>
+          <p className="text-teal-400 text-sm font-medium mb-1">Welcome back, {data.user?.name || 'User'}</p>
           <h3 className="text-xl font-bold text-white">Focus: Board Exam Peak Performance</h3>
         </div>
       ),
@@ -1366,45 +1604,52 @@ const App: React.FC = () => {
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-slate-950 flex flex-col relative pb-20 shadow-2xl shadow-teal-500/5">
-      <XPHeader />
-      
-      <main className="flex-1 p-5 overflow-y-auto">
-        {activeTab === 'dashboard' && <Dashboard />}
-        {activeTab === 'physical' && <PhysicalSection />}
-        {activeTab === 'intelligence' && <IntelligenceSection />}
-        {activeTab === 'skills' && <SkillsSection />}
-        {activeTab === 'wealth' && <WealthSection />}
-        {activeTab === 'settings' && <SettingsSection />}
-      </main>
+      {/* Show Onboarding if incomplete, otherwise show App */}
+      {!data.onboardingCompleted ? (
+          <OnboardingOverlay onComplete={handleOnboardingComplete} />
+      ) : (
+        <>
+          <XPHeader />
+          
+          <main className="flex-1 p-5 overflow-y-auto">
+            {activeTab === 'dashboard' && <Dashboard />}
+            {activeTab === 'physical' && <PhysicalSection />}
+            {activeTab === 'intelligence' && <IntelligenceSection />}
+            {activeTab === 'skills' && <SkillsSection />}
+            {activeTab === 'wealth' && <WealthSection />}
+            {activeTab === 'settings' && <SettingsSection />}
+          </main>
 
-      {/* Undo Toast */}
-      {undoStack && (
-        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-4 z-50 animate-in slide-in-from-bottom-4 duration-200">
-            <span className="text-sm text-slate-300 flex items-center gap-2">
-                <Trash2 size={16} /> Deleted
-            </span>
-            <div className="flex items-center gap-3">
-                <button 
-                    onClick={handleUndo} 
-                    className="flex items-center gap-1 text-teal-400 font-bold text-sm hover:underline"
-                >
-                    <Undo2 size={16} /> Undo
-                </button>
-                <button onClick={() => setUndoStack(null)} className="text-slate-500 hover:text-white">
-                    <X size={16}/>
-                </button>
+          {/* Undo Toast */}
+          {undoStack && (
+            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-4 z-50 animate-in slide-in-from-bottom-4 duration-200">
+                <span className="text-sm text-slate-300 flex items-center gap-2">
+                    <Trash2 size={16} /> Deleted
+                </span>
+                <div className="flex items-center gap-3">
+                    <button 
+                        onClick={handleUndo} 
+                        className="flex items-center gap-1 text-teal-400 font-bold text-sm hover:underline"
+                    >
+                        <Undo2 size={16} /> Undo
+                    </button>
+                    <button onClick={() => setUndoStack(null)} className="text-slate-500 hover:text-white">
+                        <X size={16}/>
+                    </button>
+                </div>
             </div>
-        </div>
-      )}
+          )}
 
-      <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 px-2 py-3 grid grid-cols-6 gap-1 z-50">
-        <TabButton id="dashboard" icon={LayoutDashboard} label="Home" />
-        <TabButton id="physical" icon={Dumbbell} label="Body" />
-        <TabButton id="intelligence" icon={Brain} label="Mind" />
-        <TabButton id="skills" icon={Target} label="Skills" />
-        <TabButton id="wealth" icon={DollarSign} label="Wealth" />
-        <TabButton id="settings" icon={Settings} label="Meta" />
-      </nav>
+          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 px-2 py-3 grid grid-cols-6 gap-1 z-50">
+            <TabButton id="dashboard" icon={LayoutDashboard} label="Home" />
+            <TabButton id="physical" icon={Dumbbell} label="Body" />
+            <TabButton id="intelligence" icon={Brain} label="Mind" />
+            <TabButton id="skills" icon={Target} label="Skills" />
+            <TabButton id="wealth" icon={DollarSign} label="Wealth" />
+            <TabButton id="settings" icon={Settings} label="Meta" />
+          </nav>
+        </>
+      )}
     </div>
   );
 };

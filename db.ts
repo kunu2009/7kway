@@ -4,6 +4,14 @@ import { AppData, Area } from './types';
 const STORAGE_KEY = '7k_ecosystem_growth_v2';
 
 const INITIAL_DATA: AppData = {
+  user: {
+    name: '',
+    age: 0,
+    height: 0,
+    weight: 0,
+    faceType: ''
+  },
+  onboardingCompleted: false,
   stats: {
     xp: 0,
     level: 1,
@@ -101,6 +109,8 @@ export const loadData = (): AppData => {
     return {
       ...INITIAL_DATA,
       ...parsed,
+      user: parsed.user || INITIAL_DATA.user,
+      onboardingCompleted: parsed.onboardingCompleted ?? false, // Default to false if missing
       exams: parsed.exams?.map((e: any) => ({
         ...e,
         studyMaterials: e.studyMaterials || [] 

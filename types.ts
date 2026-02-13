@@ -91,7 +91,17 @@ export interface PhysicalStats {
   };
 }
 
+export interface UserProfile {
+  name: string;
+  age: number;
+  height: number; // cm
+  weight: number; // kg
+  faceType: string; // e.g., 'diamond', 'oval'
+}
+
 export interface AppData {
+  user: UserProfile;
+  onboardingCompleted: boolean;
   stats: UserStats;
   habits: Habit[];
   projects: Project[];

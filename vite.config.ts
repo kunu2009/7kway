@@ -35,8 +35,9 @@ export default defineConfig({
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
-        // Exclude index.html from being cached permanently to allow updates to be seen immediately
-        navigateFallback: null,
+        
+        // CRITICAL: Force Network First strategy to ensure updates are seen immediately on refresh
+        navigateFallback: 'index.html',
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -50,6 +51,15 @@ export default defineConfig({
               cacheableResponse: {
                 statuses: [0, 200]
               }
+            }
+          },
+          {
+            // For all other requests (JS, CSS, HTML), try network first, then cache
+            urlPattern: ({ request }) => request.destination === 'document' || request.destination === 'script' || request.destination === 'style',
+            handler: 'NetworkFirst', 
+            options: {
+              cacheName: 'app-core-cache',
+              networkTimeoutSeconds: 5
             }
           }
         ]
