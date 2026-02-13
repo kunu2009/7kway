@@ -10,7 +10,7 @@ import {
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
   ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
   Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
-  RotateCcw, Play, Pause, X, GripHorizontal, EyeOff
+  RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task } from './types';
 import { loadData, saveData } from './db';
@@ -132,6 +132,10 @@ const App: React.FC = () => {
   const [data, setData] = useState<AppData>(loadData());
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+  
+  // Undo State
+  const [undoStack, setUndoStack] = useState<Task | null>(null);
+  const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Handle Loading Screen (Splash)
   useEffect(() => {
@@ -233,10 +237,36 @@ const App: React.FC = () => {
   };
 
   const deleteTask = (id: string) => {
+    const taskToDelete = data.tasks.find(t => t.id === id);
+    if (!taskToDelete) return;
+
+    // Clear existing timer if any
+    if (undoTimer) clearTimeout(undoTimer);
+
+    // Set undo stack
+    setUndoStack(taskToDelete);
+
+    // Remove task
     setData(prev => ({
       ...prev,
       tasks: prev.tasks.filter(t => t.id !== id)
     }));
+
+    // Auto-clear undo after 5 seconds
+    const timer = setTimeout(() => {
+        setUndoStack(null);
+    }, 5000);
+    setUndoTimer(timer);
+  };
+
+  const handleUndo = () => {
+      if (!undoStack) return;
+      setData(prev => ({
+          ...prev,
+          tasks: [undoStack, ...prev.tasks].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+      }));
+      setUndoStack(null);
+      if (undoTimer) clearTimeout(undoTimer);
   };
   // -------------------------------
 
@@ -429,13 +459,16 @@ const App: React.FC = () => {
                         {priorityTasks.length === 0 && <p className="text-xs text-slate-500 italic">No priorities set.</p>}
                         {priorityTasks.map(task => (
                             <div key={task.id} className="flex items-center gap-3 bg-slate-900/60 p-3 rounded-xl border border-purple-500/10">
-                                <button onClick={() => toggleTask(task.id)} className="text-purple-400 hover:text-purple-300 transition-colors">
+                                <button onClick={() => toggleTask(task.id)} className="text-purple-400 hover:text-purple-300 transition-colors shrink-0">
                                     {task.completed ? <CheckSquare size={20} /> : <Square size={20} />}
                                 </button>
-                                <span className={`flex-1 text-sm font-medium ${task.completed ? 'text-slate-500 line-through' : 'text-slate-100'}`}>
+                                <span 
+                                    onClick={() => toggleTask(task.id)}
+                                    className={`flex-1 text-sm font-medium cursor-pointer select-none transition-colors hover:text-purple-300 ${task.completed ? 'text-slate-500 line-through' : 'text-slate-100'}`}
+                                >
                                     {task.title}
                                 </span>
-                                <button onClick={() => deleteTask(task.id)} className="text-slate-600 hover:text-red-400">
+                                <button onClick={() => deleteTask(task.id)} className="text-slate-600 hover:text-red-400 p-1">
                                     <Trash2 size={14} />
                                 </button>
                             </div>
@@ -478,13 +511,16 @@ const App: React.FC = () => {
                      {normalTasks.length === 0 && <p className="text-xs text-slate-500 italic">No tasks pending.</p>}
                      {normalTasks.map(task => (
                         <div key={task.id} className="flex items-center gap-3 p-2 hover:bg-slate-800/50 rounded-lg transition-colors group">
-                            <button onClick={() => toggleTask(task.id)} className="text-slate-400 hover:text-teal-400 transition-colors">
+                            <button onClick={() => toggleTask(task.id)} className="text-slate-400 hover:text-teal-400 transition-colors shrink-0">
                                 {task.completed ? <CheckSquare size={18} /> : <Square size={18} />}
                             </button>
-                            <span className={`flex-1 text-sm ${task.completed ? 'text-slate-500 line-through' : 'text-slate-300'}`}>
+                            <span 
+                                onClick={() => toggleTask(task.id)}
+                                className={`flex-1 text-sm cursor-pointer select-none transition-colors hover:text-teal-400 ${task.completed ? 'text-slate-500 line-through' : 'text-slate-300'}`}
+                            >
                                 {task.title}
                             </span>
-                            <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-opacity">
+                            <button onClick={() => deleteTask(task.id)} className="opacity-0 group-hover:opacity-100 text-slate-600 hover:text-red-400 transition-opacity p-1">
                                 <Trash2 size={14} />
                             </button>
                         </div>
@@ -972,6 +1008,20 @@ const App: React.FC = () => {
         setDraggedIndex(null);
     };
 
+    // Mobile reorder helper
+    const moveWidget = (index: number, direction: 'up' | 'down') => {
+        const layout = [...data.settings.dashboardLayout];
+        if (direction === 'up' && index > 0) {
+            [layout[index - 1], layout[index]] = [layout[index], layout[index - 1]];
+        } else if (direction === 'down' && index < layout.length - 1) {
+            [layout[index + 1], layout[index]] = [layout[index], layout[index + 1]];
+        }
+        setData(prev => ({
+            ...prev,
+            settings: { ...prev.settings, dashboardLayout: layout }
+        }));
+    };
+
     const toggleWidget = (widget: WidgetType) => {
         const layout = data.settings.dashboardLayout;
         if (layout.includes(widget)) {
@@ -1002,12 +1052,12 @@ const App: React.FC = () => {
           </button>
         )}
         
-        {/* Dashboard Layout - Drag & Drop */}
+        {/* Dashboard Layout - Drag & Drop + Mobile Arrows */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
           <h4 className="font-bold mb-4 flex items-center gap-2">
              <LayoutDashboard size={18} className="text-teal-400" /> Dashboard Layout
           </h4>
-          <p className="text-xs text-slate-400 mb-4">Drag to reorder widgets. Click X to hide.</p>
+          <p className="text-xs text-slate-400 mb-4">Drag to reorder (Desktop) or use arrows (Mobile).</p>
           
           {/* Active Widgets */}
           <div className="space-y-2 mb-6">
@@ -1021,7 +1071,25 @@ const App: React.FC = () => {
                 className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-transparent hover:border-teal-500/30 cursor-grab active:cursor-grabbing transition-colors ${draggedIndex === index ? 'opacity-50 border-teal-500' : ''}`}
               >
                  <div className="flex items-center gap-3">
-                    <GripVertical size={16} className="text-slate-500" />
+                    {/* Reordering Controls */}
+                    <div className="flex flex-col gap-0.5 md:hidden">
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); moveWidget(index, 'up'); }}
+                            disabled={index === 0}
+                            className="p-2 text-slate-500 hover:text-teal-400 disabled:opacity-30"
+                        >
+                            <ChevronUp size={14} />
+                        </button>
+                        <button 
+                            onClick={(e) => { e.stopPropagation(); moveWidget(index, 'down'); }}
+                            disabled={index === data.settings.dashboardLayout.length - 1}
+                            className="p-2 text-slate-500 hover:text-teal-400 disabled:opacity-30"
+                        >
+                            <ChevronDown size={14} />
+                        </button>
+                    </div>
+                    <GripVertical size={16} className="text-slate-500 hidden md:block" />
+                    
                     <span className="capitalize text-sm font-medium text-slate-200">{widget}</span>
                  </div>
                  <button 
@@ -1132,6 +1200,26 @@ const App: React.FC = () => {
         {activeTab === 'wealth' && <WealthSection />}
         {activeTab === 'settings' && <SettingsSection />}
       </main>
+
+      {/* Undo Toast */}
+      {undoStack && (
+        <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-4 z-50 animate-in slide-in-from-bottom-4 duration-200">
+            <span className="text-sm text-slate-300 flex items-center gap-2">
+                <Trash2 size={16} /> Task deleted
+            </span>
+            <div className="flex items-center gap-3">
+                <button 
+                    onClick={handleUndo} 
+                    className="flex items-center gap-1 text-teal-400 font-bold text-sm hover:underline"
+                >
+                    <Undo2 size={16} /> Undo
+                </button>
+                <button onClick={() => setUndoStack(null)} className="text-slate-500 hover:text-white">
+                    <X size={16}/>
+                </button>
+            </div>
+        </div>
+      )}
 
       <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-slate-950/95 backdrop-blur-lg border-t border-slate-800 px-2 py-3 grid grid-cols-6 gap-1 z-50">
         <TabButton id="dashboard" icon={LayoutDashboard} label="Home" />
