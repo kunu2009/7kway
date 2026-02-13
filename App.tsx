@@ -7,8 +7,8 @@ import {
   Zap, Brain, Target, DollarSign, Settings, 
   Dumbbell, CheckCircle2, Trophy, Clock, 
   BookOpen, Music, Share2, Github, Instagram, ExternalLink, Mail,
-  LayoutDashboard, Flame, Box, Calendar, AlertCircle, Shield,
-  ArrowUp, ArrowDown, Eye, EyeOff, GripVertical
+  LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
+  ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType } from './types';
 import { loadData, saveData } from './db';
@@ -16,6 +16,26 @@ import { loadData, saveData } from './db';
 const App: React.FC = () => {
   const [data, setData] = useState<AppData>(loadData());
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
+  const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
+
+  // PWA Install Prompt Listener
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  const handleInstallClick = async () => {
+    if (!deferredPrompt) return;
+    deferredPrompt.prompt();
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      setDeferredPrompt(null);
+    }
+  };
 
   // Sync data to localStorage on change
   useEffect(() => {
@@ -40,7 +60,7 @@ const App: React.FC = () => {
       return {
         ...prev,
         stats: { ...prev.stats, xp: newXp },
-        logs: [newLog, ...prev.logs].slice(0, 100)
+        logs: [newLog, ...prev.logs].slice(0, 500) // Keep last 500 logs
       };
     });
   }, []);
@@ -100,7 +120,6 @@ const App: React.FC = () => {
       dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString().split('T')[0],
       priority: 'high'
     };
-    // We can call addXP separately here because it's a distinct action, not dependent on previous state calculation within a map
     setData(prev => ({
       ...prev,
       projects: [newProject, ...prev.projects]
@@ -110,7 +129,6 @@ const App: React.FC = () => {
 
   // UI Components
   const TabButton = ({ id, icon: Icon, label }: { id: any, icon: any, label: string }) => {
-    // Check if section is active (always show Dashboard and Settings)
     if (id !== 'dashboard' && id !== 'settings') {
       const sectionKey = id as keyof typeof data.settings.activeSections;
       if (!data.settings.activeSections[sectionKey]) return null;
@@ -165,10 +183,24 @@ const App: React.FC = () => {
   );
 
   const Dashboard = () => {
+    // REAL DATA for Chart
     const chartData = useMemo(() => {
-      const days = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'];
-      return days.map(d => ({ name: d, xp: Math.floor(Math.random() * 500) + 100 }));
-    }, []);
+      const days = [];
+      for (let i = 6; i >= 0; i--) {
+        const d = new Date();
+        d.setDate(d.getDate() - i);
+        const dateStr = d.toISOString().split('T')[0];
+        const dayName = d.toLocaleDateString('en-US', { weekday: 'short' });
+        
+        // Sum XP logs for this day
+        const xpForDay = data.logs
+          .filter(log => log.type === 'xp' && log.timestamp.startsWith(dateStr))
+          .reduce((sum, log) => sum + log.value, 0);
+
+        days.push({ name: dayName, xp: xpForDay });
+      }
+      return days;
+    }, [data.logs]);
 
     const completionRate = useMemo(() => {
       const today = new Date().toISOString().split('T')[0];
@@ -181,6 +213,84 @@ const App: React.FC = () => {
         <div key="welcome" className="bg-teal-500/10 border border-teal-500/20 rounded-2xl p-6 text-center mb-6">
           <p className="text-teal-400 text-sm font-medium mb-1">Made by 7K Ecosystem</p>
           <h3 className="text-xl font-bold text-white">Focus: Board Exam Peak Performance</h3>
+        </div>
+      ),
+      exams: (
+        <div key="exams" className="mb-6 space-y-3">
+          <SectionHeader title="Exam Countdown" subtitle="Mission Critical Milestones" />
+          <div className="grid gap-3">
+            {data.exams.sort((a,b) => new Date(a.date).getTime() - new Date(b.date).getTime()).map(exam => {
+              const daysLeft = Math.ceil((new Date(exam.date).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+              const isUrgent = daysLeft < 7 && daysLeft >= 0;
+              const isPast = daysLeft < 0;
+              
+              return (
+                <div key={exam.id} className={`flex items-center justify-between p-4 rounded-xl border ${isUrgent ? 'bg-red-500/10 border-red-500/30' : 'bg-slate-900 border-slate-800'}`}>
+                  <div className="flex items-center gap-3">
+                    <div className={`p-2 rounded-lg ${exam.type === 'board' ? 'bg-blue-500/20 text-blue-400' : 'bg-purple-500/20 text-purple-400'}`}>
+                      <GraduationCap size={20} />
+                    </div>
+                    <div>
+                      <p className="font-bold text-sm">{exam.subject}</p>
+                      <p className="text-[10px] text-slate-400 uppercase">{new Date(exam.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })} • {exam.type}</p>
+                    </div>
+                  </div>
+                  <div className="text-right">
+                    {isPast ? (
+                       <span className="text-xs font-bold text-slate-500">Done</span>
+                    ) : (
+                      <>
+                        <p className={`text-xl font-bold ${isUrgent ? 'text-red-400' : 'text-white'}`}>{daysLeft}</p>
+                        <p className="text-[10px] text-slate-500">days left</p>
+                      </>
+                    )}
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ),
+      calendar: (
+        <div key="calendar" className="bg-slate-900 border border-slate-800 rounded-2xl p-4 mb-6">
+          <div className="flex justify-between items-center mb-4">
+             <h4 className="font-bold text-sm flex items-center gap-2"><CalendarIcon size={16} className="text-teal-400"/> Calendar</h4>
+             <span className="text-xs text-slate-500">{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center mb-2">
+            {['S','M','T','W','T','F','S'].map(d => <span key={d} className="text-[10px] text-slate-500 font-bold">{d}</span>)}
+          </div>
+          <div className="grid grid-cols-7 gap-1 text-center">
+            {/* Simple calendar logic for current month */}
+            {(() => {
+              const today = new Date();
+              const daysInMonth = new Date(today.getFullYear(), today.getMonth() + 1, 0).getDate();
+              const firstDay = new Date(today.getFullYear(), today.getMonth(), 1).getDay();
+              const els = [];
+              
+              // Empty slots
+              for(let i=0; i<firstDay; i++) els.push(<div key={`empty-${i}`} className="h-8"></div>);
+              
+              // Days
+              for(let i=1; i<=daysInMonth; i++) {
+                const dateStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(i).padStart(2,'0')}`;
+                const isToday = i === today.getDate();
+                const exam = data.exams.find(e => e.date === dateStr);
+                
+                els.push(
+                  <div key={i} className={`h-8 flex items-center justify-center rounded-lg text-xs font-medium relative ${
+                    isToday ? 'bg-teal-500 text-white' : 
+                    exam ? 'bg-purple-500/20 text-purple-300 border border-purple-500/30' : 
+                    'text-slate-400 hover:bg-slate-800'
+                  }`}>
+                    {i}
+                    {exam && <div className="absolute bottom-0.5 w-1 h-1 bg-purple-400 rounded-full"></div>}
+                  </div>
+                );
+              }
+              return els;
+            })()}
+          </div>
         </div>
       ),
       stats: (
@@ -438,7 +548,7 @@ const App: React.FC = () => {
                   <p className="text-[10px] text-slate-400 line-clamp-1">{project.description}</p>
                   <div className="flex items-center justify-between mt-1 pt-2 border-t border-slate-700/50">
                     <div className="flex items-center gap-1 text-[10px] text-slate-500">
-                      <Calendar size={10} /> {project.dueDate}
+                      <CalendarIcon size={10} /> {project.dueDate}
                     </div>
                     <div className="flex items-center gap-1 text-[10px] text-slate-500 uppercase font-bold tracking-wider">
                       <AlertCircle size={10} /> {project.priority}
@@ -500,6 +610,17 @@ const App: React.FC = () => {
     return (
       <div className="space-y-8 animate-in slide-in-from-right-4 duration-300 pb-20">
         <SectionHeader title="Settings & Customization" />
+
+        {/* PWA Install Button - Only shows if deferredPrompt exists */}
+        {deferredPrompt && (
+          <button 
+            onClick={handleInstallClick}
+            className="w-full bg-gradient-to-r from-teal-500 to-emerald-500 text-white font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-teal-500/20 hover:scale-[1.02] transition-transform"
+          >
+            <Download size={20} />
+            Install App to Home Screen
+          </button>
+        )}
         
         {/* Module Visibility */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">

@@ -41,7 +41,14 @@ export interface LogEntry {
   label: string;
 }
 
-export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits';
+export interface Exam {
+  id: string;
+  subject: string;
+  date: string; // YYYY-MM-DD
+  type: 'board' | 'entrance';
+}
+
+export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits' | 'exams' | 'calendar';
 
 export interface AppSettings {
   dopamineMode: boolean;
@@ -60,5 +67,6 @@ export interface AppData {
   habits: Habit[];
   projects: Project[];
   logs: LogEntry[];
+  exams: Exam[];
   settings: AppSettings;
 }

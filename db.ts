@@ -21,6 +21,12 @@ const INITIAL_DATA: AppData = {
   ],
   projects: [],
   logs: [],
+  exams: [
+    { id: 'e1', subject: 'Political Science', date: '2025-02-18', type: 'board' },
+    { id: 'e2', subject: 'Economics', date: '2025-02-24', type: 'board' },
+    { id: 'e3', subject: 'History', date: '2025-03-15', type: 'board' },
+    { id: 'e4', subject: 'MHCET 5 Year LLB', date: '2025-05-08', type: 'entrance' },
+  ],
   settings: {
     dopamineMode: false,
     darkMode: true,
@@ -30,7 +36,7 @@ const INITIAL_DATA: AppData = {
       skills: true,
       wealth: true
     },
-    dashboardLayout: ['welcome', 'stats', 'chart', 'habits']
+    dashboardLayout: ['welcome', 'exams', 'calendar', 'stats', 'chart', 'habits']
   },
 };
 
@@ -43,6 +49,7 @@ export const loadData = (): AppData => {
     return {
       ...INITIAL_DATA,
       ...parsed,
+      exams: parsed.exams || INITIAL_DATA.exams, // Ensure exams exist if loading old data
       settings: {
         ...INITIAL_DATA.settings,
         ...parsed.settings,
