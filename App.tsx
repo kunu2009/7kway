@@ -10,7 +10,7 @@ import {
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
   ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
   Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
-  RotateCcw, Play, Pause
+  RotateCcw, Play, Pause, X, GripHorizontal, EyeOff
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task } from './types';
 import { loadData, saveData } from './db';
@@ -937,18 +937,54 @@ const App: React.FC = () => {
       }));
     };
 
-    // Helper to move dashboard widgets
-    const moveWidget = (index: number, direction: 'up' | 'down') => {
-      const layout = [...data.settings.dashboardLayout];
-      if (direction === 'up' && index > 0) {
-        [layout[index - 1], layout[index]] = [layout[index], layout[index - 1]];
-      } else if (direction === 'down' && index < layout.length - 1) {
-        [layout[index + 1], layout[index]] = [layout[index], layout[index + 1]];
-      }
-      setData(prev => ({
-        ...prev,
-        settings: { ...prev.settings, dashboardLayout: layout }
-      }));
+    const ALL_WIDGETS: WidgetType[] = ['welcome', 'priority', 'tasks', 'exams', 'calendar', 'stats', 'chart', 'habits'];
+
+    const [draggedIndex, setDraggedIndex] = useState<number | null>(null);
+
+    const handleDragStart = (e: React.DragEvent, index: number) => {
+        setDraggedIndex(index);
+        // Default ghost image is usually sufficient
+        if (e.dataTransfer) {
+            e.dataTransfer.effectAllowed = "move";
+        }
+    };
+
+    const handleDragOver = (e: React.DragEvent, index: number) => {
+        e.preventDefault(); // Necessary to allow dropping
+        if (draggedIndex === null) return;
+    };
+
+    const handleDrop = (e: React.DragEvent, dropIndex: number) => {
+        e.preventDefault();
+        if (draggedIndex === null || draggedIndex === dropIndex) return;
+        
+        const layout = [...data.settings.dashboardLayout];
+        const draggedItem = layout[draggedIndex];
+        
+        // Remove from old pos and insert at new pos
+        layout.splice(draggedIndex, 1);
+        layout.splice(dropIndex, 0, draggedItem);
+        
+        setData(prev => ({
+            ...prev,
+            settings: { ...prev.settings, dashboardLayout: layout }
+        }));
+        setDraggedIndex(null);
+    };
+
+    const toggleWidget = (widget: WidgetType) => {
+        const layout = data.settings.dashboardLayout;
+        if (layout.includes(widget)) {
+            setData(prev => ({
+                ...prev,
+                settings: { ...prev.settings, dashboardLayout: layout.filter(w => w !== widget) }
+            }));
+        } else {
+            setData(prev => ({
+                ...prev,
+                settings: { ...prev.settings, dashboardLayout: [...layout, widget] }
+            }));
+        }
     };
 
     return (
@@ -966,12 +1002,67 @@ const App: React.FC = () => {
           </button>
         )}
         
+        {/* Dashboard Layout - Drag & Drop */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <h4 className="font-bold mb-4 flex items-center gap-2">
+             <LayoutDashboard size={18} className="text-teal-400" /> Dashboard Layout
+          </h4>
+          <p className="text-xs text-slate-400 mb-4">Drag to reorder widgets. Click X to hide.</p>
+          
+          {/* Active Widgets */}
+          <div className="space-y-2 mb-6">
+            {data.settings.dashboardLayout.map((widget, index) => (
+              <div 
+                key={widget} 
+                draggable
+                onDragStart={(e) => handleDragStart(e, index)}
+                onDragOver={(e) => handleDragOver(e, index)}
+                onDrop={(e) => handleDrop(e, index)}
+                className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-transparent hover:border-teal-500/30 cursor-grab active:cursor-grabbing transition-colors ${draggedIndex === index ? 'opacity-50 border-teal-500' : ''}`}
+              >
+                 <div className="flex items-center gap-3">
+                    <GripVertical size={16} className="text-slate-500" />
+                    <span className="capitalize text-sm font-medium text-slate-200">{widget}</span>
+                 </div>
+                 <button 
+                    onClick={() => toggleWidget(widget)}
+                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                 >
+                    <X size={16} />
+                 </button>
+              </div>
+            ))}
+            {data.settings.dashboardLayout.length === 0 && (
+                <p className="text-xs text-slate-600 text-center italic py-2">No widgets visible on dashboard.</p>
+            )}
+          </div>
+
+          {/* Available Widgets */}
+          {ALL_WIDGETS.some(w => !data.settings.dashboardLayout.includes(w)) && (
+            <div className="pt-4 border-t border-slate-800">
+                <p className="text-xs font-bold text-slate-500 uppercase mb-3">Hidden Widgets</p>
+                <div className="grid grid-cols-2 gap-2">
+                    {ALL_WIDGETS.filter(w => !data.settings.dashboardLayout.includes(w)).map(widget => (
+                        <button 
+                            key={widget}
+                            onClick={() => toggleWidget(widget)}
+                            className="flex items-center justify-between p-2 bg-slate-950 border border-slate-800 rounded-lg hover:border-teal-500/30 transition-colors group"
+                        >
+                            <span className="capitalize text-xs text-slate-400 group-hover:text-slate-200">{widget}</span>
+                            <Plus size={14} className="text-teal-500" />
+                        </button>
+                    ))}
+                </div>
+            </div>
+          )}
+        </div>
+
         {/* Module Visibility */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
           <h4 className="font-bold mb-4 flex items-center gap-2">
              <Eye size={18} className="text-teal-400" /> Focus Modules
           </h4>
-          <p className="text-xs text-slate-400 mb-4">Toggle sections to reduce clutter and focus on what matters.</p>
+          <p className="text-xs text-slate-400 mb-4">Toggle sections to reduce clutter.</p>
           <div className="space-y-3">
             {Object.keys(data.settings.activeSections).map(key => {
                const k = key as keyof typeof data.settings.activeSections;
@@ -987,40 +1078,6 @@ const App: React.FC = () => {
                 </div>
                );
             })}
-          </div>
-        </div>
-
-        {/* Dashboard Layout */}
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-          <h4 className="font-bold mb-4 flex items-center gap-2">
-             <LayoutDashboard size={18} className="text-teal-400" /> Dashboard Layout
-          </h4>
-          <p className="text-xs text-slate-400 mb-4">Reorder widgets to customize your home screen.</p>
-          <div className="space-y-2">
-            {data.settings.dashboardLayout.map((widget, index) => (
-              <div key={widget} className="flex items-center justify-between p-3 bg-slate-800/50 rounded-xl">
-                 <div className="flex items-center gap-3">
-                    <GripVertical size={16} className="text-slate-500" />
-                    <span className="capitalize text-sm font-medium">{widget}</span>
-                 </div>
-                 <div className="flex gap-1">
-                   <button 
-                     onClick={() => moveWidget(index, 'up')}
-                     disabled={index === 0}
-                     className="p-1 hover:bg-slate-700 rounded disabled:opacity-30"
-                   >
-                     <ArrowUp size={16} />
-                   </button>
-                   <button 
-                     onClick={() => moveWidget(index, 'down')}
-                     disabled={index === data.settings.dashboardLayout.length - 1}
-                     className="p-1 hover:bg-slate-700 rounded disabled:opacity-30"
-                   >
-                     <ArrowDown size={16} />
-                   </button>
-                 </div>
-              </div>
-            ))}
           </div>
         </div>
 
