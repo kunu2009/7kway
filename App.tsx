@@ -132,6 +132,23 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
 
+  // Handle Loading Screen (Splash)
+  useEffect(() => {
+    // Add a small delay to simulate loading or ensure splash is seen
+    const timer = setTimeout(() => {
+        const splash = document.getElementById('splash-screen');
+        if (splash) {
+            splash.style.opacity = '0';
+            splash.style.visibility = 'hidden';
+            // Optional: Remove from DOM after transition
+            setTimeout(() => {
+                splash.remove();
+            }, 600);
+        }
+    }, 1500); // 1.5 seconds visible splash
+    return () => clearTimeout(timer);
+  }, []);
+
   // PWA Install Prompt Listener
   useEffect(() => {
     const handler = (e: any) => {
