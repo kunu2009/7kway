@@ -10,10 +10,15 @@ import {
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
   ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
   Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
-  RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2
+  RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2, RefreshCw
 } from 'lucide-react';
-import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task } from './types';
+import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task, StudyMaterial } from './types';
 import { loadData, saveData } from './db';
+
+// Undo Types
+type UndoAction = 
+  | { type: 'TASK_DELETE'; payload: Task }
+  | { type: 'MATERIAL_DELETE'; payload: { examId: string; material: StudyMaterial } };
 
 const ExamItem = ({ exam, onAddMaterial, onDeleteMaterial }: { 
   exam: Exam; 
@@ -134,7 +139,7 @@ const App: React.FC = () => {
   const [deferredPrompt, setDeferredPrompt] = useState<any>(null);
   
   // Undo State
-  const [undoStack, setUndoStack] = useState<Task | null>(null);
+  const [undoStack, setUndoStack] = useState<UndoAction | null>(null);
   const [undoTimer, setUndoTimer] = useState<NodeJS.Timeout | null>(null);
 
   // Handle Loading Screen (Splash)
@@ -173,6 +178,19 @@ const App: React.FC = () => {
     }
   };
 
+  const handleHardRefresh = () => {
+    if ('serviceWorker' in navigator) {
+      navigator.serviceWorker.getRegistrations().then((registrations) => {
+        for (const registration of registrations) {
+          registration.unregister();
+        }
+        window.location.reload();
+      });
+    } else {
+      window.location.reload();
+    }
+  };
+
   // Sync data to localStorage on change
   useEffect(() => {
     saveData(data);
@@ -201,6 +219,41 @@ const App: React.FC = () => {
     });
   }, []);
 
+  // --- Undo Logic ---
+  const triggerUndo = (action: UndoAction) => {
+    if (undoTimer) clearTimeout(undoTimer);
+    setUndoStack(action);
+    const timer = setTimeout(() => setUndoStack(null), 5000);
+    setUndoTimer(timer);
+  };
+
+  const handleUndo = () => {
+    if (!undoStack) return;
+
+    if (undoStack.type === 'TASK_DELETE') {
+        const task = undoStack.payload;
+        setData(prev => ({
+            ...prev,
+            tasks: [task, ...prev.tasks].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
+        }));
+    } else if (undoStack.type === 'MATERIAL_DELETE') {
+        const { examId, material } = undoStack.payload;
+        setData(prev => ({
+            ...prev,
+            exams: prev.exams.map(e => {
+                if (e.id === examId) {
+                    return { ...e, studyMaterials: [...(e.studyMaterials || []), material] };
+                }
+                return e;
+            })
+        }));
+    }
+
+    setUndoStack(null);
+    if (undoTimer) clearTimeout(undoTimer);
+  };
+  // ------------------
+
   // --- Task Management Functions ---
   const addTask = (title: string, isPriority: boolean) => {
     if (!title.trim()) return;
@@ -223,11 +276,6 @@ const App: React.FC = () => {
     setData(prev => {
       const updatedTasks = prev.tasks.map(t => {
         if (t.id === id) {
-          // If completing, add XP
-          if (!t.completed) {
-            // No direct XP call here to avoid double set state issues, 
-            // but we could architect it differently. For now, simple state update.
-          }
           return { ...t, completed: !t.completed };
         }
         return t;
@@ -239,34 +287,13 @@ const App: React.FC = () => {
   const deleteTask = (id: string) => {
     const taskToDelete = data.tasks.find(t => t.id === id);
     if (!taskToDelete) return;
+    
+    triggerUndo({ type: 'TASK_DELETE', payload: taskToDelete });
 
-    // Clear existing timer if any
-    if (undoTimer) clearTimeout(undoTimer);
-
-    // Set undo stack
-    setUndoStack(taskToDelete);
-
-    // Remove task
     setData(prev => ({
       ...prev,
       tasks: prev.tasks.filter(t => t.id !== id)
     }));
-
-    // Auto-clear undo after 5 seconds
-    const timer = setTimeout(() => {
-        setUndoStack(null);
-    }, 5000);
-    setUndoTimer(timer);
-  };
-
-  const handleUndo = () => {
-      if (!undoStack) return;
-      setData(prev => ({
-          ...prev,
-          tasks: [undoStack, ...prev.tasks].sort((a,b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime())
-      }));
-      setUndoStack(null);
-      if (undoTimer) clearTimeout(undoTimer);
   };
   // -------------------------------
 
@@ -285,15 +312,21 @@ const App: React.FC = () => {
   };
 
   const deleteStudyMaterial = (examId: string, matId: string) => {
-    setData(prev => ({
-      ...prev,
-      exams: prev.exams.map(e => {
-        if (e.id === examId) {
-          return { ...e, studyMaterials: (e.studyMaterials || []).filter(m => m.id !== matId) };
-        }
-        return e;
-      })
-    }));
+    const exam = data.exams.find(e => e.id === examId);
+    const material = exam?.studyMaterials?.find(m => m.id === matId);
+
+    if (material) {
+        triggerUndo({ type: 'MATERIAL_DELETE', payload: { examId, material } });
+        setData(prev => ({
+            ...prev,
+            exams: prev.exams.map(e => {
+                if (e.id === examId) {
+                return { ...e, studyMaterials: (e.studyMaterials || []).filter(m => m.id !== matId) };
+                }
+                return e;
+            })
+        }));
+    }
   };
 
   // Corrected toggleHabit to handle state updates atomically
@@ -1051,6 +1084,15 @@ const App: React.FC = () => {
             Install App to Home Screen
           </button>
         )}
+
+        {/* Manual Cache Clear */}
+        <button 
+            onClick={handleHardRefresh}
+            className="w-full bg-slate-800 border border-slate-700 text-slate-300 font-bold py-3 px-4 rounded-xl flex items-center justify-center gap-2 hover:bg-slate-700 transition-colors"
+        >
+            <RefreshCw size={18} />
+            Hard Refresh (Fix Bugs/Updates)
+        </button>
         
         {/* Dashboard Layout - Drag & Drop + Mobile Arrows */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
@@ -1071,21 +1113,23 @@ const App: React.FC = () => {
                 className={`flex items-center justify-between p-3 bg-slate-800/50 rounded-xl border border-transparent hover:border-teal-500/30 cursor-grab active:cursor-grabbing transition-colors ${draggedIndex === index ? 'opacity-50 border-teal-500' : ''}`}
               >
                  <div className="flex items-center gap-3">
-                    {/* Reordering Controls */}
-                    <div className="flex flex-col gap-0.5 md:hidden">
+                    {/* Reordering Controls - Enhanced for touch */}
+                    <div className="flex flex-col gap-1 md:hidden">
                         <button 
                             onClick={(e) => { e.stopPropagation(); moveWidget(index, 'up'); }}
                             disabled={index === 0}
-                            className="p-2 text-slate-500 hover:text-teal-400 disabled:opacity-30"
+                            className="p-2 -m-1 text-slate-500 hover:text-teal-400 disabled:opacity-30 active:scale-95 transition-transform"
+                            aria-label="Move Up"
                         >
-                            <ChevronUp size={14} />
+                            <ChevronUp size={20} />
                         </button>
                         <button 
                             onClick={(e) => { e.stopPropagation(); moveWidget(index, 'down'); }}
                             disabled={index === data.settings.dashboardLayout.length - 1}
-                            className="p-2 text-slate-500 hover:text-teal-400 disabled:opacity-30"
+                            className="p-2 -m-1 text-slate-500 hover:text-teal-400 disabled:opacity-30 active:scale-95 transition-transform"
+                            aria-label="Move Down"
                         >
-                            <ChevronDown size={14} />
+                            <ChevronDown size={20} />
                         </button>
                     </div>
                     <GripVertical size={16} className="text-slate-500 hidden md:block" />
@@ -1094,9 +1138,9 @@ const App: React.FC = () => {
                  </div>
                  <button 
                     onClick={() => toggleWidget(widget)}
-                    className="p-1.5 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded transition-colors"
+                    className="p-2 text-slate-500 hover:text-red-400 hover:bg-red-500/10 rounded-lg transition-colors"
                  >
-                    <X size={16} />
+                    <X size={18} />
                  </button>
               </div>
             ))}
@@ -1205,7 +1249,7 @@ const App: React.FC = () => {
       {undoStack && (
         <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-4 z-50 animate-in slide-in-from-bottom-4 duration-200">
             <span className="text-sm text-slate-300 flex items-center gap-2">
-                <Trash2 size={16} /> Task deleted
+                <Trash2 size={16} /> Deleted
             </span>
             <div className="flex items-center gap-3">
                 <button 

@@ -9,6 +9,9 @@ export default defineConfig({
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['icon.svg'],
+      devOptions: {
+        enabled: true
+      },
       manifest: {
         name: '7K Improvement System',
         short_name: '7K System',
@@ -28,11 +31,12 @@ export default defineConfig({
         ]
       },
       workbox: {
-        // These settings force the new service worker to activate immediately
-        skipWaiting: true, 
+        skipWaiting: true,
         clientsClaim: true,
         cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Exclude index.html from being cached permanently to allow updates to be seen immediately
+        navigateFallback: null,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -42,34 +46,6 @@ export default defineConfig({
               expiration: {
                 maxEntries: 10,
                 maxAgeSeconds: 60 * 60 * 24 * 365
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'gstatic-fonts-cache',
-              expiration: {
-                maxEntries: 10,
-                maxAgeSeconds: 60 * 60 * 24 * 365
-              },
-              cacheableResponse: {
-                statuses: [0, 200]
-              }
-            }
-          },
-          {
-            urlPattern: /^https:\/\/cdn\.tailwindcss\.com.*/i,
-            handler: 'CacheFirst',
-            options: {
-              cacheName: 'tailwind-cdn',
-              expiration: {
-                maxEntries: 1,
-                maxAgeSeconds: 60 * 60 * 24 * 30 
               },
               cacheableResponse: {
                 statuses: [0, 200]
