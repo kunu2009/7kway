@@ -10,7 +10,8 @@ import {
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
   ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
   Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
-  RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2, RefreshCw
+  RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2, RefreshCw,
+  Droplets, Moon, Utensils, TrendingUp, Scale, Minus
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task, StudyMaterial } from './types';
 import { loadData, saveData } from './db';
@@ -391,6 +392,36 @@ const App: React.FC = () => {
     addXP(100, "Project Initialized");
   };
 
+  // --- Physical Section Logic ---
+  const updatePhysicalStat = (key: keyof typeof data.physical, value: number) => {
+    setData(prev => ({
+      ...prev,
+      physical: {
+        ...prev.physical,
+        [key]: value
+      }
+    }));
+  };
+
+  const updatePB = (exercise: keyof typeof data.physical.pbs, value: number) => {
+    setData(prev => {
+        const oldPB = prev.physical.pbs[exercise];
+        if (value > oldPB) {
+            // New PB Logic
+            addXP(100, `New PB: ${exercise} (${value})`);
+            return {
+                ...prev,
+                physical: {
+                    ...prev.physical,
+                    pbs: { ...prev.physical.pbs, [exercise]: value }
+                }
+            };
+        }
+        return prev;
+    });
+  };
+  // -----------------------------
+
   // UI Components
   const TabButton = ({ id, icon: Icon, label }: { id: any, icon: any, label: string }) => {
     if (id !== 'dashboard' && id !== 'settings') {
@@ -730,49 +761,145 @@ const App: React.FC = () => {
     );
   };
 
-  const PhysicalSection = () => (
+  const PhysicalSection = () => {
+    // Helper for PB updates (Gamification)
+    const handlePBUpdate = (exercise: string, currentValue: number) => {
+        const input = prompt(`Enter new max reps for ${exercise}:`, currentValue.toString());
+        if (input) {
+            const newVal = parseInt(input);
+            if (!isNaN(newVal) && newVal > currentValue) {
+                // @ts-ignore - dynamic key access
+                updatePB(exercise.toLowerCase() as any, newVal);
+            }
+        }
+    };
+
+    return (
     <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
-      <SectionHeader title="Physical Growth" subtitle="Optimize your vessel for peak performance" />
+      <SectionHeader title="Bio-Hacking Dashboard" subtitle="Optimize your vessel for peak performance" />
       
-      <div className="grid gap-4">
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-          <div className="flex items-center justify-between mb-4">
-            <h4 className="font-bold flex items-center gap-2"><Target size={18} className="text-teal-400" /> Height Optimization</h4>
-            <span className="text-xs bg-teal-400/10 text-teal-400 px-2 py-1 rounded">Daily</span>
-          </div>
-          <div className="space-y-4">
-            <div className="flex justify-between items-center text-sm">
-              <span>HGH Sleep (10pm-6am)</span>
-              <input type="checkbox" className="w-5 h-5 accent-teal-500" />
+      {/* Bio-Metrics Grid */}
+      <div className="grid grid-cols-2 gap-3">
+        {/* Water Tracker */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-4 flex flex-col justify-between">
+            <div className="flex items-center justify-between mb-2">
+                <h4 className="font-bold text-xs text-slate-400 uppercase flex items-center gap-1">
+                    <Droplets size={14} className="text-blue-400" /> Hydration
+                </h4>
+                <span className="text-lg font-bold text-white">{data.physical?.waterIntake || 0}<span className="text-slate-500 text-xs">/8</span></span>
             </div>
-            <div className="flex justify-between items-center text-sm">
-              <span>Cobra Stretch (3 sets)</span>
-              <input type="checkbox" className="w-5 h-5 accent-teal-500" />
+            <div className="flex justify-between items-center gap-1">
+                {Array.from({length: 8}).map((_, i) => (
+                    <div 
+                        key={i} 
+                        className={`h-8 flex-1 rounded-md transition-all duration-300 ${i < (data.physical?.waterIntake || 0) ? 'bg-blue-500 shadow-[0_0_10px_rgba(59,130,246,0.5)]' : 'bg-slate-800'}`}
+                    />
+                ))}
             </div>
-          </div>
+            <div className="flex gap-2 mt-3">
+                 <button 
+                    onClick={() => updatePhysicalStat('waterIntake', Math.max(0, (data.physical?.waterIntake || 0) - 1))}
+                    className="flex-1 bg-slate-800 hover:bg-slate-700 text-slate-300 rounded-lg py-1 flex items-center justify-center"
+                 >
+                    <Minus size={16} />
+                 </button>
+                 <button 
+                    onClick={() => {
+                        const current = data.physical?.waterIntake || 0;
+                        if(current < 8) {
+                            updatePhysicalStat('waterIntake', current + 1);
+                            if (current + 1 === 8) addXP(50, "Hydration Goal Met");
+                        }
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-500 text-white rounded-lg py-1 flex items-center justify-center"
+                 >
+                    <Plus size={16} />
+                 </button>
+            </div>
         </div>
 
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
-          <h4 className="font-bold mb-4 flex items-center gap-2"><Dumbbell size={18} className="text-teal-400" /> Workout Log</h4>
-          <div className="grid grid-cols-3 gap-2 text-center">
-            <div className="p-2 bg-slate-800 rounded-lg">
-              <p className="text-[10px] text-slate-400 uppercase">Pushups</p>
-              <p className="text-lg font-bold">45</p>
+        {/* Nutrition / Sleep */}
+        <div className="space-y-3">
+            {/* Sleep */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between">
+                <div>
+                     <p className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1"><Moon size={12} className="text-purple-400"/> Sleep (h)</p>
+                     <input 
+                        type="number" 
+                        value={data.physical?.sleepHours || 0}
+                        onChange={(e) => updatePhysicalStat('sleepHours', parseFloat(e.target.value))}
+                        className="bg-transparent text-xl font-bold w-16 focus:outline-none"
+                     />
+                </div>
             </div>
-            <div className="p-2 bg-slate-800 rounded-lg">
-              <p className="text-[10px] text-slate-400 uppercase">Squats</p>
-              <p className="text-lg font-bold">30</p>
+            {/* Protein */}
+            <div className="bg-slate-900 border border-slate-800 rounded-2xl p-3 flex items-center justify-between">
+                <div>
+                     <p className="text-[10px] text-slate-400 uppercase font-bold flex items-center gap-1"><Utensils size={12} className="text-orange-400"/> Protein (g)</p>
+                     <input 
+                        type="number" 
+                        value={data.physical?.proteinIntake || 0}
+                        onChange={(e) => updatePhysicalStat('proteinIntake', parseInt(e.target.value))}
+                        className="bg-transparent text-xl font-bold w-16 focus:outline-none"
+                     />
+                </div>
             </div>
-            <div className="p-2 bg-slate-800 rounded-lg">
-              <p className="text-[10px] text-slate-400 uppercase">Plank</p>
-              <p className="text-lg font-bold">2m</p>
-            </div>
+        </div>
+      </div>
+
+      {/* The Protocol (Habits) */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-bold flex items-center gap-2"><Target size={18} className="text-teal-400" /> The Protocol</h4>
+            <span className="text-xs bg-teal-400/10 text-teal-400 px-2 py-1 rounded">Daily</span>
           </div>
-          <button onClick={() => addXP(50, "Bodyweight Training")} className="w-full mt-4 py-2 bg-teal-600 rounded-xl font-bold text-sm">Log Training +50 XP</button>
+          <div className="space-y-3">
+             {data.habits.filter(h => h.category === Area.Physical).map(habit => {
+                 const isDone = habit.completedDates.includes(new Date().toISOString().split('T')[0]);
+                 return (
+                    <div key={habit.id} className="flex justify-between items-center text-sm p-2 hover:bg-slate-800/50 rounded-lg transition-colors cursor-pointer" onClick={() => toggleHabit(habit.id)}>
+                        <span className={isDone ? 'text-teal-400 line-through' : 'text-slate-200'}>{habit.name}</span>
+                        <div className={`w-5 h-5 rounded border flex items-center justify-center transition-all ${isDone ? 'bg-teal-500 border-teal-500' : 'border-slate-600'}`}>
+                            {isDone && <CheckCircle2 size={14} className="text-white" />}
+                        </div>
+                    </div>
+                 );
+             })}
+             {data.habits.filter(h => h.category === Area.Physical).length === 0 && (
+                 <p className="text-xs text-slate-500 italic">No physical habits set in 'Meta' settings.</p>
+             )}
+          </div>
+      </div>
+
+      {/* Workout Lab */}
+      <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
+        <h4 className="font-bold mb-4 flex items-center gap-2"><Dumbbell size={18} className="text-teal-400" /> Training Lab</h4>
+        <div className="grid grid-cols-2 gap-3">
+            {[
+                { label: 'Pushups', key: 'pushups', icon: Flame },
+                { label: 'Pullups', key: 'pullups', icon: Dumbbell },
+                { label: 'Squats', key: 'squats', icon: ActivityIcon }, // Placeholder icon if needed, defined locally
+                { label: 'Plank (s)', key: 'plank', icon: Clock },
+            ].map((item) => {
+                // @ts-ignore
+                const val = data.physical?.pbs?.[item.key] || 0;
+                return (
+                    <div key={item.key} className="bg-slate-950 border border-slate-800 p-3 rounded-xl relative group">
+                        <p className="text-[10px] text-slate-500 uppercase font-bold mb-1">{item.label}</p>
+                        <p className="text-2xl font-black text-white">{val}</p>
+                        <button 
+                            onClick={() => handlePBUpdate(item.key, val)}
+                            className="absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity bg-teal-500 text-white p-1 rounded-md"
+                        >
+                            <TrendingUp size={14} />
+                        </button>
+                    </div>
+                )
+            })}
         </div>
       </div>
     </div>
-  );
+  )};
 
   const IntelligenceSection = () => {
     const [timeLeft, setTimeLeft] = useState(25 * 60);
@@ -1231,6 +1358,11 @@ const App: React.FC = () => {
       </div>
     );
   };
+
+  // Define simple icon component for activity to avoid errors if not imported
+  const ActivityIcon = ({size, className}: {size: number, className?: string}) => (
+      <svg xmlns="http://www.w3.org/2000/svg" width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={className}><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>
+  );
 
   return (
     <div className="max-w-md mx-auto min-h-screen bg-slate-950 flex flex-col relative pb-20 shadow-2xl shadow-teal-500/5">

@@ -1,3 +1,4 @@
+
 import { AppData, Area } from './types';
 
 const STORAGE_KEY = '7k_ecosystem_growth_v2';
@@ -67,6 +68,18 @@ const INITIAL_DATA: AppData = {
     { id: 't3', title: 'Organize study desk', completed: true, isPriority: false, createdAt: new Date().toISOString() },
     { id: 't4', title: 'Review Economics flashcards', completed: false, isPriority: false, createdAt: new Date().toISOString() }
   ],
+  physical: {
+    waterIntake: 2,
+    proteinIntake: 65,
+    sleepHours: 7.0,
+    weight: 70,
+    pbs: {
+      pushups: 40,
+      pullups: 10,
+      squats: 50,
+      plank: 120
+    }
+  },
   settings: {
     dopamineMode: false,
     darkMode: true,
@@ -76,7 +89,6 @@ const INITIAL_DATA: AppData = {
       skills: true,
       wealth: true
     },
-    // Updated layout to include priority and tasks
     dashboardLayout: ['welcome', 'priority', 'exams', 'tasks', 'calendar', 'stats', 'chart', 'habits']
   },
 };
@@ -89,12 +101,12 @@ export const loadData = (): AppData => {
     return {
       ...INITIAL_DATA,
       ...parsed,
-      // Ensure arrays exist when merging old data
       exams: parsed.exams?.map((e: any) => ({
         ...e,
         studyMaterials: e.studyMaterials || [] 
       })) || INITIAL_DATA.exams,
       tasks: parsed.tasks || INITIAL_DATA.tasks,
+      physical: { ...INITIAL_DATA.physical, ...parsed.physical },
       settings: {
         ...INITIAL_DATA.settings,
         ...parsed.settings,

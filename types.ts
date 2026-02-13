@@ -1,3 +1,4 @@
+
 export enum Area {
   Physical = 'PHYSICAL',
   Intelligence = 'INTELLIGENCE',
@@ -77,6 +78,19 @@ export interface AppSettings {
   dashboardLayout: WidgetType[];
 }
 
+export interface PhysicalStats {
+  waterIntake: number; // glasses (target 8)
+  proteinIntake: number; // grams
+  sleepHours: number;
+  weight: number; // kg
+  pbs: {
+    pushups: number;
+    pullups: number;
+    squats: number;
+    plank: number; // seconds
+  };
+}
+
 export interface AppData {
   stats: UserStats;
   habits: Habit[];
@@ -84,5 +98,6 @@ export interface AppData {
   logs: LogEntry[];
   exams: Exam[];
   tasks: Task[];
+  physical: PhysicalStats;
   settings: AppSettings;
 }
