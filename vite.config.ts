@@ -28,6 +28,10 @@ export default defineConfig({
         ]
       },
       workbox: {
+        // These settings force the new service worker to activate immediately
+        skipWaiting: true, 
+        clientsClaim: true,
+        cleanupOutdatedCaches: true,
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
         runtimeCaching: [
           {

@@ -9,7 +9,8 @@ import {
   BookOpen, Music, Share2, Github, Instagram, ExternalLink, Mail,
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
   ArrowUp, ArrowDown, Eye, GripVertical, Download, ChevronRight, GraduationCap,
-  Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square
+  Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
+  RotateCcw, Play, Pause
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task } from './types';
 import { loadData, saveData } from './db';
@@ -707,6 +708,7 @@ const App: React.FC = () => {
   const IntelligenceSection = () => {
     const [timeLeft, setTimeLeft] = useState(25 * 60);
     const [isActive, setIsActive] = useState(false);
+    const totalTime = 25 * 60;
 
     useEffect(() => {
       let interval: any = null;
@@ -716,7 +718,7 @@ const App: React.FC = () => {
         }, 1000);
       } else if (timeLeft === 0) {
         setIsActive(false);
-        addXP(100, "Deep Work Session Complete");
+        addXP(100, "Pomodoro Session Complete");
         setTimeLeft(25 * 60);
       }
       return () => clearInterval(interval);
@@ -728,24 +730,81 @@ const App: React.FC = () => {
       return `${m}:${s < 10 ? '0' : ''}${s}`;
     };
 
+    // Circular Progress Calculation
+    const radius = 80;
+    const circumference = 2 * Math.PI * radius;
+    const strokeDashoffset = circumference - ((totalTime - timeLeft) / totalTime) * circumference;
+
     return (
       <div className="space-y-6 animate-in slide-in-from-right-4 duration-300">
         <SectionHeader title="The Intelligence Mind" subtitle="Sharpen your cognitive edge" />
         
-        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-8 text-center">
-          <h4 className="text-xs text-slate-400 uppercase tracking-widest mb-2 font-bold">Deep Work Timer</h4>
-          <div className="text-6xl font-black mb-6 font-mono text-teal-400">{formatTime(timeLeft)}</div>
-          <div className="flex gap-4 justify-center">
+        {/* Pomodoro Timer Component */}
+        <div className="bg-slate-900 border border-slate-800 rounded-2xl p-6 text-center relative overflow-hidden">
+          <div className="absolute top-0 right-0 p-4 opacity-10">
+            <Clock size={100} className="text-teal-500" />
+          </div>
+          
+          <h4 className="text-xs text-slate-400 uppercase tracking-widest mb-6 font-bold flex items-center justify-center gap-2">
+            <Brain size={14} /> Pomodoro Focus
+          </h4>
+
+          <div className="relative w-48 h-48 mx-auto mb-6">
+            {/* Background Circle */}
+            <svg className="w-full h-full transform -rotate-90">
+              <circle
+                cx="96"
+                cy="96"
+                r={radius}
+                stroke="#0f172a"
+                strokeWidth="8"
+                fill="transparent"
+              />
+              {/* Progress Circle */}
+              <circle
+                cx="96"
+                cy="96"
+                r={radius}
+                stroke="#14b8a6"
+                strokeWidth="8"
+                fill="transparent"
+                strokeDasharray={circumference}
+                strokeDashoffset={strokeDashoffset}
+                strokeLinecap="round"
+                className="transition-all duration-1000 ease-linear"
+              />
+            </svg>
+            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-center">
+              <div className="text-4xl font-black font-mono text-white tracking-tighter">
+                {formatTime(timeLeft)}
+              </div>
+              <p className="text-[10px] text-teal-400 font-bold uppercase mt-1">
+                {isActive ? 'Focusing...' : 'Ready'}
+              </p>
+            </div>
+          </div>
+
+          <div className="flex gap-3 justify-center">
             <button 
               onClick={() => setIsActive(!isActive)}
-              className={`px-8 py-3 rounded-2xl font-bold ${isActive ? 'bg-red-500/20 text-red-400 border border-red-500/30' : 'bg-teal-500 text-white'}`}
+              className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${
+                isActive 
+                  ? 'bg-amber-500/10 text-amber-400 border border-amber-500/20 hover:bg-amber-500/20' 
+                  : 'bg-teal-500 text-white shadow-lg shadow-teal-500/20 hover:scale-105'
+              }`}
             >
-              {isActive ? 'Pause' : 'Start Focus'}
+              {isActive ? <><Pause size={18} /> Pause</> : <><Play size={18} /> Start Focus</>}
             </button>
-            <button onClick={() => { setTimeLeft(25*60); setIsActive(false); }} className="px-4 py-3 bg-slate-800 rounded-2xl">Reset</button>
+            <button 
+              onClick={() => { setTimeLeft(25*60); setIsActive(false); }} 
+              className="p-3 bg-slate-800 text-slate-400 rounded-xl hover:bg-slate-700 hover:text-white transition-colors"
+            >
+              <RotateCcw size={20} />
+            </button>
           </div>
         </div>
 
+        {/* Existing Book Tracker */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
           <h4 className="font-bold mb-4 flex items-center gap-2"><BookOpen size={18} className="text-teal-400" /> Book Reading Tracker</h4>
           <div className="space-y-3">
@@ -759,6 +818,7 @@ const App: React.FC = () => {
           </div>
         </div>
 
+        {/* Existing Chess Tracker */}
         <div className="bg-slate-900 border border-slate-800 rounded-2xl p-5">
           <h4 className="font-bold mb-4 flex items-center gap-2"><Target size={18} className="text-teal-400" /> Chess Improvement</h4>
           <div className="flex justify-between items-center">
