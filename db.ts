@@ -2,7 +2,7 @@
 import { AppData, Area } from './types';
 
 const STORAGE_KEY = '7k_ecosystem_growth_v2';
-export const APP_VERSION = '1.2.0-PRO-BETA';
+export const APP_VERSION = '1.3.0-ELITE';
 
 const INITIAL_DATA: AppData = {
   user: {
@@ -10,7 +10,8 @@ const INITIAL_DATA: AppData = {
     age: 0,
     height: 0,
     weight: 0,
-    faceType: ''
+    faceType: '',
+    goal: 'sleeper-build'
   },
   onboardingCompleted: false,
   stats: {

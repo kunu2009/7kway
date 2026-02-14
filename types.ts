@@ -7,6 +7,8 @@ export enum Area {
   Discipline = 'DISCIPLINE'
 }
 
+export type FitnessGoal = 'bulk' | 'shredded' | 'sleeper-build' | 'athletic';
+
 export interface UserStats {
   xp: number;
   level: number;
@@ -100,6 +102,7 @@ export interface UserProfile {
   height: number; // cm
   weight: number; // kg
   faceType: string; // e.g., 'diamond', 'oval'
+  goal: FitnessGoal;
 }
 
 export interface AppData {
