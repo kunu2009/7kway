@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, 
@@ -71,9 +70,8 @@ const calculateBMI = (h: number, w: number) => {
 
 const calculateTDEE = (h: number, w: number, a: number) => {
   if (!h || !w || !a) return 0;
-  // Basic Mifflin-St Jeor
   const bmr = (10 * w) + (6.25 * h) - (5 * a) + 5;
-  return Math.round(bmr * 1.375); // Lightly active multiplier
+  return Math.round(bmr * 1.375);
 };
 
 // --- Sub-Components ---
@@ -358,26 +356,38 @@ const OnboardingOverlay = ({ onComplete, accent }: { onComplete: (userData: any)
 
 // --- App Root ---
 const App: React.FC = () => {
-  const [data, setData] = useState<AppData>(loadData());
+  const [data, setData] = useState<AppData>(() => loadData());
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
   const accent = data.settings.accentColor || 'teal';
 
   // --- Splash Screen Cleanup ---
   useEffect(() => {
-    // Once the app mounts, hide the splash screen from index.html
-    const splash = document.getElementById('splash-screen');
-    if (splash) {
-      splash.style.opacity = '0';
-      setTimeout(() => {
-        splash.style.display = 'none';
-      }, 600); // Matches the CSS transition duration
-    }
+    // Attempt to hide splash screen as soon as component is ready
+    const removeSplash = () => {
+      const splash = document.getElementById('splash-screen');
+      if (splash) {
+        splash.style.opacity = '0';
+        splash.style.pointerEvents = 'none';
+        setTimeout(() => {
+          splash.style.display = 'none';
+        }, 500);
+      }
+    };
+    
+    // Immediate call and a slightly delayed one to catch edge cases
+    removeSplash();
+    const timer = setTimeout(removeSplash, 100);
+    return () => clearTimeout(timer);
   }, []);
 
   useEffect(() => {
-    saveData(data);
-    if (data.settings.darkMode) document.documentElement.classList.add('dark');
-    else document.documentElement.classList.remove('dark');
+    try {
+      saveData(data);
+      if (data.settings.darkMode) document.documentElement.classList.add('dark');
+      else document.documentElement.classList.remove('dark');
+    } catch (e) {
+      console.error("System settings error", e);
+    }
   }, [data]);
 
   const level = useMemo(() => Math.floor(data.stats.xp / 1000) + 1, [data.stats.xp]);

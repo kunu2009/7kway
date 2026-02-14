@@ -1,8 +1,7 @@
-
 import { AppData, Area } from './types';
 
 const STORAGE_KEY = '7k_ecosystem_growth_v2';
-export const APP_VERSION = '1.3.0-ELITE';
+export const APP_VERSION = '1.3.1-ELITE';
 
 const INITIAL_DATA: AppData = {
   user: {
@@ -33,7 +32,6 @@ const INITIAL_DATA: AppData = {
   ],
   projects: [],
   logs: [],
-  // Adding more preloaded study materials to provide a better initial experience for students
   exams: [
     { 
       id: 'e1', 
@@ -120,35 +118,45 @@ const INITIAL_DATA: AppData = {
 export const loadData = (): AppData => {
   const stored = localStorage.getItem(STORAGE_KEY);
   if (!stored) return INITIAL_DATA;
+  
   try {
     const parsed = JSON.parse(stored);
+    if (!parsed || typeof parsed !== 'object') return INITIAL_DATA;
+
     return {
       ...INITIAL_DATA,
       ...parsed,
-      user: parsed.user || INITIAL_DATA.user,
-      onboardingCompleted: parsed.onboardingCompleted ?? false,
-      exams: parsed.exams?.map((e: any) => ({
-        ...e,
-        studyMaterials: e.studyMaterials || [] 
-      })) || INITIAL_DATA.exams,
-      tasks: parsed.tasks || INITIAL_DATA.tasks,
-      physical: { ...INITIAL_DATA.physical, ...parsed.physical },
+      user: { ...INITIAL_DATA.user, ...(parsed.user || {}) },
+      stats: { ...INITIAL_DATA.stats, ...(parsed.stats || {}) },
+      physical: { ...INITIAL_DATA.physical, ...(parsed.physical || {}) },
       settings: {
         ...INITIAL_DATA.settings,
-        ...parsed.settings,
-        accentColor: parsed.settings?.accentColor || 'teal',
+        ...(parsed.settings || {}),
         activeSections: {
           ...INITIAL_DATA.settings.activeSections,
-          ...parsed.settings?.activeSections
-        },
-        dashboardLayout: parsed.settings?.dashboardLayout || INITIAL_DATA.settings.dashboardLayout
-      }
+          ...(parsed.settings?.activeSections || {})
+        }
+      },
+      habits: Array.isArray(parsed.habits) ? parsed.habits : INITIAL_DATA.habits,
+      exams: Array.isArray(parsed.exams) ? parsed.exams.map((e: any) => ({
+        ...e,
+        studyMaterials: Array.isArray(e.studyMaterials) ? e.studyMaterials : []
+      })) : INITIAL_DATA.exams,
+      tasks: Array.isArray(parsed.tasks) ? parsed.tasks : INITIAL_DATA.tasks,
+      projects: Array.isArray(parsed.projects) ? parsed.projects : INITIAL_DATA.projects,
+      logs: Array.isArray(parsed.logs) ? parsed.logs : INITIAL_DATA.logs,
+      onboardingCompleted: !!parsed.onboardingCompleted
     };
-  } catch {
+  } catch (error) {
+    console.error("Critical: Data corruption detected. Reverting to initial state.", error);
     return INITIAL_DATA;
   }
 };
 
 export const saveData = (data: AppData) => {
-  localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  try {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+  } catch (e) {
+    console.error("Failed to save data to local storage", e);
+  }
 };
