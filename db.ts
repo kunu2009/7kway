@@ -2,6 +2,7 @@
 import { AppData, Area } from './types';
 
 const STORAGE_KEY = '7k_ecosystem_growth_v2';
+export const APP_VERSION = '1.2.0-PRO-BETA';
 
 const INITIAL_DATA: AppData = {
   user: {
@@ -19,14 +20,15 @@ const INITIAL_DATA: AppData = {
     lastActive: new Date().toISOString(),
   },
   habits: [
-    { id: 'h1', name: '7h+ Sleep (Height)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 50 },
-    { id: 'h2', name: 'Posture Stretching', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 30 },
-    { id: 'h3', name: 'Board Prep (2h)', category: Area.Intelligence, frequency: 'daily', completedDates: [], xpValue: 100 },
-    { id: 'h4', name: 'Deep Work Session', category: Area.Intelligence, frequency: 'daily', completedDates: [], xpValue: 80 },
-    { id: 'h5', name: 'Language Practice', category: Area.Skills, frequency: 'daily', completedDates: [], xpValue: 40 },
-    { id: 'h6', name: 'Instrument Practice', category: Area.Skills, frequency: 'daily', completedDates: [], xpValue: 40 },
-    { id: 'h7', name: 'Social Skills Challenge', category: Area.Skills, frequency: 'daily', completedDates: [], xpValue: 60 },
+    { id: 'h1', name: '7h+ Sleep (Growth Hormone)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 50 },
+    { id: 'h2', name: 'Posture Wall-Stretches', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 30 },
+    { id: 'h3', name: 'Board Prep (Deep Work)', category: Area.Intelligence, frequency: 'daily', completedDates: [], xpValue: 100 },
+    { id: 'h4', name: 'Active Mewing (Face Posture)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 40 },
+    { id: 'h5', name: 'Spinal Decompression (Hanging)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 50 },
+    { id: 'h6', name: 'Language Acquisition (30m)', category: Area.Skills, frequency: 'daily', completedDates: [], xpValue: 40 },
+    { id: 'h7', name: 'Social Interaction Challenge', category: Area.Skills, frequency: 'daily', completedDates: [], xpValue: 60 },
     { id: 'h8', name: 'Cold Shower (Discipline)', category: Area.Discipline, frequency: 'daily', completedDates: [], xpValue: 75 },
+    { id: 'h9', name: 'Face Yoga (Symmetry)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 40 },
   ],
   projects: [],
   logs: [],
@@ -37,8 +39,9 @@ const INITIAL_DATA: AppData = {
       date: '2025-02-18', 
       type: 'board',
       studyMaterials: [
-        { id: 'sm1', title: 'Chapter 1: Cold War Era Notes', url: 'https://example.com/notes1' },
-        { id: 'sm2', title: 'Imp Questions 2024', url: 'https://example.com/imp-q' }
+        { id: 'sm1', title: 'Chapter 1: The Cold War Era', url: 'https://ncert.nic.in/textbook.php?feps1=1-9' },
+        { id: 'sm2', title: 'Chapter 2: The End of Bipolarity', url: 'https://ncert.nic.in/textbook.php?feps1=2-9' },
+        { id: 'sm10', title: '2024 Solved Sample Paper', url: 'https://cbseacademic.nic.in/web_material/SQP/ClassXII_2023_24/PolScience-SQP.pdf' }
       ]
     },
     { 
@@ -47,8 +50,9 @@ const INITIAL_DATA: AppData = {
       date: '2025-02-24', 
       type: 'board',
       studyMaterials: [
-        { id: 'sm3', title: 'Macroeconomics Formulas', url: 'https://example.com/macro' },
-        { id: 'sm4', title: 'Indian Eco Development Summary', url: 'https://example.com/ied' }
+        { id: 'sm3', title: 'Macroeconomics Formulas Sheet', url: 'https://example.com/macro-formulas' },
+        { id: 'sm4', title: 'Indian Eco: Rural Development', url: 'https://ncert.nic.in/textbook.php?leec2=6-10' },
+        { id: 'sm11', title: 'Money & Banking Flashcards', url: 'https://quizlet.com/search?query=economics-class-12' }
       ]
     },
     { 
@@ -57,7 +61,8 @@ const INITIAL_DATA: AppData = {
       date: '2025-03-15', 
       type: 'board',
       studyMaterials: [
-        { id: 'sm5', title: 'Map Work Practice', url: 'https://example.com/maps' }
+        { id: 'sm5', title: 'Map Work: Harappan Sites', url: 'https://example.com/history-maps' },
+        { id: 'sm12', title: 'Bhakti-Sufi Traditions PDF', url: 'https://ncert.nic.in/textbook.php?lehs2=2-5' }
       ]
     },
     { 
@@ -66,26 +71,26 @@ const INITIAL_DATA: AppData = {
       date: '2025-05-08', 
       type: 'entrance',
       studyMaterials: [
-        { id: 'sm6', title: 'Legal Aptitude Mock', url: 'https://example.com/legal' }
+        { id: 'sm6', title: 'Legal Reasoning Mock 1', url: 'https://example.com/mhcet-legal' },
+        { id: 'sm13', title: 'Current Affairs 2024-25', url: 'https://gktoday.in' }
       ]
     },
   ],
   tasks: [
-    { id: 't1', title: 'Revise Pol Sci Chapter 2', completed: false, isPriority: true, createdAt: new Date().toISOString() },
-    { id: 't2', title: 'Solve 1 Previous Year Paper', completed: false, isPriority: true, createdAt: new Date().toISOString() },
-    { id: 't3', title: 'Organize study desk', completed: true, isPriority: false, createdAt: new Date().toISOString() },
-    { id: 't4', title: 'Review Economics flashcards', completed: false, isPriority: false, createdAt: new Date().toISOString() }
+    { id: 't1', title: 'Complete Mewing Routine (10m)', completed: false, isPriority: true, createdAt: new Date().toISOString() },
+    { id: 't2', title: 'Hanging Exercises (3 sets)', completed: false, isPriority: true, createdAt: new Date().toISOString() },
+    { id: 't3', title: 'Read Pol Sci Chapter 4', completed: false, isPriority: false, createdAt: new Date().toISOString() },
   ],
   physical: {
-    waterIntake: 2,
-    proteinIntake: 65,
-    sleepHours: 7.0,
-    weight: 70,
+    waterIntake: 0,
+    proteinIntake: 0,
+    sleepHours: 0,
+    weight: 0,
     pbs: {
-      pushups: 40,
-      pullups: 10,
-      squats: 50,
-      plank: 120
+      pushups: 0,
+      pullups: 0,
+      squats: 0,
+      plank: 0
     }
   },
   settings: {
@@ -121,7 +126,7 @@ export const loadData = (): AppData => {
       settings: {
         ...INITIAL_DATA.settings,
         ...parsed.settings,
-        accentColor: parsed.settings?.accentColor || 'teal', // Default for migration
+        accentColor: parsed.settings?.accentColor || 'teal',
         activeSections: {
           ...INITIAL_DATA.settings.activeSections,
           ...parsed.settings?.activeSections

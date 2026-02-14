@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, 
@@ -12,10 +13,10 @@ import {
   Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
   RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2, RefreshCw,
   Droplets, Moon, Utensils, TrendingUp, Scale, Minus, UserCircle, ScanFace, Ruler, Weight,
-  Palette, Sun, Moon as MoonIcon
+  Palette, Sun, Moon as MoonIcon, Sparkles, Activity
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor } from './types';
-import { loadData, saveData } from './db';
+import { loadData, saveData, APP_VERSION } from './db';
 
 // Undo Types
 type UndoAction = 
@@ -365,60 +366,122 @@ interface SectionProps {
 
 const PhysicalSection: React.FC<SectionProps> = ({ data, actions }) => {
   const { accent } = actions;
+  const heightHabits = data.habits.filter(h => h.name.toLowerCase().includes('height') || h.name.toLowerCase().includes('hanging') || h.name.toLowerCase().includes('posture'));
+  const faceHabits = data.habits.filter(h => h.name.toLowerCase().includes('mewing') || h.name.toLowerCase().includes('face') || h.name.toLowerCase().includes('jaw'));
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-      <SectionHeader title="Bio-Metrics" subtitle="Optimize your hardware" />
-      
+      <div className={`bg-gradient-to-br from-${accent}-500/10 to-indigo-500/10 border border-${accent}-500/20 rounded-2xl p-6 relative overflow-hidden`}>
+         <div className="flex items-center gap-4 relative z-10">
+            <div className={`w-14 h-14 bg-${accent}-500/20 rounded-full flex items-center justify-center border border-${accent}-500/30`}>
+               <UserCircle className={`text-${accent}-500`} size={32} />
+            </div>
+            <div>
+               <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{data.user.name}</h3>
+               <div className="flex items-center gap-2 mt-1">
+                  <span className="text-[10px] font-bold bg-slate-200 dark:bg-slate-800 px-2 py-0.5 rounded text-slate-600 dark:text-slate-400 uppercase">Age {data.user.age}</span>
+                  <span className={`text-[10px] font-bold bg-${accent}-500/20 px-2 py-0.5 rounded text-${accent}-600 dark:text-${accent}-400 uppercase`}>{data.user.faceType} Face</span>
+               </div>
+            </div>
+         </div>
+         <Activity className={`absolute top-4 right-4 text-${accent}-500/20`} size={48} />
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
         {[
-            { label: 'Water (Glasses)', val: data.physical.waterIntake, icon: Droplets, color: 'blue', key: 'waterIntake' },
-            { label: 'Protein (g)', val: data.physical.proteinIntake, icon: Utensils, color: 'orange', key: 'proteinIntake' },
-            { label: 'Sleep (hrs)', val: data.physical.sleepHours, icon: Moon, color: 'violet', key: 'sleepHours' },
-            { label: 'Weight (kg)', val: data.physical.weight, icon: Scale, color: 'teal', key: 'weight' }
+            { label: 'Current Height', val: data.user.height, icon: Ruler, color: 'emerald', suffix: 'cm' },
+            { label: 'Body Weight', val: data.physical.weight, icon: Weight, color: 'blue', suffix: 'kg' },
+            { label: 'Water Intake', val: data.physical.waterIntake, icon: Droplets, color: 'cyan', suffix: 'gl' },
+            { label: 'Sleep Hours', val: data.physical.sleepHours, icon: Moon, color: 'violet', suffix: 'h' }
         ].map((item: any) => (
-            <div key={item.key} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-                <div className="flex justify-between items-center mb-2">
-                <span className="text-xs text-slate-500 dark:text-slate-400">{item.label}</span>
-                <item.icon size={16} className={`text-${item.color}-500 dark:text-${item.color}-400`} />
+            <div key={item.label} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm relative overflow-hidden">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">{item.label}</span>
+                  <item.icon size={14} className={`text-${item.color}-500`} />
                 </div>
-                <div className="flex items-center gap-2">
-                    {item.key === 'waterIntake' ? (
-                        <div className="flex items-end justify-between w-full">
-                            <span className="text-2xl font-bold text-slate-900 dark:text-white">{item.val}</span>
-                            <div className="flex gap-1">
-                                <button onClick={() => actions.updatePhysicalStat(item.key, Math.max(0, item.val - 1))} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-400"><Minus size={14} /></button>
-                                <button onClick={() => { actions.updatePhysicalStat(item.key, item.val + 1); actions.addXP(5, 'Water'); }} className="p-1 hover:bg-slate-100 dark:hover:bg-slate-800 rounded text-slate-600 dark:text-slate-400"><Plus size={14} /></button>
-                            </div>
-                        </div>
-                    ) : (
-                        <input 
-                            type="number" 
-                            value={item.val} 
-                            onChange={(e) => actions.updatePhysicalStat(item.key, parseFloat(e.target.value) || 0)}
-                            className="bg-transparent text-2xl font-bold text-slate-900 dark:text-white w-20 focus:outline-none"
-                        />
-                    )}
+                <div className="flex items-baseline gap-1">
+                  <span className="text-2xl font-black text-slate-900 dark:text-white">{item.val}</span>
+                  <span className="text-[10px] text-slate-500 font-bold uppercase">{item.suffix}</span>
+                </div>
+                <div className={`absolute bottom-0 left-0 h-1 bg-${item.color}-500/20 w-full`}>
+                   <div className={`h-full bg-${item.color}-500`} style={{ width: '40%' }} />
                 </div>
             </div>
         ))}
       </div>
 
+      {/* Height Potential Module */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <ArrowUp size={18} className="text-emerald-500" /> Vertical Growth Protocol
+            </h4>
+            <span className="text-[10px] font-black text-emerald-500 bg-emerald-500/10 px-2 py-1 rounded-full uppercase">Target: +2cm Posture</span>
+          </div>
+          <div className="space-y-3">
+             {heightHabits.map(habit => {
+               const today = new Date().toISOString().split('T')[0];
+               const isDone = habit.completedDates.includes(today);
+               return (
+                 <button 
+                  key={habit.id}
+                  onClick={() => actions.toggleHabit(habit.id)}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                    isDone ? 'bg-emerald-500/10 border-emerald-500/30' : 'bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800/50'
+                  }`}
+                 >
+                   <span className={`text-xs font-bold ${isDone ? 'text-emerald-600 dark:text-emerald-400' : 'text-slate-600 dark:text-slate-400'}`}>{habit.name}</span>
+                   {isDone ? <CheckCircle2 size={16} className="text-emerald-500" /> : <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-700" />}
+                 </button>
+               );
+             })}
+          </div>
+      </div>
+
+      {/* Face Aesthetics Module */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <div className="flex items-center justify-between mb-4">
+            <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+              <ScanFace size={18} className="text-purple-500" /> Aesthetics & Structure
+            </h4>
+            <span className="text-[10px] font-black text-purple-500 bg-purple-500/10 px-2 py-1 rounded-full uppercase">Focus: {data.user.faceType} Optimization</span>
+          </div>
+          <div className="space-y-3">
+             {faceHabits.map(habit => {
+               const today = new Date().toISOString().split('T')[0];
+               const isDone = habit.completedDates.includes(today);
+               return (
+                 <button 
+                  key={habit.id}
+                  onClick={() => actions.toggleHabit(habit.id)}
+                  className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                    isDone ? 'bg-purple-500/10 border-purple-500/30' : 'bg-slate-50 dark:bg-slate-950/50 border-slate-200 dark:border-slate-800/50'
+                  }`}
+                 >
+                   <span className={`text-xs font-bold ${isDone ? 'text-purple-600 dark:text-purple-400' : 'text-slate-600 dark:text-slate-400'}`}>{habit.name}</span>
+                   {isDone ? <CheckCircle2 size={16} className="text-purple-500" /> : <div className="w-4 h-4 rounded-full border border-slate-300 dark:border-slate-700" />}
+                 </button>
+               );
+             })}
+          </div>
+      </div>
+
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <Trophy size={18} className="text-yellow-500 dark:text-yellow-400" /> Personal Records
+            <Trophy size={18} className="text-yellow-500 dark:text-yellow-400" /> Physical Performance (PBs)
           </h4>
-          <div className="space-y-4">
+          <div className="grid grid-cols-2 gap-4">
             {Object.entries(data.physical.pbs).map(([key, val]) => (
-              <div key={key} className="flex items-center justify-between">
-                  <span className="text-sm text-slate-600 dark:text-slate-300 capitalize">{key}</span>
-                  <div className="flex items-center gap-2 bg-slate-50 dark:bg-slate-950 px-3 py-1 rounded-lg border border-slate-200 dark:border-slate-800">
+              <div key={key} className="bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+                  <span className="text-[10px] text-slate-500 uppercase font-black block mb-1">{key}</span>
+                  <div className="flex items-center gap-2">
                     <input 
                       type="number" 
                       value={val}
                       onChange={(e) => actions.updatePB(key as keyof typeof data.physical.pbs, parseInt(e.target.value) || 0)}
-                      className={`bg-transparent text-right w-12 text-sm font-bold text-${accent}-600 dark:text-${accent}-400 focus:outline-none`}
+                      className={`bg-transparent w-full text-lg font-black text-${accent}-600 dark:text-${accent}-400 focus:outline-none`}
                     />
-                    <span className="text-xs text-slate-500 dark:text-slate-600">{key === 'plank' ? 's' : 'reps'}</span>
+                    <span className="text-[10px] text-slate-400 font-bold uppercase">{key === 'plank' ? 's' : 'rep'}</span>
                   </div>
               </div>
             ))}
@@ -627,8 +690,9 @@ const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
               <h4 className="font-bold text-slate-900 dark:text-white mb-1">User Profile</h4>
               <div className="text-sm text-slate-500 dark:text-slate-400 grid grid-cols-2 gap-2 mt-2">
                   <div>Name: <span className="text-slate-900 dark:text-white">{data.user.name}</span></div>
-                  <div>Level: <span className={`text-${accent}-500 dark:text-${accent}-400`}>{actions.level}</span></div>
+                  <div>Level: <span className={`text-${accent}-500 dark:text-${accent}-400 font-black`}>{actions.level}</span></div>
                   <div>Face: <span className="text-slate-900 dark:text-white">{data.user.faceType}</span></div>
+                  <div>Age: <span className="text-slate-900 dark:text-white">{data.user.age}</span></div>
               </div>
           </div>
       </div>
@@ -636,7 +700,7 @@ const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
       {/* Aesthetics Control */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-            <Palette size={18} className={`text-${accent}-500`} /> Aesthetics
+            <Palette size={18} className={`text-${accent}-500`} /> System Styling
           </h4>
           
           <div className="flex items-center justify-between mb-6">
@@ -661,7 +725,6 @@ const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
                         key={c}
                         onClick={() => setAccent(c)}
                         className={`w-8 h-8 rounded-full border-2 transition-all ${data.settings.accentColor === c ? 'border-white ring-2 ring-slate-400 dark:ring-slate-500 scale-110' : 'border-transparent'}`}
-                        style={{ backgroundColor: `var(--color-${c})` }} // Simplified, actually using tailwind classes
                       >
                          <div className={`w-full h-full rounded-full bg-${c}-500`} />
                       </button>
@@ -685,15 +748,20 @@ const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
       </div>
 
       <div className="text-center space-y-4 pt-8">
+          <div className="flex justify-center">
+             <span className={`text-[10px] font-black tracking-widest text-${accent}-500/50 uppercase bg-${accent}-500/5 px-3 py-1 rounded-full border border-${accent}-500/10`}>
+                Build Version: {APP_VERSION}
+             </span>
+          </div>
           <div className="text-xs text-slate-400 dark:text-slate-500">
-              <p className="mb-2">Made by 7K Ecosystem</p>
+              <p className="mb-2 font-bold tracking-tight">7K ECOSYSTEM | GROWTH SYSTEM</p>
               <div className="flex justify-center gap-4 mb-4">
-                  <a href="https://7kc.me" target="_blank" className={`hover:text-${accent}-400`}><LayoutDashboard size={18} /></a>
-                  <a href="https://instagram.com" target="_blank" className="hover:text-pink-400"><Instagram size={18} /></a>
-                  <a href="https://github.com" target="_blank" className="hover:text-white"><Github size={18} /></a>
+                  <a href="#" className={`hover:text-${accent}-400`}><LayoutDashboard size={18} /></a>
+                  <a href="#" className="hover:text-pink-400"><Instagram size={18} /></a>
+                  <a href="#" className="hover:text-white"><Github size={18} /></a>
                   <a href="mailto:kunal@7kc.me" className="hover:text-blue-400"><Mail size={18} /></a>
               </div>
-              <p>© 2025 7K Ecosystem. All rights reserved.</p>
+              <p>© 2025 7K Ecosystem. Neo Protocol Active.</p>
           </div>
       </div>
     </div>
@@ -742,15 +810,6 @@ const App: React.FC = () => {
         }
     }, 1500); 
     return () => clearTimeout(timer);
-  }, []);
-
-  useEffect(() => {
-    const handler = (e: any) => {
-      e.preventDefault();
-      setDeferredPrompt(e);
-    };
-    window.addEventListener('beforeinstallprompt', handler);
-    return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
   const handleOnboardingComplete = (userData: any) => {
@@ -1009,18 +1068,18 @@ const App: React.FC = () => {
             <Trophy className="text-white" size={24} />
           </div>
           <div>
-            <h1 className="text-sm font-bold text-slate-900 dark:text-slate-100 uppercase tracking-wider">Level {level}</h1>
-            <p className={`text-[10px] text-${accent}-600 dark:text-${accent}-400 font-semibold`}>{xpInCurrentLevel} / 1000 XP</p>
+            <h1 className="text-sm font-black text-slate-900 dark:text-slate-100 uppercase tracking-widest">Lv. {level}</h1>
+            <p className={`text-[10px] text-${accent}-600 dark:text-${accent}-400 font-black`}>{xpInCurrentLevel} / 1000 XP</p>
           </div>
         </div>
         <div className="flex items-center gap-3">
-          <div className="flex items-center gap-1 bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-full text-xs font-bold border border-orange-500/20">
+          <div className="flex items-center gap-1 bg-orange-500/10 text-orange-600 dark:text-orange-400 px-2 py-1 rounded-full text-xs font-black border border-orange-500/20">
             <Flame size={14} /> {data.stats.streak}
           </div>
-          <Zap className={`text-${accent}-500 dark:text-${accent}-400 animate-pulse`} size={20} />
+          <Sparkles className={`text-${accent}-500 dark:text-${accent}-400 animate-pulse`} size={18} />
         </div>
       </div>
-      <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+      <div className="h-2 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner">
         <div 
           className={`h-full bg-gradient-to-r from-${accent}-500 to-emerald-400 transition-all duration-500 ease-out`} 
           style={{ width: `${progressPercent}%` }}
@@ -1064,14 +1123,14 @@ const App: React.FC = () => {
                 </div>
                 <div className="relative z-10">
                     <h4 className="font-bold text-lg text-slate-900 dark:text-white mb-1 flex items-center gap-2">
-                        <Flag size={18} className="text-purple-500 dark:text-purple-400" /> Priority Board
+                        <Flag size={18} className="text-purple-500 dark:text-purple-400" /> Critical Mission Board
                     </h4>
-                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Mission critical tasks for today</p>
+                    <p className="text-xs text-slate-500 dark:text-slate-400 mb-4">Immediate operational priorities</p>
                     
                     <div className="space-y-2 mb-4">
                         {priorityTasks.length === 0 && <p className="text-xs text-slate-500 italic">No priorities set.</p>}
                         {priorityTasks.map(task => (
-                            <div key={task.id} className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-purple-500/10">
+                            <div key={task.id} className="flex items-center gap-3 bg-slate-50 dark:bg-slate-900/60 p-3 rounded-xl border border-purple-500/10 group">
                                 <button onClick={() => toggleTask(task.id)} className="text-purple-500 dark:text-purple-400 hover:text-purple-600 dark:hover:text-purple-300 transition-colors shrink-0">
                                     {task.completed ? <CheckSquare size={20} /> : <Square size={20} />}
                                 </button>
@@ -1081,7 +1140,7 @@ const App: React.FC = () => {
                                 >
                                     {task.title}
                                 </span>
-                                <button onClick={() => deleteTask(task.id)} className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1">
+                                <button onClick={() => deleteTask(task.id)} className="text-slate-400 hover:text-red-500 dark:hover:text-red-400 p-1 opacity-0 group-hover:opacity-100 transition-opacity">
                                     <Trash2 size={14} />
                                 </button>
                             </div>
@@ -1091,7 +1150,7 @@ const App: React.FC = () => {
                     <div className="flex gap-2">
                         <input 
                             type="text" 
-                            placeholder="Add priority task..." 
+                            placeholder="Set new mission..." 
                             className="flex-1 bg-white dark:bg-slate-900/80 border border-purple-500/20 rounded-lg px-3 py-2 text-xs text-slate-900 dark:text-white focus:outline-none focus:border-purple-500"
                             value={newTask}
                             onChange={(e) => setNewTask(e.target.value)}
@@ -1116,11 +1175,11 @@ const App: React.FC = () => {
         return (
             <div key="tasks" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 mb-6 shadow-sm">
                 <h4 className="font-bold text-sm text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-                    <CheckCircle2 size={16} className={`text-${accent}-500 dark:text-${accent}-400`} /> Daily Operations
+                    <Activity size={16} className={`text-${accent}-500 dark:text-${accent}-400`} /> Daily Operations
                 </h4>
                 
                 <div className="space-y-2 mb-4">
-                     {normalTasks.length === 0 && <p className="text-xs text-slate-500 italic">No tasks pending.</p>}
+                     {normalTasks.length === 0 && <p className="text-xs text-slate-500 italic">System clear. No pending tasks.</p>}
                      {normalTasks.map(task => (
                         <div key={task.id} className="flex items-center gap-3 p-2 hover:bg-slate-50 dark:hover:bg-slate-800/50 rounded-lg transition-colors group">
                             <button onClick={() => toggleTask(task.id)} className={`text-slate-400 hover:text-${accent}-500 transition-colors shrink-0`}>
@@ -1143,7 +1202,7 @@ const App: React.FC = () => {
                     <Plus size={14} className="text-slate-400" />
                     <input 
                         type="text" 
-                        placeholder="Add new task..." 
+                        placeholder="Log new operation..." 
                         className="flex-1 bg-transparent border-none text-xs text-slate-900 dark:text-white focus:outline-none placeholder:text-slate-400"
                         value={newTask}
                         onChange={(e) => setNewTask(e.target.value)}
@@ -1151,9 +1210,9 @@ const App: React.FC = () => {
                     />
                      <button 
                         onClick={() => { addTask(newTask, false); setNewTask(''); }}
-                        className={`text-xs font-bold text-${accent}-600 dark:text-${accent}-400 uppercase`}
+                        className={`text-xs font-black text-${accent}-600 dark:text-${accent}-400 uppercase tracking-tighter`}
                     >
-                        Add
+                        COMMIT
                     </button>
                 </div>
             </div>
@@ -1163,8 +1222,8 @@ const App: React.FC = () => {
     const widgetComponents = {
       welcome: (
         <div key="welcome" className={`bg-${accent}-500/10 border border-${accent}-500/20 rounded-2xl p-6 text-center mb-6`}>
-          <p className={`text-${accent}-600 dark:text-${accent}-400 text-sm font-medium mb-1`}>Welcome back, {data.user?.name || 'User'}</p>
-          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Focus: Board Exam Peak Performance</h3>
+          <p className={`text-${accent}-600 dark:text-${accent}-400 text-[10px] font-black uppercase tracking-[0.2em] mb-1`}>Active Profile: {data.user?.name || 'User'}</p>
+          <h3 className="text-xl font-bold text-slate-900 dark:text-white">Current Focus: Board Peak & Growth</h3>
         </div>
       ),
       priority: <PriorityWidget />,
@@ -1188,8 +1247,8 @@ const App: React.FC = () => {
       calendar: (
         <div key="calendar" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 shadow-sm">
           <div className="flex justify-between items-center mb-4">
-             <h4 className="font-bold text-sm flex items-center gap-2"><CalendarIcon size={16} className={`text-${accent}-500`}/> Calendar</h4>
-             <span className="text-xs text-slate-500">{new Date().toLocaleString('default', { month: 'long', year: 'numeric' })}</span>
+             <h4 className="font-bold text-sm flex items-center gap-2 uppercase tracking-tighter"><CalendarIcon size={16} className={`text-${accent}-500`}/> Schedule Matrix</h4>
+             <span className="text-[10px] font-bold text-slate-500 uppercase">{new Date().toLocaleString('default', { month: 'long' })}</span>
           </div>
           <div className="grid grid-cols-7 gap-1 text-center mb-2">
             {['S','M','T','W','T','F','S'].map(d => <span key={d} className="text-[10px] text-slate-400 font-bold">{d}</span>)}
@@ -1209,13 +1268,13 @@ const App: React.FC = () => {
                 const exam = data.exams.find(e => e.date === dateStr);
                 
                 els.push(
-                  <div key={i} className={`h-8 flex items-center justify-center rounded-lg text-xs font-medium relative ${
-                    isToday ? `bg-${accent}-500 text-white` : 
+                  <div key={i} className={`h-8 flex items-center justify-center rounded-lg text-xs font-black relative ${
+                    isToday ? `bg-${accent}-500 text-white shadow-lg shadow-${accent}-500/30` : 
                     exam ? 'bg-purple-500/20 text-purple-600 dark:text-purple-300 border border-purple-500/30' : 
                     'text-slate-500 dark:text-slate-400 hover:bg-slate-100 dark:hover:bg-slate-800'
                   }`}>
                     {i}
-                    {exam && <div className="absolute bottom-0.5 w-1 h-1 bg-purple-400 rounded-full"></div>}
+                    {exam && <div className="absolute bottom-1 w-1 h-1 bg-purple-500 rounded-full"></div>}
                   </div>
                 );
               }
@@ -1228,23 +1287,23 @@ const App: React.FC = () => {
         <div key="stats" className="grid grid-cols-2 gap-4 mb-6">
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
             <div className="flex justify-between items-center mb-2">
-              <p className="text-slate-500 text-xs">Habit Completion</p>
+              <p className="text-slate-500 text-[10px] font-black uppercase">Efficiency</p>
               <CheckCircle2 size={16} className={`text-${accent}-500`} />
             </div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">{completionRate.toFixed(0)}%</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{completionRate.toFixed(0)}%</p>
           </div>
           <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
             <div className="flex justify-between items-center mb-2">
-              <p className="text-slate-500 text-xs">Deep Work (h)</p>
-              <Clock size={16} className="text-blue-500" />
+              <p className="text-slate-500 text-[10px] font-black uppercase">Concentration</p>
+              <Zap size={16} className="text-blue-500" />
             </div>
-            <p className="text-2xl font-bold text-slate-900 dark:text-white">4.5</p>
+            <p className="text-2xl font-black text-slate-900 dark:text-white">High</p>
           </div>
         </div>
       ),
       chart: (
         <div key="chart" className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 mb-6 shadow-sm">
-          <p className="text-slate-500 text-xs mb-4">Weekly XP Velocity</p>
+          <p className="text-slate-500 text-[10px] font-black uppercase mb-4 tracking-widest">Growth Velocity (XP)</p>
           <div className="h-40 w-full">
             <ResponsiveContainer width="100%" height="100%">
               <BarChart data={chartData}>
@@ -1265,7 +1324,7 @@ const App: React.FC = () => {
       ),
       habits: (
         <div key="habits" className="space-y-3 mb-6">
-          <SectionHeader title="Daily Quest" subtitle="Complete these for a perfect streak" />
+          <SectionHeader title="Daily Quests" subtitle="Execute these for XP accumulation" />
           {data.habits.map(habit => {
             const today = new Date().toISOString().split('T')[0];
             const isDone = habit.completedDates.includes(today);
@@ -1285,13 +1344,13 @@ const App: React.FC = () => {
                     {habit.category === Area.Discipline && <Shield size={18} />}
                   </div>
                   <div className="text-left">
-                    <p className="font-semibold text-sm">{habit.name}</p>
-                    <p className="text-[10px] opacity-60 uppercase tracking-tighter">{habit.category}</p>
+                    <p className="font-bold text-sm tracking-tight">{habit.name}</p>
+                    <p className="text-[10px] opacity-60 font-black uppercase tracking-widest">{habit.category}</p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <p className="text-xs font-bold">+{habit.xpValue} XP</p>
-                  {isDone && <CheckCircle2 size={16} className="ml-auto mt-1" />}
+                  <p className={`text-xs font-black ${isDone ? `text-${accent}-500` : 'text-slate-500'}`}>+{habit.xpValue} XP</p>
+                  {isDone && <CheckCircle2 size={16} className={`ml-auto mt-1 text-${accent}-500`} />}
                 </div>
               </button>
             );
@@ -1325,16 +1384,16 @@ const App: React.FC = () => {
           </main>
 
           {undoStack && (
-            <div className="fixed bottom-6 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-slate-800 border border-slate-700 text-white px-4 py-3 rounded-xl shadow-xl flex items-center justify-between gap-4 z-50 animate-in slide-in-from-bottom-4 duration-200">
-                <span className="text-sm text-slate-300 flex items-center gap-2">
-                    <Trash2 size={16} /> Deleted
+            <div className="fixed bottom-24 left-1/2 transform -translate-x-1/2 w-11/12 max-w-sm bg-slate-900 text-white px-4 py-3 rounded-xl shadow-2xl flex items-center justify-between gap-4 z-50 animate-in slide-in-from-bottom-10 duration-300 border border-slate-700">
+                <span className="text-xs font-bold flex items-center gap-2">
+                    <RotateCcw size={16} className={`text-${accent}-500`} /> Command Reversed
                 </span>
                 <div className="flex items-center gap-3">
                     <button 
                         onClick={handleUndo} 
-                        className={`flex items-center gap-1 text-${accent}-400 font-bold text-sm hover:underline`}
+                        className={`bg-${accent}-500 text-white px-3 py-1 rounded text-[10px] font-black uppercase`}
                     >
-                        <Undo2 size={16} /> Undo
+                        Undo
                     </button>
                     <button onClick={() => setUndoStack(null)} className="text-slate-500 hover:text-white">
                         <X size={16}/>
@@ -1343,7 +1402,7 @@ const App: React.FC = () => {
             </div>
           )}
 
-          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#dbd7d2]/95 dark:bg-slate-950/95 backdrop-blur-lg border-t border-slate-300 dark:border-slate-800 px-2 py-3 grid grid-cols-6 gap-1 z-50">
+          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#dbd7d2]/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-300 dark:border-slate-800 px-2 py-3 grid grid-cols-6 gap-1 z-50 shadow-2xl shadow-black/50">
             <TabButton id="dashboard" icon={LayoutDashboard} label="Home" />
             <TabButton id="physical" icon={Dumbbell} label="Body" />
             <TabButton id="intelligence" icon={Brain} label="Mind" />
