@@ -5,7 +5,7 @@ import {
   Cell
 } from 'recharts';
 import { 
-  Zap, Brain, Target, DollarSign, Settings, 
+  Zap, Brain, Target, DollarSign, Settings as SettingsIcon, 
   Dumbbell, CheckCircle2, Trophy, Clock, 
   BookOpen, Music, Share2, Github, Instagram, ExternalLink, Mail,
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, AlertCircle, Shield,
@@ -13,7 +13,7 @@ import {
   Link as LinkIcon, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
   RotateCcw, Play, Pause, X, GripHorizontal, EyeOff, Undo2, RefreshCw,
   Droplets, Moon, Utensils, TrendingUp, Scale, Minus, UserCircle, ScanFace, Ruler, Weight,
-  Palette, Sun, Moon as MoonIcon, Sparkles, Activity
+  Palette, Sun, Moon as MoonIcon, Sparkles, Activity, Layers, ListFilter
 } from 'lucide-react';
 import { Area, AppData, Habit, Project, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor } from './types';
 import { loadData, saveData, APP_VERSION } from './db';
@@ -663,7 +663,6 @@ const WealthSection: React.FC<SectionProps> = ({ data, actions }) => {
 
 const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
   const { accent } = actions;
-  
   const colors: AccentColor[] = ['teal', 'cyan', 'violet', 'rose', 'orange'];
 
   const toggleDarkMode = () => {
@@ -680,24 +679,90 @@ const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
       }));
   };
 
+  const toggleSection = (section: keyof typeof data.settings.activeSections) => {
+    actions.setData(prev => ({
+      ...prev,
+      settings: {
+        ...prev.settings,
+        activeSections: {
+          ...prev.settings.activeSections,
+          [section]: !prev.settings.activeSections[section]
+        }
+      }
+    }));
+  };
+
+  const allWidgets: { id: WidgetType, label: string }[] = [
+    { id: 'welcome', label: 'Welcome Banner' },
+    { id: 'priority', label: 'Critical Missions' },
+    { id: 'tasks', label: 'Daily Operations' },
+    { id: 'exams', label: 'Exam Countdown' },
+    { id: 'calendar', label: 'Schedule Matrix' },
+    { id: 'stats', label: 'Quick Stats' },
+    { id: 'chart', label: 'Growth Chart' },
+    { id: 'habits', label: 'Daily Quests' },
+  ];
+
+  const toggleWidget = (widgetId: WidgetType) => {
+    actions.setData(prev => {
+      const exists = prev.settings.dashboardLayout.includes(widgetId);
+      const newLayout = exists 
+        ? prev.settings.dashboardLayout.filter(id => id !== widgetId)
+        : [...prev.settings.dashboardLayout, widgetId];
+      return {
+        ...prev,
+        settings: { ...prev.settings, dashboardLayout: newLayout }
+      };
+    });
+  };
+
+  const moveWidget = (id: WidgetType, direction: 'up' | 'down') => {
+    actions.setData(prev => {
+      const layout = [...prev.settings.dashboardLayout];
+      const index = layout.indexOf(id);
+      if (index === -1) return prev;
+      
+      const newIndex = direction === 'up' ? index - 1 : index + 1;
+      if (newIndex < 0 || newIndex >= layout.length) return prev;
+
+      const [temp] = layout.splice(index, 1);
+      layout.splice(newIndex, 0, temp);
+
+      return {
+        ...prev,
+        settings: { ...prev.settings, dashboardLayout: layout }
+      };
+    });
+  };
+
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-      <SectionHeader title="System" subtitle="Meta-configuration" />
+      <SectionHeader title="Settings" subtitle="Control Center" />
 
-      {/* User Profile Card */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl overflow-hidden shadow-sm">
-          <div className="p-4 border-b border-slate-200 dark:border-slate-800">
-              <h4 className="font-bold text-slate-900 dark:text-white mb-1">User Profile</h4>
-              <div className="text-sm text-slate-500 dark:text-slate-400 grid grid-cols-2 gap-2 mt-2">
-                  <div>Name: <span className="text-slate-900 dark:text-white">{data.user.name}</span></div>
-                  <div>Level: <span className={`text-${accent}-500 dark:text-${accent}-400 font-black`}>{actions.level}</span></div>
-                  <div>Face: <span className="text-slate-900 dark:text-white">{data.user.faceType}</span></div>
-                  <div>Age: <span className="text-slate-900 dark:text-white">{data.user.age}</span></div>
+      {/* Profile Info */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+          <div className="flex items-center gap-3 mb-4">
+              <div className={`w-10 h-10 bg-${accent}-500/20 rounded-full flex items-center justify-center border border-${accent}-500/20`}>
+                  <UserCircle className={`text-${accent}-500`} size={24} />
+              </div>
+              <div>
+                  <h4 className="font-bold text-slate-900 dark:text-white">{data.user.name}</h4>
+                  <p className="text-[10px] text-slate-500 uppercase font-black">Agent Level {actions.level}</p>
+              </div>
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-xs">
+              <div className="p-2 bg-slate-50 dark:bg-slate-950 rounded-lg">
+                  <span className="text-slate-400 uppercase font-bold block mb-1">Height</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-black">{data.user.height} cm</span>
+              </div>
+              <div className="p-2 bg-slate-50 dark:bg-slate-950 rounded-lg">
+                  <span className="text-slate-400 uppercase font-bold block mb-1">Face</span>
+                  <span className="text-slate-900 dark:text-slate-100 font-black">{data.user.faceType}</span>
               </div>
           </div>
       </div>
 
-      {/* Aesthetics Control */}
+      {/* Aesthetics */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
             <Palette size={18} className={`text-${accent}-500`} /> System Styling
@@ -732,6 +797,76 @@ const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
               </div>
           </div>
       </div>
+
+      {/* Module Toggles */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <ListFilter size={18} className={`text-${accent}-500`} /> Navigation Modules
+          </h4>
+          <p className="text-[10px] text-slate-500 mb-4 uppercase font-black">Toggle tabs for a cleaner experience</p>
+          <div className="space-y-2">
+            {Object.entries(data.settings.activeSections).map(([key, isActive]) => (
+              <button 
+                key={key}
+                onClick={() => toggleSection(key as any)}
+                className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${
+                  isActive ? `bg-${accent}-500/10 border-${accent}-500/20 text-${accent}-600 dark:text-${accent}-300` : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400'
+                }`}
+              >
+                <span className="text-sm font-bold capitalize">{key} Module</span>
+                {isActive ? <CheckCircle2 size={16} /> : <X size={16} />}
+              </button>
+            ))}
+          </div>
+      </div>
+
+      {/* Dashboard Layout Reordering */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+          <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+            <Layers size={18} className={`text-${accent}-500`} /> Dashboard Config
+          </h4>
+          <p className="text-[10px] text-slate-500 mb-4 uppercase font-black">Enable and reorder home widgets</p>
+          
+          <div className="space-y-3">
+             {allWidgets.map((widget) => {
+               const isActive = data.settings.dashboardLayout.includes(widget.id);
+               const layoutIndex = data.settings.dashboardLayout.indexOf(widget.id);
+               
+               return (
+                 <div key={widget.id} className={`flex flex-col gap-2 p-3 rounded-xl border transition-all ${isActive ? 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-700' : 'bg-slate-50 dark:bg-slate-950 border-slate-200/50 dark:border-slate-800 opacity-60'}`}>
+                    <div className="flex items-center justify-between">
+                       <span className={`text-sm font-bold ${isActive ? 'text-slate-900 dark:text-white' : 'text-slate-500'}`}>{widget.label}</span>
+                       <button 
+                        onClick={() => toggleWidget(widget.id)}
+                        className={`p-1 rounded-md ${isActive ? `bg-${accent}-500 text-white` : 'bg-slate-200 dark:bg-slate-800 text-slate-400'}`}
+                       >
+                         {isActive ? <Eye size={16} /> : <EyeOff size={16} />}
+                       </button>
+                    </div>
+                    {isActive && (
+                      <div className="flex items-center gap-2 mt-1">
+                        <button 
+                          disabled={layoutIndex === 0}
+                          onClick={() => moveWidget(widget.id, 'up')}
+                          className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500 disabled:opacity-30"
+                        >
+                          <ChevronUp size={14} />
+                        </button>
+                        <button 
+                          disabled={layoutIndex === data.settings.dashboardLayout.length - 1}
+                          onClick={() => moveWidget(widget.id, 'down')}
+                          className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded text-slate-500 disabled:opacity-30"
+                        >
+                          <ChevronDown size={14} />
+                        </button>
+                        <span className="text-[10px] text-slate-400 font-bold uppercase ml-auto">Pos {layoutIndex + 1}</span>
+                      </div>
+                    )}
+                 </div>
+               );
+             })}
+          </div>
+      </div>
       
       <div className="space-y-4">
           <button 
@@ -743,7 +878,7 @@ const SettingsSection: React.FC<SectionProps> = ({ data, actions }) => {
               }}
               className="w-full py-3 bg-red-500/10 text-red-500 dark:text-red-400 border border-red-500/20 rounded-xl font-bold hover:bg-red-500/20 transition-colors"
           >
-              Factory Reset
+              Factory Reset System
           </button>
       </div>
 
@@ -1408,7 +1543,7 @@ const App: React.FC = () => {
             <TabButton id="intelligence" icon={Brain} label="Mind" />
             <TabButton id="skills" icon={Target} label="Skills" />
             <TabButton id="wealth" icon={DollarSign} label="Wealth" />
-            <TabButton id="settings" icon={Settings} label="Meta" />
+            <TabButton id="settings" icon={SettingsIcon} label="Settings" />
           </nav>
         </>
       )}
