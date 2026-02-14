@@ -362,6 +362,18 @@ const App: React.FC = () => {
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
   const accent = data.settings.accentColor || 'teal';
 
+  // --- Splash Screen Cleanup ---
+  useEffect(() => {
+    // Once the app mounts, hide the splash screen from index.html
+    const splash = document.getElementById('splash-screen');
+    if (splash) {
+      splash.style.opacity = '0';
+      setTimeout(() => {
+        splash.style.display = 'none';
+      }, 600); // Matches the CSS transition duration
+    }
+  }, []);
+
   useEffect(() => {
     saveData(data);
     if (data.settings.darkMode) document.documentElement.classList.add('dark');
