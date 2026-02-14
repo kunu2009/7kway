@@ -33,6 +33,7 @@ const INITIAL_DATA: AppData = {
   ],
   projects: [],
   logs: [],
+  // Adding more preloaded study materials to provide a better initial experience for students
   exams: [
     { 
       id: 'e1', 
@@ -42,7 +43,9 @@ const INITIAL_DATA: AppData = {
       studyMaterials: [
         { id: 'sm1', title: 'Chapter 1: The Cold War Era', url: 'https://ncert.nic.in/textbook.php?feps1=1-9' },
         { id: 'sm2', title: 'Chapter 2: The End of Bipolarity', url: 'https://ncert.nic.in/textbook.php?feps1=2-9' },
-        { id: 'sm10', title: '2024 Solved Sample Paper', url: 'https://cbseacademic.nic.in/web_material/SQP/ClassXII_2023_24/PolScience-SQP.pdf' }
+        { id: 'sm10', title: '2024 Solved Sample Paper', url: 'https://cbseacademic.nic.in/web_material/SQP/ClassXII_2023_24/PolScience-SQP.pdf' },
+        { id: 'sm14', title: 'Chapter 3: Contemporary South Asia', url: 'https://ncert.nic.in/textbook.php?feps1=3-9' },
+        { id: 'sm15', title: 'Chapter 4: International Organisations', url: 'https://ncert.nic.in/textbook.php?feps1=4-9' }
       ]
     },
     { 
@@ -53,7 +56,9 @@ const INITIAL_DATA: AppData = {
       studyMaterials: [
         { id: 'sm3', title: 'Macroeconomics Formulas Sheet', url: 'https://example.com/macro-formulas' },
         { id: 'sm4', title: 'Indian Eco: Rural Development', url: 'https://ncert.nic.in/textbook.php?leec2=6-10' },
-        { id: 'sm11', title: 'Money & Banking Flashcards', url: 'https://quizlet.com/search?query=economics-class-12' }
+        { id: 'sm11', title: 'Money & Banking Flashcards', url: 'https://quizlet.com/search?query=economics-class-12' },
+        { id: 'sm16', title: 'National Income PDF Notes', url: 'https://ncert.nic.in/textbook.php?leec1=1-6' },
+        { id: 'sm17', title: 'Government Budgeting Guide', url: 'https://ncert.nic.in/textbook.php?leec1=5-6' }
       ]
     },
     { 
@@ -63,7 +68,9 @@ const INITIAL_DATA: AppData = {
       type: 'board',
       studyMaterials: [
         { id: 'sm5', title: 'Map Work: Harappan Sites', url: 'https://example.com/history-maps' },
-        { id: 'sm12', title: 'Bhakti-Sufi Traditions PDF', url: 'https://ncert.nic.in/textbook.php?lehs2=2-5' }
+        { id: 'sm12', title: 'Bhakti-Sufi Traditions PDF', url: 'https://ncert.nic.in/textbook.php?lehs2=2-5' },
+        { id: 'sm18', title: 'Bricks, Beads and Bones', url: 'https://ncert.nic.in/textbook.php?lehs1=1-4' },
+        { id: 'sm19', title: 'Kings and Chronicles', url: 'https://ncert.nic.in/textbook.php?lehs2=4-5' }
       ]
     },
     { 
@@ -73,7 +80,9 @@ const INITIAL_DATA: AppData = {
       type: 'entrance',
       studyMaterials: [
         { id: 'sm6', title: 'Legal Reasoning Mock 1', url: 'https://example.com/mhcet-legal' },
-        { id: 'sm13', title: 'Current Affairs 2024-25', url: 'https://gktoday.in' }
+        { id: 'sm13', title: 'Current Affairs 2024-25', url: 'https://gktoday.in' },
+        { id: 'sm20', title: 'Logical Reasoning Workbook', url: 'https://example.com/mhcet-logic' },
+        { id: 'sm21', title: 'Previous Year Question Papers', url: 'https://cetcell.mahacet.org/' }
       ]
     },
   ],
