@@ -91,6 +91,7 @@ const INITIAL_DATA: AppData = {
   settings: {
     dopamineMode: false,
     darkMode: true,
+    accentColor: 'teal',
     activeSections: {
       physical: true,
       intelligence: true,
@@ -110,7 +111,7 @@ export const loadData = (): AppData => {
       ...INITIAL_DATA,
       ...parsed,
       user: parsed.user || INITIAL_DATA.user,
-      onboardingCompleted: parsed.onboardingCompleted ?? false, // Default to false if missing
+      onboardingCompleted: parsed.onboardingCompleted ?? false,
       exams: parsed.exams?.map((e: any) => ({
         ...e,
         studyMaterials: e.studyMaterials || [] 
@@ -120,6 +121,7 @@ export const loadData = (): AppData => {
       settings: {
         ...INITIAL_DATA.settings,
         ...parsed.settings,
+        accentColor: parsed.settings?.accentColor || 'teal', // Default for migration
         activeSections: {
           ...INITIAL_DATA.settings.activeSections,
           ...parsed.settings?.activeSections

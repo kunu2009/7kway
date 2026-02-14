@@ -66,9 +66,12 @@ export interface Task {
 
 export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits' | 'exams' | 'calendar' | 'priority' | 'tasks';
 
+export type AccentColor = 'teal' | 'cyan' | 'violet' | 'rose' | 'orange';
+
 export interface AppSettings {
   dopamineMode: boolean;
   darkMode: boolean;
+  accentColor: AccentColor;
   activeSections: {
     physical: boolean;
     intelligence: boolean;
