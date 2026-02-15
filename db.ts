@@ -150,7 +150,9 @@ const INITIAL_DATA: AppData = {
     targetWakeTime: '05:30'
   },
   totalEarnings: 0,
-  workouts: []
+  workouts: [],
+  checkIns: [],
+  protocols: []
 };
 
 export const loadData = (): AppData => {
@@ -193,6 +195,8 @@ export const loadData = (): AppData => {
       income: Array.isArray(parsed.income) ? parsed.income : INITIAL_DATA.income,
       pomodoroSessions: Array.isArray(parsed.pomodoroSessions) ? parsed.pomodoroSessions : INITIAL_DATA.pomodoroSessions,
       workouts: Array.isArray(parsed.workouts) ? parsed.workouts : INITIAL_DATA.workouts,
+      checkIns: Array.isArray(parsed.checkIns) ? parsed.checkIns : INITIAL_DATA.checkIns,
+      protocols: Array.isArray(parsed.protocols) ? parsed.protocols : INITIAL_DATA.protocols,
       totalEarnings: parsed.totalEarnings || 0,
       onboardingCompleted: !!parsed.onboardingCompleted
     };

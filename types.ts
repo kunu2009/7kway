@@ -71,6 +71,46 @@ export interface WorkoutSession {
   notes?: string;
 }
 
+// Daily Check-in Types
+export interface DailyCheckIn {
+  id: string;
+  date: string; // YYYY-MM-DD
+  morning: {
+    completed: boolean;
+    time: string;
+    goals: string[]; // Top 3 goals for the day
+    mood: 1 | 2 | 3 | 4 | 5;
+    affirmation: string;
+  };
+  evening: {
+    completed: boolean;
+    time: string;
+    goalsCompleted: number; // out of goals.length
+    wins: string[]; // What went well
+    lessons: string; // What could improve
+    gratitude: string[];
+    rating: 1 | 2 | 3 | 4 | 5; // Day rating
+  };
+}
+
+// Protocol Types
+export interface ProtocolTask {
+  id: string;
+  name: string;
+  category: 'morning' | 'night';
+  completed: boolean;
+  xp: number;
+  icon?: string;
+}
+
+export interface DailyProtocol {
+  date: string;
+  morningTasks: ProtocolTask[];
+  nightTasks: ProtocolTask[];
+  morningScore: number;
+  nightScore: number;
+}
+
 export interface UserStats {
   xp: number;
   level: number;
@@ -193,4 +233,6 @@ export interface AppData {
   discipline: DisciplineStats;
   totalEarnings: number;
   workouts: WorkoutSession[];
+  checkIns: DailyCheckIn[];
+  protocols: DailyProtocol[];
 }

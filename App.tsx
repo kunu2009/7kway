@@ -15,9 +15,9 @@ import {
   GraduationCap, Play, Pause, SkipForward, Timer, TrendingUp, Wallet, Code,
   Gamepad2, Languages, Guitar, AlertTriangle, Heart, Coffee, Snowflake, Ban,
   IndianRupee, PiggyBank, Briefcase, Award, Star, CircleDot,
-  Footprints, Waves, Wind, Bike, Swords, Repeat, Phone
+  Footprints, Waves, Wind, Bike, Swords, Repeat, Phone, Sunrise, Sunset, Smile, Meh, Frown
 } from 'lucide-react';
-import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats, WorkoutSession, Exercise, MuscleGroup } from './types';
+import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats, WorkoutSession, Exercise, MuscleGroup, DailyCheckIn, DailyProtocol, ProtocolTask } from './types';
 import { loadData, saveData, APP_VERSION } from './db';
 
 // --- Static Data Libraries ---
@@ -330,6 +330,9 @@ const PhysicalTab = ({ data, actions }: TabProps) => {
 
       {/* Quick Workout Logger */}
       <WorkoutLogger data={data} actions={actions} accent={accent} />
+
+      {/* Morning/Night Protocol */}
+      <ProtocolWidget data={data} actions={actions} accent={accent} />
     </div>
   );
 };
@@ -516,15 +519,531 @@ const WorkoutLogger = ({ data, actions, accent }: { data: AppData, actions: any,
   );
 };
 
+// --- MORNING/NIGHT PROTOCOL WIDGET ---
+const ProtocolWidget = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const today = new Date().toISOString().split('T')[0];
+  const currentHour = new Date().getHours();
+  const [activeProtocol, setActiveProtocol] = useState<'morning' | 'night'>(currentHour < 14 ? 'morning' : 'night');
+  
+  // Default morning tasks (5:30am routine)
+  const defaultMorningTasks: ProtocolTask[] = [
+    { id: 'm1', name: 'Wake Up 5:30 AM', category: 'morning', completed: false, xp: 30, icon: 'alarm' },
+    { id: 'm2', name: 'Cold Shower (2-5 min)', category: 'morning', completed: false, xp: 25, icon: 'snowflake' },
+    { id: 'm3', name: 'Hydrate (500ml water)', category: 'morning', completed: false, xp: 10, icon: 'droplet' },
+    { id: 'm4', name: 'Mewing & Face Exercises (10 min)', category: 'morning', completed: false, xp: 20, icon: 'face' },
+    { id: 'm5', name: 'Hanging Exercises (10-20 min)', category: 'morning', completed: false, xp: 30, icon: 'stretch' },
+    { id: 'm6', name: 'Quick Workout (15-30 min)', category: 'morning', completed: false, xp: 40, icon: 'dumbbell' },
+    { id: 'm7', name: 'Healthy Breakfast', category: 'morning', completed: false, xp: 15, icon: 'food' },
+    { id: 'm8', name: 'Apply Sunscreen', category: 'morning', completed: false, xp: 10, icon: 'sun' },
+  ];
+
+  // Default night tasks (before 10pm)
+  const defaultNightTasks: ProtocolTask[] = [
+    { id: 'n1', name: 'No Screens After 9:30 PM', category: 'night', completed: false, xp: 25, icon: 'screen' },
+    { id: 'n2', name: 'Skincare Routine', category: 'night', completed: false, xp: 15, icon: 'face' },
+    { id: 'n3', name: 'Stretching (10 min)', category: 'night', completed: false, xp: 20, icon: 'stretch' },
+    { id: 'n4', name: 'Read Book (15 min)', category: 'night', completed: false, xp: 20, icon: 'book' },
+    { id: 'n5', name: 'Gratitude/Journaling', category: 'night', completed: false, xp: 15, icon: 'journal' },
+    { id: 'n6', name: 'Tomorrow Planning', category: 'night', completed: false, xp: 15, icon: 'plan' },
+    { id: 'n7', name: 'In Bed by 10:00 PM', category: 'night', completed: false, xp: 30, icon: 'bed' },
+  ];
+
+  // Get or create today's protocol
+  const todayProtocol = data.protocols.find(p => p.date === today) || {
+    date: today,
+    morningTasks: defaultMorningTasks,
+    nightTasks: defaultNightTasks,
+    morningScore: 0,
+    nightScore: 0
+  };
+
+  const tasks = activeProtocol === 'morning' ? todayProtocol.morningTasks : todayProtocol.nightTasks;
+  const completedCount = tasks.filter(t => t.completed).length;
+  const totalXP = tasks.filter(t => t.completed).reduce((acc, t) => acc + t.xp, 0);
+  const maxXP = tasks.reduce((acc, t) => acc + t.xp, 0);
+
+  const toggleTask = (taskId: string) => {
+    const updatedProtocol = { ...todayProtocol };
+    if (activeProtocol === 'morning') {
+      updatedProtocol.morningTasks = todayProtocol.morningTasks.map(t => 
+        t.id === taskId ? { ...t, completed: !t.completed } : t
+      );
+      updatedProtocol.morningScore = updatedProtocol.morningTasks.filter(t => t.completed).reduce((a, t) => a + t.xp, 0);
+    } else {
+      updatedProtocol.nightTasks = todayProtocol.nightTasks.map(t => 
+        t.id === taskId ? { ...t, completed: !t.completed } : t
+      );
+      updatedProtocol.nightScore = updatedProtocol.nightTasks.filter(t => t.completed).reduce((a, t) => a + t.xp, 0);
+    }
+    
+    const task = tasks.find(t => t.id === taskId);
+    if (task && !task.completed) {
+      actions.addXP(task.xp, `Protocol: ${task.name}`);
+    }
+    
+    actions.saveProtocol(updatedProtocol);
+  };
+
+  const getIconForTask = (icon?: string) => {
+    switch(icon) {
+      case 'alarm': return Clock;
+      case 'snowflake': return Snowflake;
+      case 'droplet': return Droplets;
+      case 'face': return ScanFace;
+      case 'stretch': return Ruler;
+      case 'dumbbell': return Dumbbell;
+      case 'food': return Utensils;
+      case 'sun': return Sun;
+      case 'screen': return Eye;
+      case 'book': return BookOpen;
+      case 'journal': return BookOpen;
+      case 'plan': return Target;
+      case 'bed': return Moon;
+      default: return CheckCircle2;
+    }
+  };
+
+  // Calculate streak
+  const protocolStreak = data.protocols.filter(p => {
+    const morningComplete = p.morningTasks.filter(t => t.completed).length >= p.morningTasks.length * 0.8;
+    const nightComplete = p.nightTasks.filter(t => t.completed).length >= p.nightTasks.length * 0.8;
+    return morningComplete && nightComplete;
+  }).length;
+
+  return (
+    <div className="bg-gradient-to-br from-indigo-500/10 to-purple-500/10 border border-indigo-500/20 rounded-2xl p-5">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h4 className="text-[10px] font-black text-indigo-500 uppercase flex items-center gap-1">
+            {activeProtocol === 'morning' ? <Sunrise size={12}/> : <MoonIcon size={12}/>}
+            {activeProtocol === 'morning' ? 'Morning Protocol' : 'Night Protocol'}
+          </h4>
+          <p className="text-xs text-slate-500 mt-1">
+            {activeProtocol === 'morning' ? '5:30 AM Power Routine' : 'Before 10 PM Wind-down'}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-[9px] text-slate-400 uppercase">Streak</p>
+          <p className="text-sm font-black text-indigo-500">{protocolStreak} days</p>
+        </div>
+      </div>
+
+      {/* Protocol Toggle */}
+      <div className="flex gap-2 mb-4">
+        <button
+          onClick={() => setActiveProtocol('morning')}
+          className={`flex-1 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${activeProtocol === 'morning' ? 'bg-orange-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}
+        >
+          <Sunrise size={12}/> Morning
+        </button>
+        <button
+          onClick={() => setActiveProtocol('night')}
+          className={`flex-1 py-2 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition-all ${activeProtocol === 'night' ? 'bg-violet-500 text-white' : 'bg-slate-100 dark:bg-slate-800 text-slate-500'}`}
+        >
+          <MoonIcon size={12}/> Night
+        </button>
+      </div>
+
+      {/* Progress Bar */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[9px] font-bold text-slate-400">{completedCount}/{tasks.length} Complete</span>
+          <span className="text-[9px] font-bold text-indigo-500">{totalXP}/{maxXP} XP</span>
+        </div>
+        <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div 
+            className={`h-full transition-all ${activeProtocol === 'morning' ? 'bg-orange-500' : 'bg-violet-500'}`}
+            style={{ width: `${(completedCount / tasks.length) * 100}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Task List */}
+      <div className="space-y-2">
+        {tasks.map(task => {
+          const IconComponent = getIconForTask(task.icon);
+          return (
+            <button
+              key={task.id}
+              onClick={() => toggleTask(task.id)}
+              className={`w-full flex items-center justify-between p-3 rounded-xl transition-all ${
+                task.completed 
+                  ? 'bg-emerald-500/10 border border-emerald-500/30' 
+                  : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 hover:border-indigo-500'
+              }`}
+            >
+              <div className="flex items-center gap-3">
+                <div className={`p-1.5 rounded-lg ${task.completed ? 'bg-emerald-500/20' : 'bg-slate-100 dark:bg-slate-800'}`}>
+                  <IconComponent size={14} className={task.completed ? 'text-emerald-500' : 'text-slate-400'} />
+                </div>
+                <span className={`text-[11px] font-bold ${task.completed ? 'text-emerald-600 dark:text-emerald-400 line-through' : ''}`}>
+                  {task.name}
+                </span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className={`text-[9px] font-black ${task.completed ? 'text-emerald-500' : 'text-slate-400'}`}>
+                  +{task.xp} XP
+                </span>
+                {task.completed && <CheckCircle2 size={14} className="text-emerald-500" />}
+              </div>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Completion Message */}
+      {completedCount === tasks.length && (
+        <div className="mt-4 p-3 bg-emerald-500/10 rounded-xl text-center animate-in fade-in">
+          <p className="text-sm font-bold text-emerald-500">
+            🎉 {activeProtocol === 'morning' ? 'Morning' : 'Night'} Protocol Complete!
+          </p>
+          <p className="text-[9px] text-slate-400">+{totalXP} XP earned</p>
+        </div>
+      )}
+    </div>
+  );
+};
+
 const IntelligenceSection = ({ data, actions }: TabProps) => (
   <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
     <SectionHeader title="Intel Protocols" subtitle="Preparation & Knowledge" />
+    {/* Daily Check-in Widget */}
+    <DailyCheckInWidget data={data} actions={actions} accent={data.settings.accentColor || 'teal'} />
     <div className="space-y-3">
         <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2"><GraduationCap size={16} /> Exam Countdown</h4>
         {data.exams.map(exam => <ExamItem key={exam.id} exam={exam} onAddMaterial={actions.addStudyMaterial} onDeleteMaterial={actions.deleteStudyMaterial} accent={data.settings.accentColor || 'teal'} />)}
     </div>
   </div>
 );
+
+// --- DAILY CHECK-IN WIDGET ---
+const DailyCheckInWidget = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const today = new Date().toISOString().split('T')[0];
+  const todayCheckIn = data.checkIns.find(c => c.date === today);
+  const [showMorning, setShowMorning] = useState(false);
+  const [showEvening, setShowEvening] = useState(false);
+  
+  // Morning check-in state
+  const [goals, setGoals] = useState<string[]>(['', '', '']);
+  const [mood, setMood] = useState<1|2|3|4|5>(3);
+  const [affirmation, setAffirmation] = useState('');
+  
+  // Evening check-in state
+  const [goalsCompleted, setGoalsCompleted] = useState(0);
+  const [wins, setWins] = useState<string[]>(['']);
+  const [lessons, setLessons] = useState('');
+  const [gratitude, setGratitude] = useState<string[]>(['', '', '']);
+  const [rating, setRating] = useState<1|2|3|4|5>(3);
+
+  const currentHour = new Date().getHours();
+  const isMorning = currentHour >= 5 && currentHour < 12;
+  const isEvening = currentHour >= 17 || currentHour < 5;
+
+  const affirmations = [
+    "I am unstoppable. I am becoming the best version of myself.",
+    "Today I will conquer my procrastination and take massive action.",
+    "I have the power to create change. My discipline defines my destiny.",
+    "I am focused, driven, and committed to my goals.",
+    "Every cell in my body is working to help me succeed."
+  ];
+
+  const completeMorningCheckIn = () => {
+    const validGoals = goals.filter(g => g.trim() !== '');
+    if (validGoals.length === 0) return;
+    
+    const checkIn: DailyCheckIn = {
+      id: Math.random().toString(),
+      date: today,
+      morning: {
+        completed: true,
+        time: new Date().toISOString(),
+        goals: validGoals,
+        mood,
+        affirmation: affirmation || affirmations[Math.floor(Math.random() * affirmations.length)]
+      },
+      evening: {
+        completed: false,
+        time: '',
+        goalsCompleted: 0,
+        wins: [],
+        lessons: '',
+        gratitude: [],
+        rating: 3
+      }
+    };
+    
+    actions.saveCheckIn(checkIn);
+    actions.addXP(50, 'Morning Check-in Complete');
+    setShowMorning(false);
+  };
+
+  const completeEveningCheckIn = () => {
+    if (!todayCheckIn) return;
+    
+    const updatedCheckIn: DailyCheckIn = {
+      ...todayCheckIn,
+      evening: {
+        completed: true,
+        time: new Date().toISOString(),
+        goalsCompleted,
+        wins: wins.filter(w => w.trim() !== ''),
+        lessons,
+        gratitude: gratitude.filter(g => g.trim() !== ''),
+        rating
+      }
+    };
+    
+    actions.saveCheckIn(updatedCheckIn);
+    actions.addXP(50, 'Evening Check-in Complete');
+    if (goalsCompleted >= todayCheckIn.morning.goals.length) {
+      actions.addXP(100, 'All Daily Goals Completed!');
+    }
+    setShowEvening(false);
+  };
+
+  const moodIcons = [
+    { icon: Frown, label: 'Terrible', color: 'red' },
+    { icon: Meh, label: 'Low', color: 'orange' },
+    { icon: Smile, label: 'Okay', color: 'yellow' },
+    { icon: Smile, label: 'Good', color: 'emerald' },
+    { icon: Star, label: 'Amazing', color: 'cyan' }
+  ];
+
+  // Check-in streak
+  const checkInStreak = data.checkIns.filter(c => c.morning.completed && c.evening.completed).length;
+
+  return (
+    <div className={`bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-2xl p-5 mb-6`}>
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h4 className="text-[10px] font-black text-amber-500 uppercase flex items-center gap-1">
+            <CalendarIcon size={12}/> Daily Check-in
+          </h4>
+          <p className="text-xs text-slate-500 mt-1">
+            {isMorning ? '🌅 Set your intentions' : isEvening ? '🌙 Reflect on your day' : '☀️ Midday momentum'}
+          </p>
+        </div>
+        <div className="text-right">
+          <p className="text-[9px] text-slate-400 uppercase">Streak</p>
+          <p className="text-sm font-black text-amber-500">{checkInStreak} days</p>
+        </div>
+      </div>
+
+      {/* Status Display */}
+      <div className="grid grid-cols-2 gap-2 mb-4">
+        <div className={`p-3 rounded-xl ${todayCheckIn?.morning.completed ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/50 dark:bg-slate-950/30'}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Sunrise size={14} className={todayCheckIn?.morning.completed ? 'text-emerald-500' : 'text-slate-400'} />
+            <span className="text-[9px] font-black uppercase">Morning</span>
+          </div>
+          {todayCheckIn?.morning.completed ? (
+            <div>
+              <p className="text-[9px] text-emerald-500 font-bold">✓ Completed</p>
+              <p className="text-[8px] text-slate-400">{todayCheckIn.morning.goals.length} goals set</p>
+            </div>
+          ) : (
+            <p className="text-[9px] text-slate-400">Not done yet</p>
+          )}
+        </div>
+        <div className={`p-3 rounded-xl ${todayCheckIn?.evening.completed ? 'bg-emerald-500/10 border border-emerald-500/20' : 'bg-white/50 dark:bg-slate-950/30'}`}>
+          <div className="flex items-center gap-2 mb-1">
+            <Sunset size={14} className={todayCheckIn?.evening.completed ? 'text-emerald-500' : 'text-slate-400'} />
+            <span className="text-[9px] font-black uppercase">Evening</span>
+          </div>
+          {todayCheckIn?.evening.completed ? (
+            <div>
+              <p className="text-[9px] text-emerald-500 font-bold">✓ Completed</p>
+              <p className="text-[8px] text-slate-400">Rated: {todayCheckIn.evening.rating}/5</p>
+            </div>
+          ) : (
+            <p className="text-[9px] text-slate-400">{todayCheckIn?.morning.completed ? 'Ready for review' : 'Complete morning first'}</p>
+          )}
+        </div>
+      </div>
+
+      {/* Action Buttons */}
+      <div className="space-y-2">
+        {!todayCheckIn?.morning.completed && (
+          <button 
+            onClick={() => setShowMorning(!showMorning)}
+            className={`w-full py-3 bg-amber-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2`}
+          >
+            <Sunrise size={16}/> {showMorning ? 'Close' : 'Start Morning Check-in (+50 XP)'}
+          </button>
+        )}
+        
+        {todayCheckIn?.morning.completed && !todayCheckIn?.evening.completed && (
+          <button 
+            onClick={() => setShowEvening(!showEvening)}
+            className={`w-full py-3 bg-violet-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2`}
+          >
+            <Sunset size={16}/> {showEvening ? 'Close' : 'Start Evening Review (+50 XP)'}
+          </button>
+        )}
+      </div>
+
+      {/* Morning Check-in Form */}
+      {showMorning && (
+        <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">🎯 Top 3 Goals for Today (be specific!)</p>
+            {goals.map((g, i) => (
+              <input
+                key={i}
+                value={g}
+                onChange={(e) => {
+                  const newGoals = [...goals];
+                  newGoals[i] = e.target.value;
+                  setGoals(newGoals);
+                }}
+                placeholder={`Goal ${i + 1}: e.g., "Complete 3 Pomodoro sessions on Economics"`}
+                className="w-full p-2 mb-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs"
+              />
+            ))}
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">😊 How are you feeling right now?</p>
+            <div className="flex gap-2 justify-center">
+              {moodIcons.map((m, i) => (
+                <button
+                  key={i}
+                  onClick={() => setMood((i + 1) as 1|2|3|4|5)}
+                  className={`p-2 rounded-lg transition-all ${mood === i + 1 ? `bg-${m.color}-500/20 border-2 border-${m.color}-500` : 'bg-slate-100 dark:bg-slate-800'}`}
+                >
+                  <m.icon size={20} className={mood === i + 1 ? `text-${m.color}-500` : 'text-slate-400'} />
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">💪 Today's Affirmation</p>
+            <textarea
+              value={affirmation}
+              onChange={(e) => setAffirmation(e.target.value)}
+              placeholder="Write your own or leave blank for a random one..."
+              className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs h-16 resize-none"
+            />
+          </div>
+
+          <button 
+            onClick={completeMorningCheckIn}
+            className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+          >
+            <CheckCircle2 size={16}/> Complete Morning Check-in
+          </button>
+        </div>
+      )}
+
+      {/* Evening Check-in Form */}
+      {showEvening && todayCheckIn && (
+        <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">✅ Goals Completed ({todayCheckIn.morning.goals.length} set this morning)</p>
+            <div className="space-y-1 mb-2">
+              {todayCheckIn.morning.goals.map((g, i) => (
+                <div key={i} className="text-[10px] p-2 bg-white/50 dark:bg-slate-950/30 rounded flex items-center gap-2">
+                  <span className="text-slate-400">{i + 1}.</span> {g}
+                </div>
+              ))}
+            </div>
+            <div className="flex items-center gap-2">
+              <span className="text-[10px] font-bold">Completed:</span>
+              <select 
+                value={goalsCompleted} 
+                onChange={(e) => setGoalsCompleted(Number(e.target.value))}
+                className="p-2 rounded bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs"
+              >
+                {[...Array(todayCheckIn.morning.goals.length + 1)].map((_, i) => (
+                  <option key={i} value={i}>{i} / {todayCheckIn.morning.goals.length}</option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">🏆 Today's Wins (what went well?)</p>
+            {wins.map((w, i) => (
+              <div key={i} className="flex gap-2 mb-1">
+                <input
+                  value={w}
+                  onChange={(e) => {
+                    const newWins = [...wins];
+                    newWins[i] = e.target.value;
+                    setWins(newWins);
+                  }}
+                  placeholder={`Win ${i + 1}`}
+                  className="flex-1 p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs"
+                />
+                {i === wins.length - 1 && wins.length < 3 && (
+                  <button onClick={() => setWins([...wins, ''])} className="p-2 bg-slate-100 dark:bg-slate-800 rounded"><Plus size={12}/></button>
+                )}
+              </div>
+            ))}
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">📝 What could improve tomorrow?</p>
+            <textarea
+              value={lessons}
+              onChange={(e) => setLessons(e.target.value)}
+              placeholder="What will you do differently?"
+              className="w-full p-2 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs h-16 resize-none"
+            />
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">🙏 3 Things I'm Grateful For</p>
+            {gratitude.map((g, i) => (
+              <input
+                key={i}
+                value={g}
+                onChange={(e) => {
+                  const newGrat = [...gratitude];
+                  newGrat[i] = e.target.value;
+                  setGratitude(newGrat);
+                }}
+                placeholder={`Gratitude ${i + 1}`}
+                className="w-full p-2 mb-1 rounded-lg bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 text-xs"
+              />
+            ))}
+          </div>
+
+          <div>
+            <p className="text-[10px] font-bold text-slate-500 mb-2">⭐ Rate Your Day</p>
+            <div className="flex gap-2 justify-center">
+              {[1,2,3,4,5].map((r) => (
+                <button
+                  key={r}
+                  onClick={() => setRating(r as 1|2|3|4|5)}
+                  className={`p-3 rounded-lg transition-all ${rating === r ? 'bg-amber-500 text-white' : 'bg-slate-100 dark:bg-slate-800'}`}
+                >
+                  <span className="text-lg font-black">{r}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+
+          <button 
+            onClick={completeEveningCheckIn}
+            className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold flex items-center justify-center gap-2"
+          >
+            <CheckCircle2 size={16}/> Complete Evening Review {goalsCompleted >= todayCheckIn.morning.goals.length ? '(+150 XP!)' : '(+50 XP)'}
+          </button>
+        </div>
+      )}
+
+      {/* Today's Affirmation (if morning completed) */}
+      {todayCheckIn?.morning.completed && !showEvening && (
+        <div className="mt-3 p-3 bg-amber-500/10 rounded-xl">
+          <p className="text-[9px] font-bold text-amber-600 dark:text-amber-400 uppercase mb-1">Today's Affirmation</p>
+          <p className="text-xs text-slate-600 dark:text-slate-300 italic">"{todayCheckIn.morning.affirmation}"</p>
+        </div>
+      )}
+    </div>
+  );
+};
 
 // --- POMODORO TIMER COMPONENT ---
 const PomodoroTimer = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
@@ -1399,6 +1918,30 @@ const App: React.FC = () => {
         ...prev,
         workouts: [...prev.workouts, workout]
       }));
+    },
+    // Check-in Actions
+    saveCheckIn: (checkIn: DailyCheckIn) => {
+      setData(prev => {
+        const existingIndex = prev.checkIns.findIndex(c => c.date === checkIn.date);
+        if (existingIndex >= 0) {
+          const updated = [...prev.checkIns];
+          updated[existingIndex] = checkIn;
+          return { ...prev, checkIns: updated };
+        }
+        return { ...prev, checkIns: [...prev.checkIns, checkIn] };
+      });
+    },
+    // Protocol Actions
+    saveProtocol: (protocol: DailyProtocol) => {
+      setData(prev => {
+        const existingIndex = prev.protocols.findIndex(p => p.date === protocol.date);
+        if (existingIndex >= 0) {
+          const updated = [...prev.protocols];
+          updated[existingIndex] = protocol;
+          return { ...prev, protocols: updated };
+        }
+        return { ...prev, protocols: [...prev.protocols, protocol] };
+      });
     },
     // Skills Actions
     logSkillPractice: (skillId: string, hours: number) => {
