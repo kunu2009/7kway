@@ -2084,307 +2084,118 @@ const OnboardingOverlay = ({ onComplete, accent }: { onComplete: (userData: any)
 
 // --- SMART HOME SCREEN (Time-Aware) ---
 const SmartHomeScreen = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
-  const [currentTime, setCurrentTime] = useState(new Date());
   const timePeriod = getTimePeriod();
-  const greetingData = getGreeting(data.user.name || 'Champion');
-  const quote = getMotivationalQuote();
+  const currentHour = new Date().getHours();
   
-  // Update time every minute
-  useEffect(() => {
-    const interval = setInterval(() => setCurrentTime(new Date()), 60000);
-    return () => clearInterval(interval);
-  }, []);
+  // Simple greeting
+  const getSimpleGreeting = () => {
+    if (currentHour < 12) return 'Good morning';
+    if (currentHour < 17) return 'Good afternoon';
+    if (currentHour < 21) return 'Good evening';
+    return 'Good night';
+  };
 
   // Get nearest exam
   const nearestExam = data.exams.reduce((nearest, exam) => {
-    const daysLeft = Math.ceil((new Date(exam.date).getTime() - currentTime.getTime()) / (1000 * 60 * 60 * 24));
-    if (!nearest || daysLeft < nearest.daysLeft) {
+    const daysLeft = Math.ceil((new Date(exam.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (daysLeft > 0 && (!nearest || daysLeft < nearest.daysLeft)) {
       return { exam, daysLeft };
     }
     return nearest;
   }, null as { exam: Exam; daysLeft: number } | null);
 
-  // Get today's protocol
-  const today = currentTime.toISOString().split('T')[0];
-  const todayProtocol = data.protocols.find(p => p.date === today);
-  
-  // Default protocols
-  const defaultMorningTasks = [
-    { id: 'm1', name: 'Wake Up 5:30 AM', completed: false, xp: 30 },
-    { id: 'm2', name: 'Cold Shower', completed: false, xp: 25 },
-    { id: 'm3', name: 'Hydrate (500ml)', completed: false, xp: 10 },
-    { id: 'm4', name: 'Mewing & Face (10m)', completed: false, xp: 20 },
-    { id: 'm5', name: 'Hanging (10-20m)', completed: false, xp: 30 },
-    { id: 'm6', name: 'Workout', completed: false, xp: 40 },
-    { id: 'm7', name: 'Breakfast', completed: false, xp: 15 },
-    { id: 'm8', name: 'Sunscreen', completed: false, xp: 10 },
-  ];
-  
-  const defaultNightTasks = [
-    { id: 'n1', name: 'No Screens 9:30 PM', completed: false, xp: 25 },
-    { id: 'n2', name: 'Skincare', completed: false, xp: 15 },
-    { id: 'n3', name: 'Stretching (10m)', completed: false, xp: 20 },
-    { id: 'n4', name: 'Read (15m)', completed: false, xp: 20 },
-    { id: 'n5', name: 'Gratitude Log', completed: false, xp: 15 },
-    { id: 'n6', name: 'Plan Tomorrow', completed: false, xp: 15 },
-    { id: 'n7', name: 'In Bed 10:30 PM', completed: false, xp: 30 },
-  ];
-
-  const morningTasks = todayProtocol?.morningTasks || defaultMorningTasks;
-  const nightTasks = todayProtocol?.nightTasks || defaultNightTasks;
-  
-  const morningDone = morningTasks.filter(t => t.completed).length;
-  const nightDone = nightTasks.filter(t => t.completed).length;
-
-  // Get ONE priority task based on time
-  const getPriorityTask = () => {
+  // ONE focus card based on time
+  const getFocusCard = () => {
     if (timePeriod === 'early_morning') {
-      return { icon: Sunrise, text: 'Complete Morning Protocol', subtext: `${morningDone}/${morningTasks.length} done` };
+      return { 
+        title: 'Morning Routine', 
+        subtitle: 'Start your day right',
+        icon: Sunrise,
+        color: 'orange',
+        action: () => actions.setActiveTab('physical')
+      };
     }
     if (timePeriod === 'study_time') {
-      const nextTopic = data.studySubjects.flatMap(s => s.chapters.flatMap(c => c.topics)).find(t => !t.completed);
-      if (nextTopic) {
-        return { icon: BookOpen, text: nextTopic.name, subtext: 'Study this topic' };
-      }
-      return { icon: GraduationCap, text: 'Focus on studies', subtext: 'Start a Pomodoro session' };
+      return { 
+        title: 'Study Time', 
+        subtitle: nearestExam ? `${nearestExam.exam.subject} in ${nearestExam.daysLeft}d` : 'Focus session',
+        icon: BookOpen,
+        color: 'blue',
+        action: () => actions.setActiveTab('intelligence')
+      };
     }
     if (timePeriod === 'evening') {
-      return { icon: Activity, text: 'Evening Review', subtext: 'Log workout & check-in' };
+      return { 
+        title: 'Log Workout', 
+        subtitle: 'Track your gains',
+        icon: Dumbbell,
+        color: 'emerald',
+        action: () => actions.setActiveTab('physical')
+      };
     }
     if (timePeriod === 'wind_down') {
-      return { icon: MoonIcon, text: 'Night Protocol', subtext: `${nightDone}/${nightTasks.length} done` };
+      return { 
+        title: 'Night Routine', 
+        subtitle: 'Wind down for sleep',
+        icon: Moon,
+        color: 'violet',
+        action: () => actions.setActiveTab('physical')
+      };
     }
-    return { icon: Moon, text: 'Time to Sleep!', subtext: 'Rest is part of growth' };
+    return { 
+      title: 'Sleep', 
+      subtitle: 'Rest is growth',
+      icon: Moon,
+      color: 'slate',
+      action: () => {}
+    };
   };
 
-  const priorityTask = getPriorityTask();
+  const focus = getFocusCard();
+  const FocusIcon = focus.icon;
 
-  // Quick actions based on time
-  const getQuickActions = () => {
-    if (timePeriod === 'early_morning' || timePeriod === 'wind_down') {
-      return [
-        { icon: CheckSquare, label: 'Protocol', action: () => actions.setActiveTab('physical') },
-        { icon: Snowflake, label: 'Cold Shower', action: () => actions.incrementColdShower() },
-      ];
-    }
-    if (timePeriod === 'study_time') {
-      return [
-        { icon: Timer, label: 'Pomodoro', action: () => actions.setActiveTab('intelligence') },
-        { icon: BookOpen, label: 'Topics', action: () => actions.setActiveTab('intelligence') },
-      ];
-    }
-    return [
-      { icon: Dumbbell, label: 'Workout', action: () => actions.setActiveTab('physical') },
-      { icon: CheckCircle2, label: 'Check-in', action: () => actions.setActiveTab('intelligence') },
-    ];
-  };
-
-  const quickActions = getQuickActions();
-
-  // Sleep time special screen
+  // Sleep time - minimal
   if (timePeriod === 'sleep_time') {
     return (
-      <div className="animate-in fade-in duration-500 flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-        <div className="text-6xl mb-4">😴</div>
-        <h2 className="text-2xl font-black text-slate-700 dark:text-slate-300 mb-2">
-          You Should Be Sleeping!
-        </h2>
-        <p className="text-slate-500 mb-6">
-          Sleep is when your body grows.<br/>
-          HGH releases 10pm-2am.
-        </p>
-        <div className="bg-violet-500/10 p-4 rounded-xl mb-6">
-          <p className="text-violet-500 font-bold">🌙 Current Streak</p>
-          <p className="text-3xl font-black text-violet-600">{data.discipline.noFapStreak} days</p>
-        </div>
-        <p className="text-[10px] text-slate-400">Put down your phone and rest. 💤</p>
+      <div className="flex flex-col items-center justify-center min-h-[70vh] text-center">
+        <Moon size={48} className="text-violet-500 mb-4"/>
+        <h2 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-1">Sleep Time</h2>
+        <p className="text-sm text-slate-500 mb-8">Growth happens while you rest</p>
+        <p className="text-5xl font-black text-violet-500">{data.discipline.noFapStreak}</p>
+        <p className="text-xs text-slate-400">day streak</p>
       </div>
     );
   }
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-2 duration-500 space-y-4">
-      {/* Time-Aware Greeting */}
-      <div className="text-center py-4">
-        <p className="text-4xl mb-2">{greetingData.emoji}</p>
-        <h1 className="text-xl font-black text-slate-800 dark:text-white">
-          {greetingData.greeting}
+    <div className="flex flex-col min-h-[75vh]">
+      {/* Greeting - Minimal */}
+      <div className="text-center pt-8 pb-6">
+        <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
+          {getSimpleGreeting()}, {data.user.name || 'Champion'}
         </h1>
-        <p className="text-sm text-slate-500">{greetingData.subtitle}</p>
-        <p className="text-[10px] text-slate-400 mt-1">
-          {getCurrentDateFormatted()} • {getCurrentTimeFormatted()}
-        </p>
+        <p className="text-sm text-slate-400 mt-1">{getCurrentDateFormatted()}</p>
       </div>
 
-      {/* ONE Priority Task - Big & Clear */}
-      <div className={`bg-gradient-to-br from-${accent}-500/20 to-${accent}-600/10 border-2 border-${accent}-500/30 rounded-2xl p-5`}>
-        <p className="text-[9px] font-black text-slate-400 uppercase mb-2 flex items-center gap-1">
-          <Zap size={10}/> YOUR ONE THING RIGHT NOW
-        </p>
-        <div className="flex items-center gap-3">
-          <div className={`p-3 bg-${accent}-500 rounded-xl`}>
-            <priorityTask.icon size={24} className="text-white" />
+      {/* ONE Focus Card - Large & Tappable */}
+      <div className="flex-1 flex items-center justify-center px-4">
+        <button 
+          onClick={focus.action}
+          className={`w-full max-w-sm bg-${focus.color}-500/10 border-2 border-${focus.color}-500/30 rounded-3xl p-8 text-center transition-transform active:scale-[0.98]`}
+        >
+          <FocusIcon size={48} className={`text-${focus.color}-500 mx-auto mb-4`}/>
+          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{focus.title}</h2>
+          <p className="text-sm text-slate-500">{focus.subtitle}</p>
+          <div className={`mt-6 inline-flex items-center gap-2 px-4 py-2 bg-${focus.color}-500 text-white rounded-full text-sm font-bold`}>
+            Start <ArrowRight size={14}/>
           </div>
-          <div>
-            <p className="font-bold text-slate-900 dark:text-white text-lg">{priorityTask.text}</p>
-            <p className="text-xs text-slate-500">{priorityTask.subtext}</p>
-          </div>
-        </div>
+        </button>
       </div>
 
-      {/* Protocol Checklist (Morning or Night based on time) */}
-      {(timePeriod === 'early_morning' || timePeriod === 'wind_down') && (
-        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
-          <div className="flex justify-between items-center mb-3">
-            <h3 className="text-[10px] font-black uppercase text-slate-400 flex items-center gap-1">
-              {timePeriod === 'early_morning' ? <><Sunrise size={12}/> Morning Protocol</> : <><MoonIcon size={12}/> Night Protocol</>}
-            </h3>
-            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
-              (timePeriod === 'early_morning' ? morningDone : nightDone) === (timePeriod === 'early_morning' ? morningTasks : nightTasks).length
-                ? 'bg-emerald-500/10 text-emerald-500'
-                : 'bg-orange-500/10 text-orange-500'
-            }`}>
-              {timePeriod === 'early_morning' ? morningDone : nightDone}/{(timePeriod === 'early_morning' ? morningTasks : nightTasks).length}
-            </span>
-          </div>
-          
-          <div className="space-y-2">
-            {(timePeriod === 'early_morning' ? morningTasks : nightTasks).slice(0, 5).map(task => (
-              <button
-                key={task.id}
-                onClick={() => {
-                  const updatedProtocol = {
-                    date: today,
-                    morningTasks: timePeriod === 'early_morning' 
-                      ? morningTasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t)
-                      : morningTasks,
-                    nightTasks: timePeriod === 'wind_down'
-                      ? nightTasks.map(t => t.id === task.id ? { ...t, completed: !t.completed } : t)
-                      : nightTasks,
-                    morningScore: 0,
-                    nightScore: 0
-                  };
-                  actions.saveProtocol(updatedProtocol);
-                  if (!task.completed) actions.addXP(task.xp, task.name);
-                }}
-                className={`w-full flex items-center justify-between p-2.5 rounded-xl transition-all ${
-                  task.completed 
-                    ? 'bg-emerald-500/10 border border-emerald-500/20' 
-                    : 'bg-slate-50 dark:bg-slate-800/50 border border-transparent hover:border-slate-300'
-                }`}
-              >
-                <div className="flex items-center gap-2">
-                  {task.completed ? (
-                    <CheckCircle2 size={16} className="text-emerald-500"/>
-                  ) : (
-                    <div className="w-4 h-4 rounded-full border-2 border-slate-300 dark:border-slate-600"/>
-                  )}
-                  <span className={`text-xs font-bold ${task.completed ? 'text-emerald-600 dark:text-emerald-400 line-through' : ''}`}>
-                    {task.name}
-                  </span>
-                </div>
-                <span className="text-[9px] text-slate-400">+{task.xp}</span>
-              </button>
-            ))}
-            {(timePeriod === 'early_morning' ? morningTasks : nightTasks).length > 5 && (
-              <button 
-                onClick={() => actions.setActiveTab('physical')}
-                className="w-full text-center text-[10px] text-slate-400 py-2 hover:text-slate-600"
-              >
-                See all tasks →
-              </button>
-            )}
-          </div>
-        </div>
-      )}
-
-      {/* Study Mode - Exam Countdown & Focus (during study time) */}
-      {timePeriod === 'study_time' && nearestExam && (
-        <div className={`bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-rose-500/20 rounded-2xl p-4`}>
-          <div className="flex justify-between items-start mb-3">
-            <div>
-              <p className="text-[9px] font-black text-rose-500 uppercase">NEXT EXAM</p>
-              <p className="font-bold text-slate-900 dark:text-white">{nearestExam.exam.subject}</p>
-            </div>
-            <div className={`px-3 py-1 rounded-lg ${
-              nearestExam.daysLeft <= 3 ? 'bg-rose-500 text-white' : 
-              nearestExam.daysLeft <= 7 ? 'bg-orange-500 text-white' : 
-              'bg-emerald-500/10 text-emerald-500'
-            } text-xs font-black`}>
-              T-{nearestExam.daysLeft} DAYS
-            </div>
-          </div>
-          <button 
-            onClick={() => actions.setActiveTab('intelligence')}
-            className={`w-full py-2.5 bg-${accent}-500 text-white rounded-xl text-sm font-bold flex items-center justify-center gap-2`}
-          >
-            <Timer size={14}/> Start Focus Session
-          </button>
-        </div>
-      )}
-
-      {/* Evening - Workout & Review */}
-      {timePeriod === 'evening' && (
-        <div className="grid grid-cols-2 gap-3">
-          <button 
-            onClick={() => actions.setActiveTab('physical')}
-            className="bg-blue-500/10 border border-blue-500/20 rounded-xl p-4 text-center"
-          >
-            <Dumbbell size={20} className="text-blue-500 mx-auto mb-2"/>
-            <p className="text-xs font-bold">Log Workout</p>
-            <p className="text-[9px] text-slate-400">{data.workouts.filter(w => w.date.split('T')[0] === today).length} today</p>
-          </button>
-          <button 
-            onClick={() => actions.setActiveTab('intelligence')}
-            className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-4 text-center"
-          >
-            <CheckCircle2 size={20} className="text-violet-500 mx-auto mb-2"/>
-            <p className="text-xs font-bold">Evening Check-in</p>
-            <p className="text-[9px] text-slate-400">Review your day</p>
-          </button>
-        </div>
-      )}
-
-      {/* Quick Actions */}
-      <div className="flex gap-2">
-        {quickActions.map((qa, i) => (
-          <button 
-            key={i}
-            onClick={qa.action}
-            className="flex-1 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3 text-center hover:border-slate-400 transition-all"
-          >
-            <qa.icon size={18} className={`text-${accent}-500 mx-auto mb-1`}/>
-            <p className="text-[10px] font-bold">{qa.label}</p>
-          </button>
-        ))}
-      </div>
-
-      {/* Mini Stats Bar */}
-      <div className="flex justify-around py-3 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
-        <div className="text-center">
-          <p className="text-lg font-black text-orange-500">{data.stats.streak}</p>
-          <p className="text-[8px] text-slate-400 uppercase">Streak</p>
-        </div>
-        <div className="text-center">
-          <p className="text-lg font-black text-emerald-500">{data.stats.xp.toLocaleString()}</p>
-          <p className="text-[8px] text-slate-400 uppercase">Total XP</p>
-        </div>
-        <div className="text-center">
-          <p className="text-lg font-black text-violet-500">{data.discipline.noFapStreak}</p>
-          <p className="text-[8px] text-slate-400 uppercase">Clean Days</p>
-        </div>
-        {nearestExam && (
-          <div className="text-center">
-            <p className={`text-lg font-black ${nearestExam.daysLeft <= 7 ? 'text-rose-500' : 'text-blue-500'}`}>{nearestExam.daysLeft}</p>
-            <p className="text-[8px] text-slate-400 uppercase">To Exam</p>
-          </div>
-        )}
-      </div>
-
-      {/* Motivational Quote */}
-      <div className="bg-slate-100 dark:bg-slate-900/50 rounded-xl p-4 text-center">
-        <p className="text-xs text-slate-600 dark:text-slate-400 italic">"{quote.quote}"</p>
-        <p className="text-[10px] text-slate-400 mt-1">— {quote.author}</p>
+      {/* ONE Stat - Bottom */}
+      <div className="text-center py-6">
+        <p className="text-4xl font-black text-orange-500">{data.stats.streak}</p>
+        <p className="text-xs text-slate-400">day streak</p>
       </div>
     </div>
   );
