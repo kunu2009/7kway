@@ -1599,6 +1599,13 @@ const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, 
 const SkillsTab = ({ data, actions }: TabProps) => {
   const accent = data.settings.accentColor || 'teal';
   const [showAddSkill, setShowAddSkill] = useState(false);
+
+  // Back button
+  const BackButton = () => (
+    <button onClick={() => actions.setActiveTab('settings')} className="flex items-center gap-1 text-sm text-slate-500 mb-4">
+      <ChevronUp size={16} className="rotate-[-90deg]"/> Back
+    </button>
+  );
   const [newSkillName, setNewSkillName] = useState('');
   const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('other');
   const [selectedCategory, setSelectedCategory] = useState<SkillCategory | 'all'>('all');
@@ -1641,8 +1648,12 @@ const SkillsTab = ({ data, actions }: TabProps) => {
   };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-      <SectionHeader title="Skill Mastery" subtitle="Track your journey to excellence" />
+    <div className="space-y-4">
+      <BackButton />
+      <div className="text-center mb-2">
+        <h2 className="text-xl font-bold">Skills</h2>
+        <p className="text-sm text-slate-400">{totalHours}h logged</p>
+      </div>
       
       {/* Stats Overview */}
       <div className="grid grid-cols-3 gap-3">
@@ -1796,6 +1807,13 @@ const SkillsTab = ({ data, actions }: TabProps) => {
 const WealthTab = ({ data, actions }: TabProps) => {
   const accent = data.settings.accentColor || 'teal';
   const [showAddIncome, setShowAddIncome] = useState(false);
+
+  // Back button
+  const BackButton = () => (
+    <button onClick={() => actions.setActiveTab('settings')} className="flex items-center gap-1 text-sm text-slate-500 mb-4">
+      <ChevronUp size={16} className="rotate-[-90deg]"/> Back
+    </button>
+  );
   const [newIncomeName, setNewIncomeName] = useState('');
   const [newIncomeAmount, setNewIncomeAmount] = useState('');
   const [newIncomeType, setNewIncomeType] = useState<'freelance' | 'app' | 'job' | 'other'>('freelance');
@@ -1822,8 +1840,12 @@ const WealthTab = ({ data, actions }: TabProps) => {
   const milestoneProgress = (totalEarnings / nextMilestone.target) * 100;
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-      <SectionHeader title="Wealth Building" subtitle="Track your income & projects" />
+    <div className="space-y-4">
+      <BackButton />
+      <div className="text-center mb-2">
+        <h2 className="text-xl font-bold">Wealth</h2>
+        <p className="text-sm text-slate-400">₹{totalEarnings.toLocaleString()} earned</p>
+      </div>
 
       {/* Main Stats */}
       <div className={`bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-2xl p-5`}>
@@ -1989,35 +2011,9 @@ const WealthTab = ({ data, actions }: TabProps) => {
 const SettingsTab = ({ data, actions }: TabProps) => {
   const accent = data.settings.accentColor || 'teal';
   const colors: AccentColor[] = ['teal', 'cyan', 'violet', 'rose', 'orange'];
-  const widgets: { id: WidgetType, label: string }[] = [
-    { id: 'welcome', label: 'Welcome Banner' },
-    { id: 'priority', label: 'Critical Missions' },
-    { id: 'tasks', label: 'Daily Operations' },
-    { id: 'exams', label: 'Exam Countdown' },
-    { id: 'calendar', label: 'Schedule Matrix' },
-    { id: 'stats', label: 'Quick Stats' },
-    { id: 'chart', label: 'Weekly Habits Chart' },
-    { id: 'habits', label: 'Daily Quests' },
-    { id: 'discipline', label: 'Discipline Tracker' },
-    { id: 'pomodoro', label: 'Focus Sessions' },
-    { id: 'skills', label: 'Skill Progress' },
-    { id: 'wealth', label: 'Wealth Summary' },
-  ];
-
-  const toggleSection = (section: keyof typeof data.settings.activeSections) => {
-    actions.setData((prev: AppData) => ({
-      ...prev,
-      settings: {
-        ...prev.settings,
-        activeSections: { ...prev.settings.activeSections, [section]: !prev.settings.activeSections[section] }
-      }
-    }));
-  };
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-      <SectionHeader title="More" subtitle="Skills, Wealth & Settings" />
-      
+    <div className="space-y-4">
       {/* Quick Access to Skills & Wealth */}
       <div className="grid grid-cols-2 gap-3">
         <button 
@@ -2038,8 +2034,9 @@ const SettingsTab = ({ data, actions }: TabProps) => {
         </button>
       </div>
       
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <h4 className="font-bold mb-4 flex items-center gap-2"><Palette size={18} className={`text-${accent}-500`} /> Theme Color</h4>
+      {/* Theme */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+          <p className="text-sm font-bold mb-3">Theme Color</p>
           <div className="flex gap-3">
               {colors.map(c => (
                 <button 
@@ -2051,32 +2048,56 @@ const SettingsTab = ({ data, actions }: TabProps) => {
           </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <h4 className="font-bold mb-4 flex items-center gap-2"><ListFilter size={18} className={`text-${accent}-500`} /> Navigation Modules</h4>
-          <div className="space-y-2">
-            {Object.entries(data.settings.activeSections).map(([key, isActive]) => (
-              <button key={key} onClick={() => toggleSection(key as any)} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${isActive ? `bg-${accent}-500/10 border-${accent}-500/20 text-${accent}-600` : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400'}`}>
-                <span className="text-sm font-bold capitalize">{key}</span>
-                {isActive ? <CheckCircle2 size={16} /> : <X size={16} />}
-              </button>
-            ))}
+      {/* Profile Info */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+        <p className="text-sm font-bold mb-3">Profile</p>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-slate-400">Name</span>
+            <span className="font-bold">{data.user.name || 'Not set'}</span>
           </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Level</span>
+            <span className="font-bold">{Math.floor(data.stats.xp / 1000) + 1}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Total XP</span>
+            <span className="font-bold">{data.stats.xp.toLocaleString()}</span>
+          </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Streak</span>
+            <span className="font-bold text-orange-500">{data.stats.streak} days</span>
+          </div>
+        </div>
       </div>
 
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <h4 className="font-bold mb-4 flex items-center gap-2"><Layers size={18} className={`text-${accent}-500`} /> Home Widgets</h4>
-          <div className="space-y-3">
-             {widgets.map(w => {
-               const active = data.settings.dashboardLayout.includes(w.id);
-               return (
-                 <button key={w.id} onClick={() => actions.setData((prev: AppData) => ({ ...prev, settings: { ...prev.settings, dashboardLayout: active ? prev.settings.dashboardLayout.filter(i => i !== w.id) : [...prev.settings.dashboardLayout, w.id] }}))} className={`w-full flex items-center justify-between p-3 rounded-xl border transition-all ${active ? `bg-${accent}-500/10 border-${accent}-500/20 text-${accent}-600` : 'bg-slate-50 dark:bg-slate-950 border-slate-200 dark:border-slate-800 text-slate-400 opacity-60'}`}>
-                    <span className="text-xs font-bold">{w.label}</span>
-                    {active ? <Eye size={14}/> : <EyeOff size={14}/>}
-                 </button>
-               );
-             })}
+      {/* App Info */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+        <p className="text-sm font-bold mb-3">About</p>
+        <div className="space-y-2 text-sm">
+          <div className="flex justify-between">
+            <span className="text-slate-400">Version</span>
+            <span className="font-bold">{APP_VERSION}</span>
           </div>
+          <div className="flex justify-between">
+            <span className="text-slate-400">Made for</span>
+            <span className="font-bold">Kunal 🚀</span>
+          </div>
+        </div>
       </div>
+
+      {/* Reset Data */}
+      <button 
+        onClick={() => {
+          if (confirm('Are you sure? This will reset ALL your data!')) {
+            localStorage.removeItem('7k_ecosystem_growth_v2');
+            window.location.reload();
+          }
+        }}
+        className="w-full p-3 border border-rose-500/30 text-rose-500 rounded-xl text-sm font-bold"
+      >
+        Reset All Data
+      </button>
     </div>
   );
 };
