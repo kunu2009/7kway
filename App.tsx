@@ -198,6 +198,98 @@ const PhysicalTab = ({ data, actions }: TabProps) => {
         ))}
       </div>
 
+      {/* Height Maximization Protocol */}
+      <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-2xl p-5">
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <h4 className="text-[10px] font-black text-cyan-500 uppercase flex items-center gap-1">
+              <Ruler size={12}/> Height Maximization Protocol
+            </h4>
+            <p className="text-xs text-slate-500 mt-1">Track progress towards 5'9"-5'10" goal</p>
+          </div>
+          <div className="text-right">
+            <p className="text-2xl font-black text-slate-900 dark:text-white">{data.physical.height || data.user.height}</p>
+            <p className="text-[9px] text-slate-400">cm current</p>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-3 gap-3 mb-4">
+          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl text-center">
+            <p className="text-[9px] font-bold text-slate-400">Target</p>
+            <p className="text-lg font-black text-cyan-500">175-178</p>
+            <p className="text-[8px] text-slate-400">cm</p>
+          </div>
+          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl text-center">
+            <p className="text-[9px] font-bold text-slate-400">To Grow</p>
+            <p className="text-lg font-black text-orange-500">{Math.max(0, 175 - (data.physical.height || data.user.height))}</p>
+            <p className="text-[8px] text-slate-400">cm</p>
+          </div>
+          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl text-center">
+            <p className="text-[9px] font-bold text-slate-400">Hanging</p>
+            <p className="text-lg font-black text-violet-500">{data.physical.hangingMinutes || 0}</p>
+            <p className="text-[8px] text-slate-400">min/day</p>
+          </div>
+        </div>
+        
+        <div className="space-y-2">
+          <div className="flex items-center justify-between p-2 bg-white/50 dark:bg-slate-950/30 rounded-lg">
+            <span className="text-[10px] font-bold">Daily Hanging (10-20min goal)</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => actions.updatePhysicalStat('hangingMinutes', Math.max(0, (data.physical.hangingMinutes || 0) - 1))} className="p-1 bg-slate-200 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+              <span className="text-xs font-black w-8 text-center">{data.physical.hangingMinutes || 0}</span>
+              <button onClick={() => actions.updatePhysicalStat('hangingMinutes', (data.physical.hangingMinutes || 0) + 1)} className="p-1 bg-cyan-500 text-white rounded"><Plus size={10}/></button>
+            </div>
+          </div>
+          <div className="flex items-center justify-between p-2 bg-white/50 dark:bg-slate-950/30 rounded-lg">
+            <span className="text-[10px] font-bold">Height (cm)</span>
+            <div className="flex items-center gap-2">
+              <button onClick={() => actions.updatePhysicalStat('height', Math.max(0, (data.physical.height || data.user.height) - 0.5))} className="p-1 bg-slate-200 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+              <span className="text-xs font-black w-12 text-center">{data.physical.height || data.user.height}</span>
+              <button onClick={() => actions.updatePhysicalStat('height', (data.physical.height || data.user.height) + 0.5)} className="p-1 bg-cyan-500 text-white rounded"><Plus size={10}/></button>
+            </div>
+          </div>
+        </div>
+        
+        <div className="mt-3 p-2 bg-cyan-500/10 rounded-lg">
+          <p className="text-[9px] text-cyan-600 dark:text-cyan-400 font-bold text-center">
+            🌙 Sleep 10pm-2am for max HGH release | 💧 Stay hydrated | 🧘 Stretch spine daily
+          </p>
+        </div>
+      </div>
+
+      {/* Body Measurements */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+        <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
+          <Activity size={18} className="text-rose-500" /> Body Measurements
+        </h4>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { key: 'chest', label: 'Chest', color: 'rose' },
+            { key: 'waist', label: 'Waist', color: 'orange' },
+            { key: 'biceps', label: 'Biceps', color: 'blue' },
+            { key: 'shoulders', label: 'Shoulders', color: 'violet' },
+            { key: 'thighs', label: 'Thighs', color: 'emerald' },
+            { key: 'calves', label: 'Calves', color: 'cyan' },
+          ].map(m => (
+            <div key={m.key} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950 rounded-xl">
+              <div>
+                <p className={`text-[9px] font-black text-${m.color}-500 uppercase`}>{m.label}</p>
+                <p className="text-sm font-black text-slate-900 dark:text-white">
+                  {(data.physical.measurements as any)?.[m.key] || 0} <span className="text-[9px] text-slate-400">cm</span>
+                </p>
+              </div>
+              <div className="flex flex-col gap-1">
+                <button onClick={() => actions.updateMeasurement(m.key, ((data.physical.measurements as any)?.[m.key] || 0) + 0.5)} className={`p-1 bg-${m.color}-500/10 rounded`}><Plus size={10} className={`text-${m.color}-500`}/></button>
+                <button onClick={() => actions.updateMeasurement(m.key, Math.max(0, ((data.physical.measurements as any)?.[m.key] || 0) - 0.5))} className="p-1 bg-slate-200 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+              </div>
+            </div>
+          ))}
+        </div>
+        <p className="text-[9px] text-slate-400 text-center mt-3">
+          📏 Measure weekly for best tracking. Target: Big arms, small waist, wide shoulders
+        </p>
+      </div>
+
       <div className="grid grid-cols-2 gap-4">
           {[
               { id: 'waterIntake', l: 'Water', val: data.physical.waterIntake, unit: 'gl', icon: Droplets, color: 'blue' },
@@ -823,8 +915,12 @@ const SettingsTab = ({ data, actions }: TabProps) => {
     { id: 'exams', label: 'Exam Countdown' },
     { id: 'calendar', label: 'Schedule Matrix' },
     { id: 'stats', label: 'Quick Stats' },
-    { id: 'chart', label: 'Growth Chart' },
+    { id: 'chart', label: 'Weekly Habits Chart' },
     { id: 'habits', label: 'Daily Quests' },
+    { id: 'discipline', label: 'Discipline Tracker' },
+    { id: 'pomodoro', label: 'Focus Sessions' },
+    { id: 'skills', label: 'Skill Progress' },
+    { id: 'wealth', label: 'Wealth Summary' },
   ];
 
   const toggleSection = (section: keyof typeof data.settings.activeSections) => {
@@ -970,6 +1066,13 @@ const App: React.FC = () => {
       ...prev, 
       physical: { ...prev.physical, pbs: { ...prev.physical.pbs, [key]: val } } 
     })),
+    updateMeasurement: (key: string, val: number) => setData(prev => ({
+      ...prev,
+      physical: { 
+        ...prev.physical, 
+        measurements: { ...(prev.physical.measurements || {}), [key]: val } 
+      }
+    })),
     addXP: (amt: number, lbl: string) => {
       setData(prev => {
         const newLog: LogEntry = {
@@ -1105,7 +1208,90 @@ const App: React.FC = () => {
     priority: <div key="priority-w" className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl mb-6"><h4 className="text-[10px] font-black text-rose-500 uppercase mb-2">Priority Board</h4><p className="text-xs font-bold text-slate-700 dark:text-slate-300">Complete Board Prep for 2 hours today.</p></div>,
     tasks: <div key="tasks-w" className="mb-6"><h4 className="text-xs font-black text-slate-400 uppercase mb-3">Daily Tasks</h4><div className="space-y-2">{data.tasks.map(t => <div key={t.id} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800"><div className="w-4 h-4 rounded border border-slate-300 dark:border-slate-700" /> <span className="text-xs">{t.title}</span></div>)}</div></div>,
     calendar: <div key="calendar-w" className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-2xl mb-6 text-center"><p className="text-[10px] font-black text-indigo-500 uppercase">System Schedule</p><p className="text-xs font-bold mt-1">{new Date().toDateString()}</p></div>,
-    chart: <div key="chart-w" className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 h-40 mb-6 flex items-center justify-center text-slate-400 text-[10px] font-bold uppercase">Growth Matrix Visualizer</div>
+    chart: (() => {
+      // Generate last 7 days habit completion data
+      const last7Days = Array.from({ length: 7 }, (_, i) => {
+        const date = new Date();
+        date.setDate(date.getDate() - (6 - i));
+        const dateStr = date.toISOString().split('T')[0];
+        const completed = data.habits.filter(h => h.completedDates.includes(dateStr)).length;
+        return {
+          day: ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'][date.getDay()],
+          completed,
+          total: data.habits.length
+        };
+      });
+      return (
+        <div key="chart-w" className="bg-white dark:bg-slate-900 p-4 rounded-2xl border border-slate-200 dark:border-slate-800 mb-6">
+          <h4 className="text-[10px] font-black text-slate-400 uppercase mb-3">Weekly Habit Completion</h4>
+          <ResponsiveContainer width="100%" height={120}>
+            <BarChart data={last7Days}>
+              <XAxis dataKey="day" axisLine={false} tickLine={false} tick={{ fontSize: 10, fill: '#94a3b8' }} />
+              <Tooltip 
+                contentStyle={{ background: '#1e293b', border: 'none', borderRadius: 8, fontSize: 10 }}
+                labelStyle={{ color: '#fff' }}
+              />
+              <Bar dataKey="completed" fill={`var(--${accent}-500, #14b8a6)`} radius={[4, 4, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+          <div className="flex justify-between mt-2 text-[9px] text-slate-400">
+            <span>🔥 Streak: {data.stats.streak} days</span>
+            <span>📊 Avg: {(last7Days.reduce((a, d) => a + d.completed, 0) / 7).toFixed(1)}/day</span>
+          </div>
+        </div>
+      );
+    })(),
+    discipline: <div key="discipline-w" className="bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-rose-500/20 p-4 rounded-2xl mb-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-[9px] font-black text-rose-500 uppercase">NoFap Streak</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white">{data.discipline.noFapStreak} <span className="text-sm text-slate-400">days</span></p>
+        </div>
+        <div className="text-right">
+          <p className="text-[9px] font-black text-slate-400">Best: {data.discipline.noFapBestStreak} days</p>
+          <button onClick={() => actions.incrementNoFapStreak()} className="mt-1 px-3 py-1 bg-emerald-500 text-white text-[9px] font-bold rounded-full">✓ Day Done</button>
+        </div>
+      </div>
+    </div>,
+    pomodoro: <div key="pomodoro-w" className={`bg-${accent}-500/10 border border-${accent}-500/20 p-4 rounded-2xl mb-6`}>
+      <div className="flex justify-between items-center">
+        <div>
+          <p className={`text-[9px] font-black text-${accent}-500 uppercase`}>Focus Sessions Today</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white">
+            {data.pomodoroSessions.filter(s => s.completedAt.split('T')[0] === new Date().toISOString().split('T')[0]).length}
+          </p>
+        </div>
+        <Timer size={24} className={`text-${accent}-500`} />
+      </div>
+      <p className="text-[9px] text-slate-400 mt-2">Go to Mind tab to start a focus session</p>
+    </div>,
+    skills: <div key="skills-w" className="bg-violet-500/10 border border-violet-500/20 p-4 rounded-2xl mb-6">
+      <div className="flex justify-between items-center mb-3">
+        <p className="text-[9px] font-black text-violet-500 uppercase">Skill Progress</p>
+        <p className="text-[9px] text-slate-400">{data.skills.reduce((a, s) => a + s.hoursLogged, 0)} total hours</p>
+      </div>
+      <div className="space-y-2">
+        {data.skills.slice(0, 3).map(skill => (
+          <div key={skill.id} className="flex items-center gap-2">
+            <div className="flex-1 h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+              <div className="h-full bg-violet-500" style={{ width: `${Math.min(100, (skill.hoursLogged / skill.targetHours) * 100)}%` }} />
+            </div>
+            <span className="text-[9px] font-bold w-16 truncate">{skill.name}</span>
+          </div>
+        ))}
+      </div>
+    </div>,
+    wealth: <div key="wealth-w" className="bg-emerald-500/10 border border-emerald-500/20 p-4 rounded-2xl mb-6">
+      <div className="flex justify-between items-center">
+        <div>
+          <p className="text-[9px] font-black text-emerald-500 uppercase">Total Earnings</p>
+          <p className="text-2xl font-black text-slate-900 dark:text-white flex items-center">
+            <IndianRupee size={18}/>{data.totalEarnings.toLocaleString()}
+          </p>
+        </div>
+        <Wallet size={24} className="text-emerald-500" />
+      </div>
+    </div>
   };
 
   const TabButton = ({ id, icon: Icon, label }: { id: any, icon: any, label: string }) => {

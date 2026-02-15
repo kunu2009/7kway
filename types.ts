@@ -106,7 +106,7 @@ export interface Task {
   createdAt: string;
 }
 
-export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits' | 'exams' | 'calendar' | 'priority' | 'tasks' | 'pomodoro' | 'nofap';
+export type WidgetType = 'welcome' | 'stats' | 'chart' | 'habits' | 'exams' | 'calendar' | 'priority' | 'tasks' | 'pomodoro' | 'nofap' | 'discipline' | 'skills' | 'wealth';
 
 export type AccentColor = 'teal' | 'cyan' | 'violet' | 'rose' | 'orange';
 
