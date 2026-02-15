@@ -232,187 +232,206 @@ interface TabProps {
 
 const PhysicalTab = ({ data, actions }: TabProps) => {
   const accent = data.settings.accentColor || 'teal';
-  const bmi = calculateBMI(data.user.height, data.physical.weight);
-  const tdee = calculateTDEE(data.user.height, data.physical.weight, data.user.age);
+  const [activeSection, setActiveSection] = useState<string | null>('protocol');
+  const currentHour = new Date().getHours();
+  const today = new Date().toISOString().split('T')[0];
   
-  const getBmiStatus = () => {
-    if (bmi < 18.5) return { label: 'Underweight', color: 'orange' };
-    if (bmi < 25) return { label: 'Normal', color: 'emerald' };
-    if (bmi < 30) return { label: 'Overweight', color: 'rose' };
-    return { label: 'Obese', color: 'red' };
-  };
-  const status = getBmiStatus();
+  // Get today's protocol
+  const todayProtocol = data.protocols.find(p => p.date === today);
+  const morningTasks = todayProtocol?.morningTasks || [];
+  const nightTasks = todayProtocol?.nightTasks || [];
+  const morningDone = morningTasks.filter(t => t.completed).length;
+  const nightDone = nightTasks.filter(t => t.completed).length;
+  
+  const todayWorkouts = data.workouts.filter(w => w.date.split('T')[0] === today).length;
+
+  const Section = ({ id, title, icon: Icon, color, stat, children }: any) => (
+    <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+      <button 
+        onClick={() => setActiveSection(activeSection === id ? null : id)}
+        className={`w-full flex items-center justify-between p-4 transition-all ${activeSection === id ? `bg-${color}-500/10` : 'bg-white dark:bg-slate-900'}`}
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={20} className={`text-${color}-500`}/>
+          <span className="font-bold">{title}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {stat && <span className={`text-sm font-black text-${color}-500`}>{stat}</span>}
+          <ChevronDown size={16} className={`text-slate-400 transition-transform ${activeSection === id ? 'rotate-180' : ''}`}/>
+        </div>
+      </button>
+      {activeSection === id && (
+        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
+          {children}
+        </div>
+      )}
+    </div>
+  );
 
   return (
-    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-      <div className={`bg-gradient-to-br from-${accent}-500/10 to-indigo-500/10 border border-${accent}-500/20 rounded-2xl p-6 relative overflow-hidden shadow-sm`}>
-         <div className="flex justify-between items-start mb-4">
-            <div>
-               <h3 className="text-xl font-black text-slate-900 dark:text-white uppercase tracking-tight">{data.user.name || 'Agent'}</h3>
-               <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">{data.user.goal.replace('-', ' ')} build protocol</p>
-            </div>
-            <div className={`px-2 py-1 rounded bg-${status.color}-500/10 border border-${status.color}-500/20 text-${status.color}-500 text-[10px] font-black uppercase`}>
-                BMI: {bmi}
-            </div>
-         </div>
-         <div className="grid grid-cols-2 gap-4">
-            <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl border border-white dark:border-slate-800">
-               <span className="text-[9px] font-black text-slate-400 uppercase block">Maintenance</span>
-               <div className="flex items-baseline gap-1">
-                 <span className="text-lg font-black text-slate-900 dark:text-white">{tdee}</span>
-                 <span className="text-[8px] text-slate-500 uppercase">kcal</span>
-               </div>
-            </div>
-            <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl border border-white dark:border-slate-800">
-               <span className="text-[9px] font-black text-slate-400 uppercase block">Current Weight</span>
-               <div className="flex items-baseline gap-1">
-                 <span className="text-lg font-black text-slate-900 dark:text-white">{data.physical.weight}</span>
-                 <span className="text-[8px] text-slate-500 uppercase">kg</span>
-               </div>
-            </div>
-         </div>
-      </div>
-
-      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-        {['bulk', 'shredded', 'sleeper-build', 'athletic'].map(g => (
-          <button key={g} onClick={() => actions.setData((prev: AppData) => ({ ...prev, user: { ...prev.user, goal: g as FitnessGoal }}))} className={`whitespace-nowrap px-4 py-2 rounded-full text-[10px] font-black uppercase tracking-widest border transition-all ${data.user.goal === g ? `bg-${accent}-500 text-white border-${accent}-500` : 'bg-white dark:bg-slate-900 text-slate-500 border-slate-200 dark:border-slate-800'}`}>{g.replace('-', ' ')}</button>
-        ))}
-      </div>
-
-      {/* Height Maximization Protocol */}
-      <div className="bg-gradient-to-br from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-2xl p-5">
-        <div className="flex justify-between items-start mb-4">
-          <div>
-            <h4 className="text-[10px] font-black text-cyan-500 uppercase flex items-center gap-1">
-              <Ruler size={12}/> Height Maximization Protocol
-            </h4>
-            <p className="text-xs text-slate-500 mt-1">Track progress towards 5'9"-5'10" goal</p>
-          </div>
-          <div className="text-right">
-            <p className="text-2xl font-black text-slate-900 dark:text-white">{data.physical.height || data.user.height}</p>
-            <p className="text-[9px] text-slate-400">cm current</p>
-          </div>
+    <div className="space-y-3">
+      {/* Quick Stats Row */}
+      <div className="flex gap-3 mb-2">
+        <div className="flex-1 bg-violet-500/10 rounded-xl p-3 text-center">
+          <p className="text-2xl font-black text-violet-500">{data.discipline.noFapStreak}</p>
+          <p className="text-[9px] text-slate-400">Clean Days</p>
         </div>
-        
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl text-center">
-            <p className="text-[9px] font-bold text-slate-400">Target</p>
-            <p className="text-lg font-black text-cyan-500">175-178</p>
-            <p className="text-[8px] text-slate-400">cm</p>
-          </div>
-          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl text-center">
-            <p className="text-[9px] font-bold text-slate-400">To Grow</p>
-            <p className="text-lg font-black text-orange-500">{Math.max(0, 175 - (data.physical.height || data.user.height))}</p>
-            <p className="text-[8px] text-slate-400">cm</p>
-          </div>
-          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl text-center">
-            <p className="text-[9px] font-bold text-slate-400">Hanging</p>
-            <p className="text-lg font-black text-violet-500">{data.physical.hangingMinutes || 0}</p>
-            <p className="text-[8px] text-slate-400">min/day</p>
-          </div>
+        <div className="flex-1 bg-blue-500/10 rounded-xl p-3 text-center">
+          <p className="text-2xl font-black text-blue-500">{todayWorkouts}</p>
+          <p className="text-[9px] text-slate-400">Workouts Today</p>
         </div>
-        
-        <div className="space-y-2">
-          <div className="flex items-center justify-between p-2 bg-white/50 dark:bg-slate-950/30 rounded-lg">
-            <span className="text-[10px] font-bold">Daily Hanging (10-20min goal)</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => actions.updatePhysicalStat('hangingMinutes', Math.max(0, (data.physical.hangingMinutes || 0) - 1))} className="p-1 bg-slate-200 dark:bg-slate-800 rounded"><Minus size={10}/></button>
-              <span className="text-xs font-black w-8 text-center">{data.physical.hangingMinutes || 0}</span>
-              <button onClick={() => actions.updatePhysicalStat('hangingMinutes', (data.physical.hangingMinutes || 0) + 1)} className="p-1 bg-cyan-500 text-white rounded"><Plus size={10}/></button>
-            </div>
-          </div>
-          <div className="flex items-center justify-between p-2 bg-white/50 dark:bg-slate-950/30 rounded-lg">
-            <span className="text-[10px] font-bold">Height (cm)</span>
-            <div className="flex items-center gap-2">
-              <button onClick={() => actions.updatePhysicalStat('height', Math.max(0, (data.physical.height || data.user.height) - 0.5))} className="p-1 bg-slate-200 dark:bg-slate-800 rounded"><Minus size={10}/></button>
-              <span className="text-xs font-black w-12 text-center">{data.physical.height || data.user.height}</span>
-              <button onClick={() => actions.updatePhysicalStat('height', (data.physical.height || data.user.height) + 0.5)} className="p-1 bg-cyan-500 text-white rounded"><Plus size={10}/></button>
-            </div>
-          </div>
-        </div>
-        
-        <div className="mt-3 p-2 bg-cyan-500/10 rounded-lg">
-          <p className="text-[9px] text-cyan-600 dark:text-cyan-400 font-bold text-center">
-            🌙 Sleep 10pm-2am for max HGH release | 💧 Stay hydrated | 🧘 Stretch spine daily
-          </p>
+        <div className="flex-1 bg-cyan-500/10 rounded-xl p-3 text-center">
+          <p className="text-2xl font-black text-cyan-500">{data.physical.hangingMinutes || 0}</p>
+          <p className="text-[9px] text-slate-400">Hang Min</p>
         </div>
       </div>
 
-      {/* Body Measurements */}
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-        <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2">
-          <Activity size={18} className="text-rose-500" /> Body Measurements
-        </h4>
+      {/* Protocol Section */}
+      <Section 
+        id="protocol" 
+        title={currentHour < 14 ? "Morning Protocol" : "Night Protocol"} 
+        icon={currentHour < 14 ? Sunrise : Moon} 
+        color={currentHour < 14 ? "orange" : "violet"}
+        stat={currentHour < 14 ? `${morningDone}/${morningTasks.length}` : `${nightDone}/${nightTasks.length}`}
+      >
+        <ProtocolWidget data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* Workout Logger */}
+      <Section id="workout" title="Log Workout" icon={Dumbbell} color="blue" stat={`${todayWorkouts} today`}>
+        <WorkoutLogger data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* NoFap */}
+      <Section id="nofap" title="NoFap Tracker" icon={Shield} color="rose" stat={`${data.discipline.noFapStreak}d`}>
+        <NoFapTracker data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* Body Stats - Simple */}
+      <Section id="stats" title="Body Stats" icon={Activity} color="emerald">
         <div className="grid grid-cols-2 gap-3">
           {[
-            { key: 'chest', label: 'Chest', color: 'rose' },
-            { key: 'waist', label: 'Waist', color: 'orange' },
-            { key: 'biceps', label: 'Biceps', color: 'blue' },
-            { key: 'shoulders', label: 'Shoulders', color: 'violet' },
-            { key: 'thighs', label: 'Thighs', color: 'emerald' },
-            { key: 'calves', label: 'Calves', color: 'cyan' },
-          ].map(m => (
-            <div key={m.key} className="flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-950 rounded-xl">
+            { id: 'weight', label: 'Weight', val: data.physical.weight, unit: 'kg' },
+            { id: 'height', label: 'Height', val: data.physical.height || data.user.height, unit: 'cm' },
+            { id: 'waterIntake', label: 'Water', val: data.physical.waterIntake, unit: 'gl' },
+            { id: 'sleepHours', label: 'Sleep', val: data.physical.sleepHours, unit: 'h' },
+          ].map(item => (
+            <div key={item.id} className="flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-lg">
               <div>
-                <p className={`text-[9px] font-black text-${m.color}-500 uppercase`}>{m.label}</p>
-                <p className="text-sm font-black text-slate-900 dark:text-white">
-                  {(data.physical.measurements as any)?.[m.key] || 0} <span className="text-[9px] text-slate-400">cm</span>
-                </p>
+                <p className="text-[9px] text-slate-400">{item.label}</p>
+                <p className="font-bold">{item.val} <span className="text-[9px] text-slate-400">{item.unit}</span></p>
               </div>
-              <div className="flex flex-col gap-1">
-                <button onClick={() => actions.updateMeasurement(m.key, ((data.physical.measurements as any)?.[m.key] || 0) + 0.5)} className={`p-1 bg-${m.color}-500/10 rounded`}><Plus size={10} className={`text-${m.color}-500`}/></button>
-                <button onClick={() => actions.updateMeasurement(m.key, Math.max(0, ((data.physical.measurements as any)?.[m.key] || 0) - 0.5))} className="p-1 bg-slate-200 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+              <div className="flex gap-1">
+                <button onClick={() => actions.updatePhysicalStat(item.id as any, Math.max(0, item.val - 1))} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+                <button onClick={() => actions.updatePhysicalStat(item.id as any, item.val + 1)} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded"><Plus size={10}/></button>
               </div>
             </div>
           ))}
         </div>
-        <p className="text-[9px] text-slate-400 text-center mt-3">
-          📏 Measure weekly for best tracking. Target: Big arms, small waist, wide shoulders
-        </p>
-      </div>
+      </Section>
 
-      <div className="grid grid-cols-2 gap-4">
-          {[
-              { id: 'waterIntake', l: 'Water', val: data.physical.waterIntake, unit: 'gl', icon: Droplets, color: 'blue' },
-              { id: 'sleepHours', l: 'Sleep', val: data.physical.sleepHours, unit: 'h', icon: Moon, color: 'violet' },
-              { id: 'proteinIntake', l: 'Protein', val: data.physical.proteinIntake, unit: 'g', icon: Utensils, color: 'rose' },
-              { id: 'weight', l: 'Weight', val: data.physical.weight, unit: 'kg', icon: Scale, color: 'emerald' }
-          ].map(item => (
-            <div key={item.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
-                <div className="flex justify-between items-center mb-1">
-                   <span className="text-[9px] font-black text-slate-400 uppercase">{item.l}</span>
-                   <item.icon size={14} className={`text-${item.color}-500`} />
-                </div>
-                <div className="flex items-center justify-between mt-2">
-                   <button onClick={() => actions.updatePhysicalStat(item.id as any, Math.max(0, item.val - 1))} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg"><Minus size={12}/></button>
-                   <div className="text-center font-black">{item.val}</div>
-                   <button onClick={() => actions.updatePhysicalStat(item.id as any, item.val + 1)} className="p-1.5 bg-slate-100 dark:bg-slate-800 rounded-lg"><Plus size={12}/></button>
-                </div>
-            </div>
-          ))}
-      </div>
-
-      {/* Discipline Section */}
-      <NoFapTracker data={data} actions={actions} accent={accent} />
-
-      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><ScanFace size={18} className="text-purple-500" /> Face Structure Enhancement</h4>
-          <div className="space-y-4">
-             {EXERCISE_LIBRARY.face.map(ex => (
-               <div key={ex.name} className="border-l-2 border-purple-500/30 pl-4 space-y-1">
-                  <p className="font-bold text-sm text-slate-800 dark:text-slate-100">{ex.name}</p>
-                  <p className="text-[9px] text-purple-500 font-bold uppercase">{ex.benefit}</p>
-                  <p className="text-[10px] text-slate-500">{ex.steps.join(' • ')}</p>
-               </div>
-             ))}
+      {/* Cold Shower Quick Action */}
+      <button 
+        onClick={() => actions.incrementColdShower()}
+        className="w-full flex items-center justify-between p-4 bg-cyan-500/10 border border-cyan-500/20 rounded-xl"
+      >
+        <div className="flex items-center gap-3">
+          <Snowflake size={20} className="text-cyan-500"/>
+          <div>
+            <p className="font-bold text-left">Cold Shower</p>
+            <p className="text-[10px] text-slate-400">{data.discipline.coldShowers} total this week</p>
           </div>
+        </div>
+        <span className="text-sm font-black text-cyan-500">+25 XP</span>
+      </button>
+    </div>
+  );
+};
+
+// --- MIND TAB (Simplified) ---
+const MindTab = ({ data, actions }: TabProps) => {
+  const accent = data.settings.accentColor || 'teal';
+  const [activeSection, setActiveSection] = useState<string | null>('pomodoro');
+  const today = new Date().toISOString().split('T')[0];
+  
+  const todaySessions = data.pomodoroSessions.filter(s => s.completedAt.split('T')[0] === today).length;
+  const todayCheckIn = data.checkIns.find(c => c.date === today);
+  
+  // Get nearest exam
+  const nearestExam = data.exams.reduce((nearest, exam) => {
+    const daysLeft = Math.ceil((new Date(exam.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
+    if (daysLeft > 0 && (!nearest || daysLeft < nearest.daysLeft)) {
+      return { exam, daysLeft };
+    }
+    return nearest;
+  }, null as { exam: Exam; daysLeft: number } | null);
+
+  const Section = ({ id, title, icon: Icon, color, stat, children }: any) => (
+    <div className="border border-slate-200 dark:border-slate-800 rounded-xl overflow-hidden">
+      <button 
+        onClick={() => setActiveSection(activeSection === id ? null : id)}
+        className={`w-full flex items-center justify-between p-4 transition-all ${activeSection === id ? `bg-${color}-500/10` : 'bg-white dark:bg-slate-900'}`}
+      >
+        <div className="flex items-center gap-3">
+          <Icon size={20} className={`text-${color}-500`}/>
+          <span className="font-bold">{title}</span>
+        </div>
+        <div className="flex items-center gap-3">
+          {stat && <span className={`text-sm font-black text-${color}-500`}>{stat}</span>}
+          <ChevronDown size={16} className={`text-slate-400 transition-transform ${activeSection === id ? 'rotate-180' : ''}`}/>
+        </div>
+      </button>
+      {activeSection === id && (
+        <div className="p-4 bg-slate-50 dark:bg-slate-950 border-t border-slate-200 dark:border-slate-800">
+          {children}
+        </div>
+      )}
+    </div>
+  );
+
+  return (
+    <div className="space-y-3">
+      {/* Quick Stats Row */}
+      <div className="flex gap-3 mb-2">
+        <div className="flex-1 bg-blue-500/10 rounded-xl p-3 text-center">
+          <p className="text-2xl font-black text-blue-500">{todaySessions}</p>
+          <p className="text-[9px] text-slate-400">Focus Today</p>
+        </div>
+        <div className="flex-1 bg-amber-500/10 rounded-xl p-3 text-center">
+          <p className="text-2xl font-black text-amber-500">{todayCheckIn?.morning.completed ? '✓' : '○'}</p>
+          <p className="text-[9px] text-slate-400">Check-in</p>
+        </div>
+        {nearestExam && (
+          <div className={`flex-1 ${nearestExam.daysLeft <= 7 ? 'bg-rose-500/10' : 'bg-emerald-500/10'} rounded-xl p-3 text-center`}>
+            <p className={`text-2xl font-black ${nearestExam.daysLeft <= 7 ? 'text-rose-500' : 'text-emerald-500'}`}>{nearestExam.daysLeft}</p>
+            <p className="text-[9px] text-slate-400">Days to Exam</p>
+          </div>
+        )}
       </div>
 
-      {/* Quick Workout Logger */}
-      <WorkoutLogger data={data} actions={actions} accent={accent} />
+      {/* Pomodoro Section */}
+      <Section id="pomodoro" title="Focus Timer" icon={Timer} color="blue" stat={`${todaySessions} today`}>
+        <PomodoroTimer data={data} actions={actions} accent={accent} />
+      </Section>
 
-      {/* Morning/Night Protocol */}
-      <ProtocolWidget data={data} actions={actions} accent={accent} />
+      {/* Daily Check-in */}
+      <Section id="checkin" title="Daily Check-in" icon={CalendarIcon} color="amber" stat={todayCheckIn?.morning.completed ? '✓' : ''}>
+        <DailyCheckInWidget data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* Study Topics */}
+      <Section id="topics" title="Study Topics" icon={BookOpen} color="violet">
+        <StudyTopicsWidget data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* Exams */}
+      {data.exams.length > 0 && (
+        <Section id="exams" title="Exams" icon={GraduationCap} color="rose" stat={nearestExam ? `T-${nearestExam.daysLeft}d` : ''}>
+          <div className="space-y-3">
+            {data.exams.map(exam => <ExamItem key={exam.id} exam={exam} onAddMaterial={actions.addStudyMaterial} onDeleteMaterial={actions.deleteStudyMaterial} accent={accent} />)}
+          </div>
+        </Section>
+      )}
     </div>
   );
 };
@@ -2645,12 +2664,7 @@ const App: React.FC = () => {
           <main className="flex-1 p-4 overflow-y-auto">
             {activeTab === 'dashboard' && <SmartHomeScreen data={data} actions={actions} accent={accent} />}
             {activeTab === 'physical' && <PhysicalTab data={data} actions={actions} />}
-            {activeTab === 'intelligence' && (
-              <div className="space-y-6">
-                <PomodoroTimer data={data} actions={actions} accent={accent} />
-                <IntelligenceSection data={data} actions={actions} />
-              </div>
-            )}
+            {activeTab === 'intelligence' && <MindTab data={data} actions={actions} />}
             {activeTab === 'settings' && <SettingsTab data={data} actions={actions} />}
             {activeTab === 'skills' && <SkillsTab data={data} actions={actions} />}
             {activeTab === 'wealth' && <WealthTab data={data} actions={actions} />}
