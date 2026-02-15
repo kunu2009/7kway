@@ -152,7 +152,105 @@ const INITIAL_DATA: AppData = {
   totalEarnings: 0,
   workouts: [],
   checkIns: [],
-  protocols: []
+  protocols: [],
+  studySubjects: [
+    {
+      id: 'sub1',
+      name: 'Political Science',
+      color: 'blue',
+      examDate: '2026-02-18',
+      chapters: [
+        { id: 'ch1', name: 'The Cold War Era', subjectId: 'sub1', completed: false, topics: [
+          { id: 't1', name: 'Cuban Missile Crisis', chapterId: 'ch1', completed: false, revision: 0, isWeak: false },
+          { id: 't2', name: 'Emergence of Two Power Blocs', chapterId: 'ch1', completed: false, revision: 0, isWeak: false },
+          { id: 't3', name: 'Arenas of Cold War', chapterId: 'ch1', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch2', name: 'The End of Bipolarity', subjectId: 'sub1', completed: false, topics: [
+          { id: 't4', name: 'Soviet System', chapterId: 'ch2', completed: false, revision: 0, isWeak: false },
+          { id: 't5', name: 'Gorbachev\'s Reforms', chapterId: 'ch2', completed: false, revision: 0, isWeak: false },
+          { id: 't6', name: 'Shock Therapy', chapterId: 'ch2', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch3', name: 'US Hegemony', subjectId: 'sub1', completed: false, topics: [
+          { id: 't7', name: 'Gulf War', chapterId: 'ch3', completed: false, revision: 0, isWeak: false },
+          { id: 't8', name: '9/11 and War on Terror', chapterId: 'ch3', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch4', name: 'Contemporary Centres of Power', subjectId: 'sub1', completed: false, topics: [
+          { id: 't9', name: 'European Union', chapterId: 'ch4', completed: false, revision: 0, isWeak: false },
+          { id: 't10', name: 'ASEAN', chapterId: 'ch4', completed: false, revision: 0, isWeak: false },
+          { id: 't11', name: 'Rise of China', chapterId: 'ch4', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch5', name: 'SAARC & Contemporary South Asia', subjectId: 'sub1', completed: false, topics: [
+          { id: 't12', name: 'Indo-Pak Relations', chapterId: 'ch5', completed: false, revision: 0, isWeak: false },
+          { id: 't13', name: 'SAARC', chapterId: 'ch5', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch6', name: 'International Organizations', subjectId: 'sub1', completed: false, topics: [
+          { id: 't14', name: 'United Nations', chapterId: 'ch6', completed: false, revision: 0, isWeak: false },
+          { id: 't15', name: 'Security Council Reform', chapterId: 'ch6', completed: false, revision: 0, isWeak: false },
+        ]}
+      ]
+    },
+    {
+      id: 'sub2',
+      name: 'Economics',
+      color: 'emerald',
+      examDate: '2026-02-24',
+      chapters: [
+        { id: 'ch7', name: 'National Income', subjectId: 'sub2', completed: false, topics: [
+          { id: 't16', name: 'Circular Flow of Income', chapterId: 'ch7', completed: false, revision: 0, isWeak: false },
+          { id: 't17', name: 'Methods of Calculation', chapterId: 'ch7', completed: false, revision: 0, isWeak: false },
+          { id: 't18', name: 'GDP, NDP, GNP, NNP', chapterId: 'ch7', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch8', name: 'Money & Banking', subjectId: 'sub2', completed: false, topics: [
+          { id: 't19', name: 'Functions of Money', chapterId: 'ch8', completed: false, revision: 0, isWeak: false },
+          { id: 't20', name: 'Money Supply', chapterId: 'ch8', completed: false, revision: 0, isWeak: false },
+          { id: 't21', name: 'Central Bank Functions', chapterId: 'ch8', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch9', name: 'Government Budget', subjectId: 'sub2', completed: false, topics: [
+          { id: 't22', name: 'Revenue & Capital Budget', chapterId: 'ch9', completed: false, revision: 0, isWeak: false },
+          { id: 't23', name: 'Types of Deficits', chapterId: 'ch9', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch10', name: 'Balance of Payments', subjectId: 'sub2', completed: false, topics: [
+          { id: 't24', name: 'Current Account', chapterId: 'ch10', completed: false, revision: 0, isWeak: false },
+          { id: 't25', name: 'Capital Account', chapterId: 'ch10', completed: false, revision: 0, isWeak: false },
+          { id: 't26', name: 'Exchange Rate', chapterId: 'ch10', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch11', name: 'Indian Economy Development', subjectId: 'sub2', completed: false, topics: [
+          { id: 't27', name: 'Economic Reforms 1991', chapterId: 'ch11', completed: false, revision: 0, isWeak: false },
+          { id: 't28', name: 'Rural Development', chapterId: 'ch11', completed: false, revision: 0, isWeak: false },
+          { id: 't29', name: 'Poverty & Unemployment', chapterId: 'ch11', completed: false, revision: 0, isWeak: false },
+        ]}
+      ]
+    },
+    {
+      id: 'sub3',
+      name: 'History',
+      color: 'amber',
+      examDate: '2026-03-15',
+      chapters: [
+        { id: 'ch12', name: 'Bricks, Beads & Bones', subjectId: 'sub3', completed: false, topics: [
+          { id: 't30', name: 'Harappan Civilization', chapterId: 'ch12', completed: false, revision: 0, isWeak: false },
+          { id: 't31', name: 'Important Sites', chapterId: 'ch12', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch13', name: 'Kings, Farmers & Towns', subjectId: 'sub3', completed: false, topics: [
+          { id: 't32', name: 'Mahajanapadas', chapterId: 'ch13', completed: false, revision: 0, isWeak: false },
+          { id: 't33', name: 'Mauryan Empire', chapterId: 'ch13', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch14', name: 'Bhakti-Sufi Traditions', subjectId: 'sub3', completed: false, topics: [
+          { id: 't34', name: 'Bhakti Movement', chapterId: 'ch14', completed: false, revision: 0, isWeak: false },
+          { id: 't35', name: 'Sufi Movement', chapterId: 'ch14', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch15', name: 'Mughal Courts', subjectId: 'sub3', completed: false, topics: [
+          { id: 't36', name: 'Akbar\'s Administration', chapterId: 'ch15', completed: false, revision: 0, isWeak: false },
+          { id: 't37', name: 'Mughal Art & Architecture', chapterId: 'ch15', completed: false, revision: 0, isWeak: false },
+        ]},
+        { id: 'ch16', name: 'Mahatma Gandhi & National Movement', subjectId: 'sub3', completed: false, topics: [
+          { id: 't38', name: 'Non-Cooperation Movement', chapterId: 'ch16', completed: false, revision: 0, isWeak: false },
+          { id: 't39', name: 'Civil Disobedience', chapterId: 'ch16', completed: false, revision: 0, isWeak: false },
+          { id: 't40', name: 'Quit India Movement', chapterId: 'ch16', completed: false, revision: 0, isWeak: false },
+        ]}
+      ]
+    }
+  ]
 };
 
 export const loadData = (): AppData => {
@@ -197,6 +295,7 @@ export const loadData = (): AppData => {
       workouts: Array.isArray(parsed.workouts) ? parsed.workouts : INITIAL_DATA.workouts,
       checkIns: Array.isArray(parsed.checkIns) ? parsed.checkIns : INITIAL_DATA.checkIns,
       protocols: Array.isArray(parsed.protocols) ? parsed.protocols : INITIAL_DATA.protocols,
+      studySubjects: Array.isArray(parsed.studySubjects) ? parsed.studySubjects : INITIAL_DATA.studySubjects,
       totalEarnings: parsed.totalEarnings || 0,
       onboardingCompleted: !!parsed.onboardingCompleted
     };

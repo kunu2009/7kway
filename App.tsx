@@ -17,7 +17,7 @@ import {
   IndianRupee, PiggyBank, Briefcase, Award, Star, CircleDot,
   Footprints, Waves, Wind, Bike, Swords, Repeat, Phone, Sunrise, Sunset, Smile, Meh, Frown
 } from 'lucide-react';
-import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats, WorkoutSession, Exercise, MuscleGroup, DailyCheckIn, DailyProtocol, ProtocolTask } from './types';
+import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats, WorkoutSession, Exercise, MuscleGroup, DailyCheckIn, DailyProtocol, ProtocolTask, StudySubject, StudyChapter, StudyTopic } from './types';
 import { loadData, saveData, APP_VERSION } from './db';
 
 // --- Static Data Libraries ---
@@ -704,11 +704,235 @@ const ProtocolWidget = ({ data, actions, accent }: { data: AppData, actions: any
   );
 };
 
+// --- STUDY TOPICS WIDGET ---
+const StudyTopicsWidget = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [selectedSubject, setSelectedSubject] = useState<string>(data.studySubjects[0]?.id || '');
+  const [expandedChapter, setExpandedChapter] = useState<string | null>(null);
+  
+  const subject = data.studySubjects.find(s => s.id === selectedSubject);
+  
+  // Calculate progress stats
+  const getSubjectProgress = (sub: StudySubject) => {
+    let totalTopics = 0;
+    let completedTopics = 0;
+    let weakTopics = 0;
+    
+    sub.chapters.forEach(ch => {
+      ch.topics.forEach(t => {
+        totalTopics++;
+        if (t.completed) completedTopics++;
+        if (t.isWeak) weakTopics++;
+      });
+    });
+    
+    return { total: totalTopics, completed: completedTopics, weak: weakTopics, percent: totalTopics > 0 ? Math.round((completedTopics / totalTopics) * 100) : 0 };
+  };
+
+  const toggleTopic = (subjectId: string, chapterId: string, topicId: string) => {
+    actions.toggleStudyTopic(subjectId, chapterId, topicId);
+  };
+
+  const markRevision = (subjectId: string, chapterId: string, topicId: string) => {
+    actions.markTopicRevision(subjectId, chapterId, topicId);
+  };
+
+  const toggleWeak = (subjectId: string, chapterId: string, topicId: string) => {
+    actions.toggleWeakTopic(subjectId, chapterId, topicId);
+  };
+
+  const getDaysToExam = (examDate?: string) => {
+    if (!examDate) return null;
+    return Math.ceil((new Date(examDate).getTime() - new Date().getTime()) / (1000 * 60 * 60 * 24));
+  };
+
+  const getRevisionLabel = (rev: number) => {
+    switch(rev) {
+      case 0: return 'Not Started';
+      case 1: return '1st Revision';
+      case 2: return '2nd Revision';
+      case 3: return '3rd Revision ✓';
+      default: return '';
+    }
+  };
+
+  const getRevisionColor = (rev: number) => {
+    switch(rev) {
+      case 0: return 'slate';
+      case 1: return 'orange';
+      case 2: return 'blue';
+      case 3: return 'emerald';
+      default: return 'slate';
+    }
+  };
+
+  if (!subject) return null;
+
+  const progress = getSubjectProgress(subject);
+  const daysLeft = getDaysToExam(subject.examDate);
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h4 className="font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <BookOpen size={18} className={`text-${subject.color}-500`}/> Study Topics
+          </h4>
+          <p className="text-[10px] text-slate-500">Track chapters, topics & revisions</p>
+        </div>
+        {daysLeft !== null && (
+          <div className={`px-2 py-1 rounded-lg bg-${daysLeft < 7 ? 'rose' : daysLeft < 14 ? 'orange' : 'emerald'}-500/10 text-${daysLeft < 7 ? 'rose' : daysLeft < 14 ? 'orange' : 'emerald'}-500 text-[9px] font-black`}>
+            T-{daysLeft} DAYS
+          </div>
+        )}
+      </div>
+
+      {/* Subject Tabs */}
+      <div className="flex gap-2 mb-4 overflow-x-auto pb-1">
+        {data.studySubjects.map(sub => {
+          const p = getSubjectProgress(sub);
+          return (
+            <button
+              key={sub.id}
+              onClick={() => setSelectedSubject(sub.id)}
+              className={`flex-shrink-0 px-3 py-2 rounded-xl text-[10px] font-bold transition-all ${
+                selectedSubject === sub.id 
+                  ? `bg-${sub.color}-500 text-white` 
+                  : `bg-slate-100 dark:bg-slate-800 text-slate-500 hover:bg-slate-200`
+              }`}
+            >
+              {sub.name}
+              <span className={`ml-1 ${selectedSubject === sub.id ? 'text-white/70' : 'text-slate-400'}`}>
+                {p.percent}%
+              </span>
+            </button>
+          );
+        })}
+      </div>
+
+      {/* Progress Bar */}
+      <div className="mb-4">
+        <div className="flex justify-between items-center mb-1">
+          <span className="text-[9px] font-bold text-slate-400">
+            {progress.completed}/{progress.total} topics • {progress.weak} weak
+          </span>
+          <span className={`text-[9px] font-bold text-${subject.color}-500`}>{progress.percent}%</span>
+        </div>
+        <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div 
+            className={`h-full bg-${subject.color}-500 transition-all`}
+            style={{ width: `${progress.percent}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Chapters & Topics */}
+      <div className="space-y-2 max-h-[400px] overflow-y-auto">
+        {subject.chapters.map(chapter => {
+          const chapterCompleted = chapter.topics.filter(t => t.completed).length;
+          const chapterTotal = chapter.topics.length;
+          const isExpanded = expandedChapter === chapter.id;
+          
+          return (
+            <div key={chapter.id} className="border border-slate-200 dark:border-slate-700 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setExpandedChapter(isExpanded ? null : chapter.id)}
+                className="w-full flex items-center justify-between p-3 bg-slate-50 dark:bg-slate-800/50 hover:bg-slate-100 dark:hover:bg-slate-800 transition-all"
+              >
+                <div className="flex items-center gap-2">
+                  {chapterCompleted === chapterTotal && chapterTotal > 0 ? (
+                    <CheckCircle2 size={14} className="text-emerald-500"/>
+                  ) : (
+                    <CircleDot size={14} className="text-slate-400"/>
+                  )}
+                  <span className="text-[11px] font-bold text-slate-700 dark:text-slate-300">{chapter.name}</span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span className="text-[9px] text-slate-400">{chapterCompleted}/{chapterTotal}</span>
+                  {isExpanded ? <ChevronUp size={14}/> : <ChevronDown size={14}/>}
+                </div>
+              </button>
+              
+              {isExpanded && (
+                <div className="p-2 space-y-1.5 border-t border-slate-200 dark:border-slate-700">
+                  {chapter.topics.map(topic => (
+                    <div 
+                      key={topic.id} 
+                      className={`flex items-center justify-between p-2 rounded-lg ${
+                        topic.completed ? 'bg-emerald-500/10' : topic.isWeak ? 'bg-rose-500/10' : 'bg-slate-50 dark:bg-slate-800/30'
+                      }`}
+                    >
+                      <div className="flex items-center gap-2 flex-1">
+                        <button
+                          onClick={() => toggleTopic(subject.id, chapter.id, topic.id)}
+                          className="p-0.5"
+                        >
+                          {topic.completed ? (
+                            <CheckSquare size={14} className="text-emerald-500"/>
+                          ) : (
+                            <Square size={14} className="text-slate-400"/>
+                          )}
+                        </button>
+                        <span className={`text-[10px] font-bold ${topic.completed ? 'text-emerald-600 dark:text-emerald-400 line-through' : ''}`}>
+                          {topic.name}
+                        </span>
+                        {topic.isWeak && (
+                          <span className="px-1 py-0.5 bg-rose-500/20 text-rose-500 text-[8px] font-bold rounded">WEAK</span>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <button
+                          onClick={() => markRevision(subject.id, chapter.id, topic.id)}
+                          disabled={!topic.completed}
+                          className={`px-1.5 py-0.5 rounded text-[8px] font-bold ${
+                            topic.completed 
+                              ? `bg-${getRevisionColor(topic.revision)}-500/10 text-${getRevisionColor(topic.revision)}-500 hover:bg-${getRevisionColor(topic.revision)}-500/20` 
+                              : 'bg-slate-200 dark:bg-slate-700 text-slate-400 cursor-not-allowed'
+                          }`}
+                        >
+                          R{topic.revision}
+                        </button>
+                        <button
+                          onClick={() => toggleWeak(subject.id, chapter.id, topic.id)}
+                          className={`p-1 rounded ${topic.isWeak ? 'text-rose-500' : 'text-slate-400 hover:text-rose-500'}`}
+                        >
+                          <AlertTriangle size={10}/>
+                        </button>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-2 mt-4 pt-4 border-t border-slate-200 dark:border-slate-700">
+        <div className="text-center">
+          <p className="text-lg font-black text-emerald-500">{progress.completed}</p>
+          <p className="text-[8px] text-slate-400 uppercase">Done</p>
+        </div>
+        <div className="text-center">
+          <p className="text-lg font-black text-slate-500">{progress.total - progress.completed}</p>
+          <p className="text-[8px] text-slate-400 uppercase">Remaining</p>
+        </div>
+        <div className="text-center">
+          <p className="text-lg font-black text-rose-500">{progress.weak}</p>
+          <p className="text-[8px] text-slate-400 uppercase">Weak Areas</p>
+        </div>
+      </div>
+    </div>
+  );
+};
+
 const IntelligenceSection = ({ data, actions }: TabProps) => (
   <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
     <SectionHeader title="Intel Protocols" subtitle="Preparation & Knowledge" />
     {/* Daily Check-in Widget */}
     <DailyCheckInWidget data={data} actions={actions} accent={data.settings.accentColor || 'teal'} />
+    {/* Study Topics Tracker */}
+    <StudyTopicsWidget data={data} actions={actions} accent={data.settings.accentColor || 'teal'} />
     <div className="space-y-3">
         <h4 className="text-xs font-black text-slate-400 uppercase flex items-center gap-2"><GraduationCap size={16} /> Exam Countdown</h4>
         {data.exams.map(exam => <ExamItem key={exam.id} exam={exam} onAddMaterial={actions.addStudyMaterial} onDeleteMaterial={actions.deleteStudyMaterial} accent={data.settings.accentColor || 'teal'} />)}
@@ -1942,6 +2166,73 @@ const App: React.FC = () => {
         }
         return { ...prev, protocols: [...prev.protocols, protocol] };
       });
+    },
+    // Study Topics Actions
+    toggleStudyTopic: (subjectId: string, chapterId: string, topicId: string) => {
+      setData(prev => ({
+        ...prev,
+        studySubjects: prev.studySubjects.map(sub => 
+          sub.id === subjectId 
+            ? {
+                ...sub,
+                chapters: sub.chapters.map(ch =>
+                  ch.id === chapterId
+                    ? {
+                        ...ch,
+                        topics: ch.topics.map(t =>
+                          t.id === topicId ? { ...t, completed: !t.completed, revision: !t.completed ? 1 : t.revision } as StudyTopic : t
+                        )
+                      }
+                    : ch
+                )
+              }
+            : sub
+        )
+      }));
+    },
+    markTopicRevision: (subjectId: string, chapterId: string, topicId: string) => {
+      setData(prev => ({
+        ...prev,
+        studySubjects: prev.studySubjects.map(sub => 
+          sub.id === subjectId 
+            ? {
+                ...sub,
+                chapters: sub.chapters.map(ch =>
+                  ch.id === chapterId
+                    ? {
+                        ...ch,
+                        topics: ch.topics.map(t =>
+                          t.id === topicId ? { ...t, revision: Math.min(3, t.revision + 1) as 0 | 1 | 2 | 3 } : t
+                        )
+                      }
+                    : ch
+                )
+              }
+            : sub
+        )
+      }));
+    },
+    toggleWeakTopic: (subjectId: string, chapterId: string, topicId: string) => {
+      setData(prev => ({
+        ...prev,
+        studySubjects: prev.studySubjects.map(sub => 
+          sub.id === subjectId 
+            ? {
+                ...sub,
+                chapters: sub.chapters.map(ch =>
+                  ch.id === chapterId
+                    ? {
+                        ...ch,
+                        topics: ch.topics.map(t =>
+                          t.id === topicId ? { ...t, isWeak: !t.isWeak } : t
+                        )
+                      }
+                    : ch
+                )
+              }
+            : sub
+        )
+      }));
     },
     // Skills Actions
     logSkillPractice: (skillId: string, hours: number) => {

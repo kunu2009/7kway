@@ -152,6 +152,33 @@ export interface StudyMaterial {
   url: string;
 }
 
+// Study Topic types
+export interface StudyTopic {
+  id: string;
+  name: string;
+  chapterId: string;
+  completed: boolean;
+  revision: 0 | 1 | 2 | 3; // 0=not started, 1=1st revision, 2=2nd revision, 3=3rd revision
+  isWeak: boolean;
+  notes?: string;
+}
+
+export interface StudyChapter {
+  id: string;
+  name: string;
+  subjectId: string;
+  topics: StudyTopic[];
+  completed: boolean;
+}
+
+export interface StudySubject {
+  id: string;
+  name: string;
+  chapters: StudyChapter[];
+  examDate?: string;
+  color: string;
+}
+
 export interface Exam {
   id: string;
   subject: string;
@@ -235,4 +262,5 @@ export interface AppData {
   workouts: WorkoutSession[];
   checkIns: DailyCheckIn[];
   protocols: DailyProtocol[];
+  studySubjects: StudySubject[];
 }

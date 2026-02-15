@@ -299,23 +299,46 @@ By age 23, Kunal will be:
 - Added `checkIns` and `protocols` arrays to AppData
 - Added `saveCheckIn` and `saveProtocol` actions
 
+### ✅ Implemented on Feb 16, 2026 (Session 5)
+
+#### 16. Study Topics Tracker (COMPLETE)
+- Full study topics system with:
+  - 3 subjects pre-loaded: Political Science, Economics, History
+  - Chapters expandable/collapsible
+  - Individual topic checkboxes
+  - Revision counter (R0 → R1 → R2 → R3)
+  - Weak topic flag (triangle icon)
+  - Subject-wise progress percentage
+  - Days-until-exam countdown per subject
+  - Quick stats: Done / Remaining / Weak Areas
+- 40+ topics across all subjects pre-configured
+- Subject color coding (blue, emerald, amber)
+- Exam dates linked to subjects
+
+#### 17. Data Structure Updates (Session 5)
+- Added `StudyTopic` interface (completed, revision, isWeak)
+- Added `StudyChapter` interface (topics array)
+- Added `StudySubject` interface (chapters, examDate, color)
+- Added `studySubjects` array to AppData with pre-populated data
+- Added `toggleStudyTopic`, `markTopicRevision`, `toggleWeakTopic` actions
+
 ---
 
 ## 🎯 YOUR GOALS BREAKDOWN
 
 ### 1️⃣ ACADEMIC SUCCESS (12th Boards + MHT-CET 5yr LLB)
 
-**Current Support:** ⭐⭐⭐⭐ (4/5) - Pomodoro + Exam tracking now working
+**Current Support:** ⭐⭐⭐⭐⭐ (5/5) - Full study tracking + Pomodoro + Exam countdown
 
 **NEEDED FEATURES:**
 
 #### A. Study System
 - [x] **Pomodoro Timer** - 25/50min focus sessions with break reminders ✅
 - [ ] **Study Schedule Generator** - Auto-create timetable based on exam dates
-- [ ] **Subject-wise Progress** - Track completion % of each subject
-- [ ] **Topic Checklist** - Break subjects into chapters/topics with checkboxes
-- [ ] **Revision Tracker** - Mark topics as 1st/2nd/3rd revision
-- [ ] **Weak Areas Identifier** - Tag difficult topics for extra focus
+- [x] **Subject-wise Progress** - Track completion % of each subject ✅
+- [x] **Topic Checklist** - Break subjects into chapters/topics with checkboxes ✅
+- [x] **Revision Tracker** - Mark topics as 1st/2nd/3rd revision ✅
+- [x] **Weak Areas Identifier** - Tag difficult topics for extra focus ✅
 - [ ] **Previous Year Papers** - Integrated PYQ database with CBSE & MHT-CET
 - [ ] **Mock Test Scheduler** - Schedule & track mock test scores
 - [ ] **Score Predictor** - Based on mock scores, predict board/entrance results
