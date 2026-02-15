@@ -257,7 +257,7 @@ const PomodoroTimer = ({ data, actions, accent }: { data: AppData, actions: any,
   const [subject, setSubject] = useState('Economics');
 
   useEffect(() => {
-    let interval: NodeJS.Timeout;
+    let interval: ReturnType<typeof setInterval>;
     if (isRunning && timeLeft > 0) {
       interval = setInterval(() => {
         setTimeLeft(prev => prev - 1);
@@ -1061,7 +1061,8 @@ const App: React.FC = () => {
         level: 'beginner',
         hoursLogged: 0,
         targetHours: 100,
-        lastPracticed: new Date().toISOString()
+        lastPracticed: new Date().toISOString(),
+        notes: ''
       };
       setData(prev => ({ ...prev, skills: [...prev.skills, newSkill] }));
     },
@@ -1072,7 +1073,8 @@ const App: React.FC = () => {
         name,
         amount,
         type,
-        date: new Date().toISOString()
+        date: new Date().toISOString(),
+        recurring: false
       };
       setData(prev => ({
         ...prev,
