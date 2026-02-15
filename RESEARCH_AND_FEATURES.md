@@ -322,6 +322,40 @@ By age 23, Kunal will be:
 - Added `studySubjects` array to AppData with pre-populated data
 - Added `toggleStudyTopic`, `markTopicRevision`, `toggleWeakTopic` actions
 
+### ✅ Implemented on Feb 16, 2026 (Session 6)
+
+#### 18. TIME-AWARE SMART HOME SCREEN (COMPLETE) 🎉
+The biggest UX improvement! App now knows what time it is and shows ONLY what's relevant.
+
+**Time Periods Implemented:**
+- `early_morning` (5-8 AM): Morning protocol, motivation, one priority task
+- `study_time` (8 AM-5 PM): Focus mode, exam countdown, Pomodoro prompt
+- `evening` (5-9 PM): Workout log, evening check-in options
+- `wind_down` (9-10:30 PM): Night protocol, calm UI
+- `sleep_time` (10:30 PM-5 AM): "Go to sleep!" message, minimal UI
+
+**Features:**
+- Time-aware greeting ("Good morning, Kunal!" 🌅)
+- ONE priority task displayed prominently (changes by time)
+- Protocol checklist (morning/night) inline on home
+- Motivational quote (rotates daily)
+- Mini stats bar (streak, XP, clean days, days to exam)
+- Quick action buttons (context-aware)
+- Exam countdown with urgency colors (red if <3 days)
+- Sleep-time special screen encourages rest
+
+**Time Utilities Added:**
+- `getTimePeriod()` - Returns current time period
+- `getGreeting()` - Time-aware personalized greeting
+- `getMotivationalQuote()` - Daily rotating quotes (10 quotes)
+- `getCurrentDateFormatted()` - Formatted date display
+- `getCurrentTimeFormatted()` - Formatted time display
+
+**Navigation Updates:**
+- Home tab now shows SmartHomeScreen instead of widget dashboard
+- Added `setActiveTab` to actions for cross-navigation
+- Quick actions navigate to relevant tabs
+
 ---
 
 ## 🎯 YOUR GOALS BREAKDOWN
@@ -661,6 +695,152 @@ EVENING (35-45 min):
 
 ---
 
+## 🎨 UX REDESIGN - TIME-AWARE SMART APP (Session 6)
+
+### 🚨 CORE PROBLEM WITH CURRENT APP
+The app shows EVERYTHING at once. When Kunal opens at 5:30 AM, he sees workout logs, wealth stats, study topics - overwhelming and irrelevant. The app should know WHAT TIME it is and show ONLY what's relevant NOW.
+
+### 🧠 USER JOURNEY - KUNAL'S PERFECT DAY
+
+```
+5:30 AM - WAKE UP
+├── Opens app → Sees: "Good morning Kunal! 🌅"
+├── ONE priority task displayed BIG
+├── Morning Protocol checklist (8 items)
+├── Motivational quote
+└── Quick stats: Streak, XP, Days to exam
+
+6:00-8:00 AM - MORNING ROUTINE
+├── Checking off protocol items gives XP
+├── App tracks what time each task done
+└── Auto-suggests next task
+
+8:00 AM - COMMUTE TO COLLEGE
+├── App detects time → Shows: "Commute Mode"
+├── Suggests: Audio learning, posture check
+└── Mini flashcard review
+
+9:00 AM - 5:00 PM - STUDY/COLLEGE
+├── Opens app → Sees: Focus Mode
+├── Pomodoro timer front and center
+├── Current study topic & progress
+├── Exam countdown prominent
+└── No distractions (physical stats hidden)
+
+5:00-6:00 PM - EVENING COMMUTE
+├── App shows: "Heading home?"
+├── Mental review prompt
+└── Audiobook suggestion
+
+6:00-9:00 PM - EVENING
+├── Opens app → Sees: Evening Mode
+├── Did you workout? Quick log
+├── Evening check-in prompt
+├── Study review if needed
+└── Tomorrow planning
+
+9:00-10:30 PM - WIND DOWN
+├── Opens app → Sees: Night Mode (dimmed UI)
+├── Night Protocol checklist
+├── Gratitude prompt
+├── "Get to bed by 10:30! 💤"
+└── No stimulating content
+
+10:30 PM+ - SHOULD BE SLEEPING
+├── App shows: "You should be asleep! 😴"
+├── Only shows sleep tracking
+└── Encourages closing app
+```
+
+### 📱 NEW NAVIGATION STRUCTURE
+
+**BEFORE (6 tabs - overwhelming):**
+Dashboard | Body | Mind | Skills | Wealth | Settings
+
+**AFTER (4 tabs - focused):**
+```
+🏠 Home     | 🎯 Focus    | 💪 Track    | 👤 Me
+(Smart,     | (Study +    | (Body +     | (Settings +
+ time-aware)| Pomodoro)   | Discipline) | Stats + All)
+```
+
+### ⏰ TIME PERIODS & WHAT TO SHOW
+
+| Time Period | Hours | App Vibe | Primary Content | Hidden |
+|-------------|-------|----------|-----------------|--------|
+| EARLY_MORNING | 5-8 AM | Energetic 🌅 | Morning Protocol, ONE task, Motivation | Wealth, complex stats |
+| STUDY_TIME | 8 AM-5 PM | Focused 📚 | Pomodoro, Study topics, Exam countdown | Physical stats, Night stuff |
+| EVENING | 5-9 PM | Productive 🌆 | Evening check-in, Workout log, Review | Morning protocol |
+| WIND_DOWN | 9-10:30 PM | Calm 🌙 | Night protocol, Gratitude, Tomorrow | Everything stimulating |
+| SLEEP_TIME | 10:30 PM-5 AM | Minimal 😴 | "Go to sleep!" message | Almost everything |
+
+### 🎯 SMART HOME SCREEN COMPONENTS
+
+```
+┌─────────────────────────────────────┐
+│ Good morning, Kunal! 🌅             │
+│ Feb 16, 2026 • 5:47 AM              │
+├─────────────────────────────────────┤
+│ ⚡ YOUR ONE THING TODAY:            │
+│ ┌───────────────────────────────┐   │
+│ │ 📖 Complete Economics Ch.3    │   │
+│ │    National Income concepts   │   │
+│ └───────────────────────────────┘   │
+├─────────────────────────────────────┤
+│ 🌅 MORNING PROTOCOL (3/8 done)      │
+│ ✓ Wake up 5:30 AM                   │
+│ ✓ Cold shower                       │
+│ ✓ Hydrate                           │
+│ ○ Mewing exercises                  │
+│ ○ Hanging (10 min)                  │
+│ ○ Workout                           │
+│ ○ Breakfast                         │
+│ ○ Sunscreen                         │
+├─────────────────────────────────────┤
+│ 💬 "The pain of discipline weighs   │
+│     ounces. The pain of regret      │
+│     weighs tons."                   │
+├─────────────────────────────────────┤
+│ [🔥 2 day streak] [⚡ 1,250 XP] [📅 2 days to exam]
+└─────────────────────────────────────┘
+```
+
+### 🔄 AUTO-LOGGING FEATURES
+
+1. **Time-based auto-suggestions:**
+   - 5:30 AM: "Time to wake up!" notification style
+   - 10:00 PM: "Start winding down"
+   - After 25 min Pomodoro: "Time for a break!"
+
+2. **Pattern learning:**
+   - Track when user completes tasks
+   - Suggest optimal times based on history
+   - "You usually study best at 3 PM"
+
+3. **Auto-complete triggers:**
+   - Opened app at 5:35 AM? Mark "Wake up" done
+   - Finished Pomodoro? Auto-log study session
+   - Checked workout items? Auto-add to log
+
+### 🎨 UI SIMPLIFICATION RULES
+
+1. **ONE primary action** per screen
+2. **Max 3-4 items** visible at once
+3. **Hide complexity** behind expandable sections
+4. **Context over completeness** - show relevant, not everything
+5. **Progressive disclosure** - details on tap, not upfront
+
+### 🔧 SETTINGS FOR CUSTOMIZATION
+
+- **Wake time:** Set your target (default 5:30 AM)
+- **Sleep time:** Set your bedtime (default 10:30 PM)
+- **Study hours:** When should Focus mode activate
+- **Protocol customization:** Add/remove/reorder tasks
+- **Quote preferences:** Motivation style selection
+- **Color theme:** Time-based auto or manual
+
+---
+
 ## 🖥️ UI/UX IMPROVEMENTS NEEDED
 
 ### Current UI Issues
@@ -685,12 +865,12 @@ EVENING (35-45 min):
 - [ ] **Onboarding Tutorial** - Guided tour of features
 - [ ] **Haptic Feedback** - Vibration on actions (mobile)
 - [ ] **Sound Effects** - Optional sounds for XP gain, level up
-- [ ] **Motivational Quotes** - Daily rotating quotes
+- [x] **Motivational Quotes** - Daily rotating quotes ✅ (Session 6)
 - [ ] **Weekly Review** - Sunday summary of the week
 - [ ] **Monthly Report** - PDF export of monthly progress
 
 ### Navigation Improvements
-- [ ] **Quick Actions FAB** - Floating button for common actions
+- [x] **Quick Actions Buttons** - Context-aware action buttons ✅ (Session 6)
 - [ ] **Search Feature** - Search across all data
 - [ ] **Keyboard Shortcuts** - For desktop users
 - [ ] **Breadcrumbs** - For nested views
