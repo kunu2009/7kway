@@ -1,7 +1,7 @@
 import { AppData, Area } from './types';
 
 const STORAGE_KEY = '7k_ecosystem_growth_v2';
-export const APP_VERSION = '1.3.1-ELITE';
+export const APP_VERSION = '2.0.0-KUNAL';
 
 const INITIAL_DATA: AppData = {
   user: {
@@ -26,17 +26,24 @@ const INITIAL_DATA: AppData = {
     { id: 'h4', name: 'Active Mewing (Face Posture)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 40 },
     { id: 'h5', name: 'Spinal Decompression (Hanging)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 50 },
     { id: 'h6', name: 'Language Acquisition (30m)', category: Area.Skills, frequency: 'daily', completedDates: [], xpValue: 40 },
-    { id: 'h7', name: 'Social Interaction Challenge', category: Area.Skills, frequency: 'daily', completedDates: [], xpValue: 60 },
+    { id: 'h7', name: 'No Fap Day Complete', category: Area.Discipline, frequency: 'daily', completedDates: [], xpValue: 100 },
     { id: 'h8', name: 'Cold Shower (Discipline)', category: Area.Discipline, frequency: 'daily', completedDates: [], xpValue: 75 },
     { id: 'h9', name: 'Face Yoga (Symmetry)', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 40 },
+    { id: 'h10', name: 'Workout Complete', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 80 },
+    { id: 'h11', name: '3L Water Intake', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 30 },
+    { id: 'h12', name: 'SPF Sunscreen Applied', category: Area.Physical, frequency: 'daily', completedDates: [], xpValue: 20 },
   ],
-  projects: [],
+  projects: [
+    { id: 'p1', title: '7K Launcher', description: 'Custom Android launcher with Stan AI', status: 'in-progress', monetized: false, income: 0, dueDate: '2026-06-01', priority: 'high' },
+    { id: 'p2', title: '7K LawPrep', description: 'CLAT/MHT-CET preparation app', status: 'in-progress', monetized: false, income: 0, dueDate: '2026-04-01', priority: 'high' },
+    { id: 'p3', title: '7K Life Dashboard', description: 'This improvement system app', status: 'in-progress', monetized: false, income: 0, dueDate: '2026-03-01', priority: 'high' },
+  ],
   logs: [],
   exams: [
     { 
       id: 'e1', 
       subject: 'Political Science', 
-      date: '2025-02-18', 
+      date: '2026-02-18', 
       type: 'board',
       studyMaterials: [
         { id: 'sm1', title: 'Chapter 1: The Cold War Era', url: 'https://ncert.nic.in/textbook.php?feps1=1-9' },
@@ -49,7 +56,7 @@ const INITIAL_DATA: AppData = {
     { 
       id: 'e2', 
       subject: 'Economics', 
-      date: '2025-02-24', 
+      date: '2026-02-24', 
       type: 'board',
       studyMaterials: [
         { id: 'sm3', title: 'Macroeconomics Formulas Sheet', url: 'https://example.com/macro-formulas' },
@@ -62,7 +69,7 @@ const INITIAL_DATA: AppData = {
     { 
       id: 'e3', 
       subject: 'History', 
-      date: '2025-03-15', 
+      date: '2026-03-15', 
       type: 'board',
       studyMaterials: [
         { id: 'sm5', title: 'Map Work: Harappan Sites', url: 'https://example.com/history-maps' },
@@ -74,7 +81,7 @@ const INITIAL_DATA: AppData = {
     { 
       id: 'e4', 
       subject: 'MHCET 5 Year LLB', 
-      date: '2025-05-08', 
+      date: '2026-05-08', 
       type: 'entrance',
       studyMaterials: [
         { id: 'sm6', title: 'Legal Reasoning Mock 1', url: 'https://example.com/mhcet-legal' },
@@ -86,19 +93,28 @@ const INITIAL_DATA: AppData = {
   ],
   tasks: [
     { id: 't1', title: 'Complete Mewing Routine (10m)', completed: false, isPriority: true, createdAt: new Date().toISOString() },
-    { id: 't2', title: 'Hanging Exercises (3 sets)', completed: false, isPriority: true, createdAt: new Date().toISOString() },
-    { id: 't3', title: 'Read Pol Sci Chapter 4', completed: false, isPriority: false, createdAt: new Date().toISOString() },
+    { id: 't2', title: 'Hanging Exercises (20 min)', completed: false, isPriority: true, createdAt: new Date().toISOString() },
+    { id: 't3', title: 'Read Economics Chapter 1', completed: false, isPriority: true, createdAt: new Date().toISOString() },
+    { id: 't4', title: 'Apply Sunscreen before going out', completed: false, isPriority: false, createdAt: new Date().toISOString() },
   ],
   physical: {
     waterIntake: 0,
     proteinIntake: 0,
     sleepHours: 0,
-    weight: 0,
+    weight: 49.9,
+    height: 164,
+    hangingMinutes: 0,
     pbs: {
       pushups: 0,
       pullups: 0,
       squats: 0,
       plank: 0
+    },
+    measurements: {
+      chest: 0,
+      waist: 0,
+      biceps: 0,
+      thighs: 0
     }
   },
   settings: {
@@ -111,8 +127,29 @@ const INITIAL_DATA: AppData = {
       skills: true,
       wealth: true
     },
-    dashboardLayout: ['welcome', 'priority', 'exams', 'tasks', 'calendar', 'stats', 'chart', 'habits']
+    dashboardLayout: ['welcome', 'nofap', 'pomodoro', 'priority', 'exams', 'tasks', 'habits', 'stats']
   },
+  // New features
+  skills: [
+    { id: 'sk1', name: "Rubik's Cube", category: 'puzzles', level: 'beginner', hoursLogged: 0, lastPracticed: '', targetHours: 50, notes: 'Target: Sub-30 seconds' },
+    { id: 'sk2', name: 'Guitar', category: 'music', level: 'beginner', hoursLogged: 0, lastPracticed: '', targetHours: 100, notes: 'Learn 10 songs' },
+    { id: 'sk3', name: 'Flute', category: 'music', level: 'beginner', hoursLogged: 0, lastPracticed: '', targetHours: 100, notes: 'Learn 5 songs' },
+    { id: 'sk4', name: 'Chess', category: 'games', level: 'beginner', hoursLogged: 0, lastPracticed: '', targetHours: 200, notes: 'Target: 1500 ELO' },
+    { id: 'sk5', name: 'Spanish', category: 'languages', level: 'beginner', hoursLogged: 0, lastPracticed: '', targetHours: 300, notes: 'Conversational level' },
+    { id: 'sk6', name: 'Video Editing', category: 'technical', level: 'beginner', hoursLogged: 0, lastPracticed: '', targetHours: 100, notes: 'DaVinci Resolve' },
+    { id: 'sk7', name: 'React/TypeScript', category: 'technical', level: 'intermediate', hoursLogged: 50, lastPracticed: new Date().toISOString(), targetHours: 500, notes: 'Building 7K apps' },
+  ],
+  income: [],
+  pomodoroSessions: [],
+  discipline: {
+    noFapStreak: 0,
+    noFapLastRelapse: new Date().toISOString(),
+    noFapBestStreak: 0,
+    coldShowerStreak: 0,
+    wakeUpStreak: 0,
+    targetWakeTime: '05:30'
+  },
+  totalEarnings: 0
 };
 
 export const loadData = (): AppData => {
@@ -128,7 +165,13 @@ export const loadData = (): AppData => {
       ...parsed,
       user: { ...INITIAL_DATA.user, ...(parsed.user || {}) },
       stats: { ...INITIAL_DATA.stats, ...(parsed.stats || {}) },
-      physical: { ...INITIAL_DATA.physical, ...(parsed.physical || {}) },
+      physical: { 
+        ...INITIAL_DATA.physical, 
+        ...(parsed.physical || {}),
+        pbs: { ...INITIAL_DATA.physical.pbs, ...(parsed.physical?.pbs || {}) },
+        measurements: { ...INITIAL_DATA.physical.measurements, ...(parsed.physical?.measurements || {}) }
+      },
+      discipline: { ...INITIAL_DATA.discipline, ...(parsed.discipline || {}) },
       settings: {
         ...INITIAL_DATA.settings,
         ...(parsed.settings || {}),
@@ -145,6 +188,10 @@ export const loadData = (): AppData => {
       tasks: Array.isArray(parsed.tasks) ? parsed.tasks : INITIAL_DATA.tasks,
       projects: Array.isArray(parsed.projects) ? parsed.projects : INITIAL_DATA.projects,
       logs: Array.isArray(parsed.logs) ? parsed.logs : INITIAL_DATA.logs,
+      skills: Array.isArray(parsed.skills) ? parsed.skills : INITIAL_DATA.skills,
+      income: Array.isArray(parsed.income) ? parsed.income : INITIAL_DATA.income,
+      pomodoroSessions: Array.isArray(parsed.pomodoroSessions) ? parsed.pomodoroSessions : INITIAL_DATA.pomodoroSessions,
+      totalEarnings: parsed.totalEarnings || 0,
       onboardingCompleted: !!parsed.onboardingCompleted
     };
   } catch (error) {

@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useMemo, useCallback } from 'react';
 import { 
   BarChart, Bar, XAxis, Tooltip, ResponsiveContainer, 
-  Cell
+  Cell, LineChart, Line, YAxis
 } from 'recharts';
 import { 
   Zap, Brain, Target, DollarSign, Settings as SettingsIcon, 
@@ -12,9 +12,11 @@ import {
   RotateCcw, X, Eye, EyeOff,
   Droplets, Moon, Utensils, Scale, Minus, UserCircle, ScanFace, Ruler, Weight,
   Palette, Sun, Moon as MoonIcon, Sparkles, Activity, Layers, ListFilter, Info,
-  GraduationCap
+  GraduationCap, Play, Pause, SkipForward, Timer, TrendingUp, Wallet, Code,
+  Gamepad2, Languages, Guitar, AlertTriangle, Heart, Coffee, Snowflake, Ban,
+  IndianRupee, PiggyBank, Briefcase, Award, Star, CircleDot
 } from 'lucide-react';
-import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile } from './types';
+import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats } from './types';
 import { loadData, saveData, APP_VERSION } from './db';
 
 // --- Static Data Libraries ---
@@ -217,6 +219,9 @@ const PhysicalTab = ({ data, actions }: TabProps) => {
           ))}
       </div>
 
+      {/* Discipline Section */}
+      <NoFapTracker data={data} actions={actions} accent={accent} />
+
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
           <h4 className="font-bold text-slate-900 dark:text-white mb-4 flex items-center gap-2"><ScanFace size={18} className="text-purple-500" /> Face Structure Enhancement</h4>
           <div className="space-y-4">
@@ -242,6 +247,571 @@ const IntelligenceSection = ({ data, actions }: TabProps) => (
     </div>
   </div>
 );
+
+// --- POMODORO TIMER COMPONENT ---
+const PomodoroTimer = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [timeLeft, setTimeLeft] = useState(25 * 60); // 25 minutes in seconds
+  const [isRunning, setIsRunning] = useState(false);
+  const [isBreak, setIsBreak] = useState(false);
+  const [sessionType, setSessionType] = useState<'study' | 'work' | 'skill'>('study');
+  const [subject, setSubject] = useState('Economics');
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isRunning && timeLeft > 0) {
+      interval = setInterval(() => {
+        setTimeLeft(prev => prev - 1);
+      }, 1000);
+    } else if (timeLeft === 0) {
+      // Session complete
+      if (!isBreak) {
+        actions.addXP(50, `Pomodoro: ${subject}`);
+        actions.logPomodoroSession(subject, 25, sessionType);
+      }
+      setIsBreak(!isBreak);
+      setTimeLeft(isBreak ? 25 * 60 : 5 * 60);
+      setIsRunning(false);
+    }
+    return () => clearInterval(interval);
+  }, [isRunning, timeLeft, isBreak]);
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const progress = isBreak 
+    ? ((5 * 60 - timeLeft) / (5 * 60)) * 100
+    : ((25 * 60 - timeLeft) / (25 * 60)) * 100;
+
+  const subjects = ['Economics', 'Political Science', 'History', 'Legal Reasoning', 'English', 'Hindi'];
+
+  return (
+    <div className={`bg-gradient-to-br ${isBreak ? 'from-emerald-500/10 to-cyan-500/10 border-emerald-500/20' : `from-${accent}-500/10 to-indigo-500/10 border-${accent}-500/20`} border rounded-2xl p-5 mb-6`}>
+      <div className="flex justify-between items-center mb-4">
+        <div>
+          <h4 className={`text-[10px] font-black uppercase ${isBreak ? 'text-emerald-500' : `text-${accent}-500`}`}>
+            {isBreak ? '☕ Break Time' : '🎯 Focus Session'}
+          </h4>
+          <p className="text-xs text-slate-500">{isBreak ? 'Rest your eyes, stretch!' : subject}</p>
+        </div>
+        <Timer size={20} className={isBreak ? 'text-emerald-500' : `text-${accent}-500`} />
+      </div>
+      
+      <div className="text-center mb-4">
+        <div className={`text-5xl font-black ${isBreak ? 'text-emerald-500' : `text-${accent}-500`}`}>
+          {formatTime(timeLeft)}
+        </div>
+        <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full mt-3 overflow-hidden">
+          <div 
+            className={`h-full transition-all duration-1000 ${isBreak ? 'bg-emerald-500' : `bg-${accent}-500`}`}
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+      </div>
+
+      {!isRunning && !isBreak && (
+        <select 
+          value={subject}
+          onChange={(e) => setSubject(e.target.value)}
+          className="w-full mb-3 p-2 rounded-lg bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-xs font-bold"
+        >
+          {subjects.map(s => <option key={s} value={s}>{s}</option>)}
+        </select>
+      )}
+
+      <div className="flex gap-2">
+        <button 
+          onClick={() => setIsRunning(!isRunning)}
+          className={`flex-1 py-3 rounded-xl font-bold text-white flex items-center justify-center gap-2 ${isBreak ? 'bg-emerald-500' : `bg-${accent}-500`}`}
+        >
+          {isRunning ? <><Pause size={16}/> Pause</> : <><Play size={16}/> {isBreak ? 'Start Break' : 'Start Focus'}</>}
+        </button>
+        <button 
+          onClick={() => { setTimeLeft(isBreak ? 5 * 60 : 25 * 60); setIsRunning(false); }}
+          className="px-4 py-3 bg-slate-200 dark:bg-slate-800 rounded-xl"
+        >
+          <RotateCcw size={16}/>
+        </button>
+      </div>
+
+      <div className="mt-3 text-center text-[10px] text-slate-400">
+        Today: {data.pomodoroSessions.filter(s => s.completedAt.split('T')[0] === new Date().toISOString().split('T')[0]).length} sessions completed
+      </div>
+    </div>
+  );
+};
+
+// --- NOFAP TRACKER WIDGET ---
+const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const streak = data.discipline.noFapStreak;
+  const bestStreak = data.discipline.noFapBestStreak;
+  
+  const getStreakMessage = () => {
+    if (streak === 0) return { msg: "Day 0 - Start your journey!", color: 'slate' };
+    if (streak < 7) return { msg: `${streak} days - Building foundation!`, color: 'orange' };
+    if (streak < 14) return { msg: `${streak} days - Dopamine recovering!`, color: 'yellow' };
+    if (streak < 30) return { msg: `${streak} days - Brain rewiring!`, color: 'emerald' };
+    if (streak < 90) return { msg: `${streak} days - Superpower mode!`, color: 'cyan' };
+    return { msg: `${streak} days - LEGENDARY!`, color: 'violet' };
+  };
+  
+  const status = getStreakMessage();
+  
+  const benefits = [
+    { days: 7, benefit: 'Increased energy & focus' },
+    { days: 14, benefit: 'Better sleep quality' },
+    { days: 30, benefit: 'Improved confidence' },
+    { days: 60, benefit: 'Mental clarity boost' },
+    { days: 90, benefit: 'Full brain rewire complete' },
+  ];
+
+  const nextMilestone = benefits.find(b => b.days > streak) || benefits[benefits.length - 1];
+
+  return (
+    <div className={`bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-rose-500/20 rounded-2xl p-5 mb-6`}>
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h4 className="text-[10px] font-black text-rose-500 uppercase flex items-center gap-1">
+            <Shield size={12}/> Discipline Protocol
+          </h4>
+          <p className={`text-lg font-black text-${status.color}-500 mt-1`}>{status.msg}</p>
+        </div>
+        <div className="text-right">
+          <p className="text-[9px] text-slate-400 uppercase">Best Streak</p>
+          <p className="text-sm font-black text-slate-600 dark:text-slate-300">{bestStreak} days</p>
+        </div>
+      </div>
+
+      <div className="bg-white/50 dark:bg-slate-950/30 rounded-xl p-3 mb-4">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-[9px] font-bold text-slate-400">Progress to {nextMilestone.days} days</span>
+          <span className="text-[9px] font-bold text-rose-500">{Math.min(100, Math.round((streak / nextMilestone.days) * 100))}%</span>
+        </div>
+        <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-rose-500 to-orange-500 transition-all"
+            style={{ width: `${Math.min(100, (streak / nextMilestone.days) * 100)}%` }}
+          />
+        </div>
+        <p className="text-[9px] text-slate-500 mt-2 text-center">🎯 {nextMilestone.benefit}</p>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2">
+        <button 
+          onClick={() => actions.incrementNoFapStreak()}
+          className={`py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-1`}
+        >
+          <CheckCircle2 size={12}/> Day Complete
+        </button>
+        <button 
+          onClick={() => actions.resetNoFapStreak()}
+          className="py-2.5 bg-slate-200 dark:bg-slate-800 text-slate-600 dark:text-slate-400 rounded-xl text-[10px] font-black flex items-center justify-center gap-1"
+        >
+          <RotateCcw size={12}/> Reset (Relapse)
+        </button>
+      </div>
+
+      <div className="mt-3 p-2 bg-orange-500/10 rounded-lg">
+        <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold text-center">
+          💡 Urge? Do 20 pushups or take a cold shower!
+        </p>
+      </div>
+    </div>
+  );
+};
+
+// --- SKILLS TAB COMPONENT ---
+const SkillsTab = ({ data, actions }: TabProps) => {
+  const accent = data.settings.accentColor || 'teal';
+  const [showAddSkill, setShowAddSkill] = useState(false);
+  const [newSkillName, setNewSkillName] = useState('');
+  const [newSkillCategory, setNewSkillCategory] = useState<SkillCategory>('other');
+  const [selectedCategory, setSelectedCategory] = useState<SkillCategory | 'all'>('all');
+
+  const categoryIcons: Record<SkillCategory, any> = {
+    puzzles: Box,
+    music: Guitar,
+    games: Gamepad2,
+    languages: Languages,
+    technical: Code,
+    sports: Trophy,
+    other: Star
+  };
+
+  const categoryColors: Record<SkillCategory, string> = {
+    puzzles: 'violet',
+    music: 'rose',
+    games: 'cyan',
+    languages: 'emerald',
+    technical: 'blue',
+    sports: 'orange',
+    other: 'slate'
+  };
+
+  const filteredSkills = selectedCategory === 'all' 
+    ? data.skills 
+    : data.skills.filter(s => s.category === selectedCategory);
+
+  const totalHours = data.skills.reduce((acc, s) => acc + s.hoursLogged, 0);
+
+  const getLevelColor = (level: string) => {
+    switch(level) {
+      case 'beginner': return 'slate';
+      case 'intermediate': return 'blue';
+      case 'advanced': return 'violet';
+      case 'expert': return 'orange';
+      case 'master': return 'emerald';
+      default: return 'slate';
+    }
+  };
+
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+      <SectionHeader title="Skill Mastery" subtitle="Track your journey to excellence" />
+      
+      {/* Stats Overview */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 text-center">
+          <p className="text-2xl font-black text-slate-900 dark:text-white">{data.skills.length}</p>
+          <p className="text-[9px] text-slate-500 uppercase font-bold">Skills</p>
+        </div>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 text-center">
+          <p className={`text-2xl font-black text-${accent}-500`}>{totalHours}</p>
+          <p className="text-[9px] text-slate-500 uppercase font-bold">Total Hours</p>
+        </div>
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-3 text-center">
+          <p className="text-2xl font-black text-emerald-500">{data.skills.filter(s => s.level !== 'beginner').length}</p>
+          <p className="text-[9px] text-slate-500 uppercase font-bold">Leveled Up</p>
+        </div>
+      </div>
+
+      {/* Category Filter */}
+      <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+        <button 
+          onClick={() => setSelectedCategory('all')}
+          className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[9px] font-black uppercase border transition-all ${selectedCategory === 'all' ? `bg-${accent}-500 text-white border-${accent}-500` : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+        >
+          All
+        </button>
+        {Object.keys(categoryIcons).map(cat => (
+          <button 
+            key={cat}
+            onClick={() => setSelectedCategory(cat as SkillCategory)}
+            className={`whitespace-nowrap px-3 py-1.5 rounded-full text-[9px] font-black uppercase border transition-all flex items-center gap-1 ${selectedCategory === cat ? `bg-${categoryColors[cat as SkillCategory]}-500 text-white border-${categoryColors[cat as SkillCategory]}-500` : 'bg-white dark:bg-slate-900 border-slate-200 dark:border-slate-800'}`}
+          >
+            {React.createElement(categoryIcons[cat as SkillCategory], { size: 10 })}
+            {cat}
+          </button>
+        ))}
+      </div>
+
+      {/* Skills List */}
+      <div className="space-y-3">
+        {filteredSkills.map(skill => {
+          const Icon = categoryIcons[skill.category];
+          const color = categoryColors[skill.category];
+          const progress = (skill.hoursLogged / skill.targetHours) * 100;
+          
+          return (
+            <div key={skill.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 shadow-sm">
+              <div className="flex justify-between items-start mb-3">
+                <div className="flex items-center gap-3">
+                  <div className={`w-10 h-10 rounded-xl bg-${color}-500/10 flex items-center justify-center`}>
+                    <Icon size={18} className={`text-${color}-500`} />
+                  </div>
+                  <div>
+                    <h5 className="font-bold text-slate-900 dark:text-white">{skill.name}</h5>
+                    <p className={`text-[9px] font-black uppercase text-${getLevelColor(skill.level)}-500`}>{skill.level}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-sm font-black text-slate-900 dark:text-white">{skill.hoursLogged}h</p>
+                  <p className="text-[9px] text-slate-400">/ {skill.targetHours}h</p>
+                </div>
+              </div>
+              
+              <div className="h-2 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden mb-3">
+                <div 
+                  className={`h-full bg-${color}-500 transition-all`}
+                  style={{ width: `${Math.min(100, progress)}%` }}
+                />
+              </div>
+              
+              <div className="flex gap-2">
+                <button 
+                  onClick={() => actions.logSkillPractice(skill.id, 0.5)}
+                  className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-bold"
+                >
+                  +30min
+                </button>
+                <button 
+                  onClick={() => actions.logSkillPractice(skill.id, 1)}
+                  className={`flex-1 py-2 bg-${accent}-500 text-white rounded-lg text-[10px] font-bold`}
+                >
+                  +1 hour
+                </button>
+                <button 
+                  onClick={() => actions.logSkillPractice(skill.id, 2)}
+                  className="flex-1 py-2 bg-slate-100 dark:bg-slate-800 rounded-lg text-[10px] font-bold"
+                >
+                  +2 hours
+                </button>
+              </div>
+              
+              {skill.notes && (
+                <p className="text-[10px] text-slate-400 mt-2 italic">📝 {skill.notes}</p>
+              )}
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Add New Skill */}
+      {!showAddSkill ? (
+        <button 
+          onClick={() => setShowAddSkill(true)}
+          className={`w-full py-3 border-2 border-dashed border-${accent}-500/30 rounded-2xl text-${accent}-500 font-bold text-sm flex items-center justify-center gap-2`}
+        >
+          <Plus size={16}/> Add New Skill
+        </button>
+      ) : (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
+          <input 
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 mb-3 text-sm"
+            placeholder="Skill name (e.g., Piano, Python, Sudoku)"
+            value={newSkillName}
+            onChange={(e) => setNewSkillName(e.target.value)}
+          />
+          <select 
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 mb-3 text-sm"
+            value={newSkillCategory}
+            onChange={(e) => setNewSkillCategory(e.target.value as SkillCategory)}
+          >
+            {Object.keys(categoryIcons).map(cat => (
+              <option key={cat} value={cat}>{cat.charAt(0).toUpperCase() + cat.slice(1)}</option>
+            ))}
+          </select>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                if (newSkillName) {
+                  actions.addSkill(newSkillName, newSkillCategory);
+                  setNewSkillName('');
+                  setShowAddSkill(false);
+                }
+              }}
+              className={`flex-1 py-3 bg-${accent}-500 text-white rounded-xl font-bold`}
+            >
+              Add Skill
+            </button>
+            <button 
+              onClick={() => setShowAddSkill(false)}
+              className="px-4 py-3 bg-slate-200 dark:bg-slate-800 rounded-xl"
+            >
+              <X size={16}/>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- WEALTH TAB COMPONENT ---
+const WealthTab = ({ data, actions }: TabProps) => {
+  const accent = data.settings.accentColor || 'teal';
+  const [showAddIncome, setShowAddIncome] = useState(false);
+  const [newIncomeName, setNewIncomeName] = useState('');
+  const [newIncomeAmount, setNewIncomeAmount] = useState('');
+  const [newIncomeType, setNewIncomeType] = useState<'freelance' | 'app' | 'job' | 'other'>('freelance');
+
+  const totalEarnings = data.income.reduce((acc, i) => acc + i.amount, 0);
+  const thisMonthEarnings = data.income
+    .filter(i => new Date(i.date).getMonth() === new Date().getMonth())
+    .reduce((acc, i) => acc + i.amount, 0);
+
+  const projectsInProgress = data.projects.filter(p => p.status === 'in-progress').length;
+  const projectsCompleted = data.projects.filter(p => p.status === 'completed').length;
+
+  // Financial milestones
+  const milestones = [
+    { target: 1000, label: 'First ₹1K' },
+    { target: 10000, label: 'First ₹10K' },
+    { target: 50000, label: '₹50K Earned' },
+    { target: 100000, label: '₹1 Lakh!' },
+    { target: 500000, label: '₹5 Lakh!' },
+    { target: 1000000, label: '₹10 Lakh!!' },
+  ];
+
+  const nextMilestone = milestones.find(m => m.target > totalEarnings) || milestones[milestones.length - 1];
+  const milestoneProgress = (totalEarnings / nextMilestone.target) * 100;
+
+  return (
+    <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
+      <SectionHeader title="Wealth Building" subtitle="Track your income & projects" />
+
+      {/* Main Stats */}
+      <div className={`bg-gradient-to-br from-emerald-500/10 to-cyan-500/10 border border-emerald-500/20 rounded-2xl p-5`}>
+        <div className="flex justify-between items-start mb-4">
+          <div>
+            <p className="text-[10px] font-black text-emerald-500 uppercase">Total Earnings</p>
+            <p className="text-3xl font-black text-slate-900 dark:text-white flex items-center">
+              <IndianRupee size={24}/>{totalEarnings.toLocaleString()}
+            </p>
+          </div>
+          <div className={`p-3 rounded-xl bg-emerald-500/10`}>
+            <Wallet size={24} className="text-emerald-500"/>
+          </div>
+        </div>
+        
+        <div className="grid grid-cols-2 gap-3">
+          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl">
+            <p className="text-[9px] text-slate-400 uppercase font-bold">This Month</p>
+            <p className="text-lg font-black text-slate-900 dark:text-white">₹{thisMonthEarnings.toLocaleString()}</p>
+          </div>
+          <div className="bg-white/50 dark:bg-slate-950/30 p-3 rounded-xl">
+            <p className="text-[9px] text-slate-400 uppercase font-bold">Projects Active</p>
+            <p className="text-lg font-black text-slate-900 dark:text-white">{projectsInProgress}</p>
+          </div>
+        </div>
+      </div>
+
+      {/* Milestone Progress */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
+        <div className="flex justify-between items-center mb-2">
+          <p className="text-xs font-bold text-slate-900 dark:text-white flex items-center gap-2">
+            <Trophy size={14} className="text-yellow-500"/> Next Milestone
+          </p>
+          <p className={`text-[10px] font-black text-${accent}-500`}>{nextMilestone.label}</p>
+        </div>
+        <div className="h-3 bg-slate-100 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-emerald-500 to-cyan-500 transition-all"
+            style={{ width: `${Math.min(100, milestoneProgress)}%` }}
+          />
+        </div>
+        <p className="text-[10px] text-slate-400 mt-2 text-center">
+          ₹{totalEarnings.toLocaleString()} / ₹{nextMilestone.target.toLocaleString()} ({Math.round(milestoneProgress)}%)
+        </p>
+      </div>
+
+      {/* 7K Projects */}
+      <div>
+        <h4 className="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+          <Briefcase size={14}/> 7K Empire Projects
+        </h4>
+        <div className="space-y-3">
+          {data.projects.map(project => (
+            <div key={project.id} className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4">
+              <div className="flex justify-between items-start mb-2">
+                <div>
+                  <h5 className="font-bold text-slate-900 dark:text-white">{project.title}</h5>
+                  <p className="text-[10px] text-slate-500">{project.description}</p>
+                </div>
+                <span className={`px-2 py-1 rounded text-[9px] font-black uppercase ${
+                  project.status === 'completed' ? 'bg-emerald-500/10 text-emerald-500' :
+                  project.status === 'in-progress' ? 'bg-blue-500/10 text-blue-500' :
+                  'bg-slate-500/10 text-slate-500'
+                }`}>
+                  {project.status}
+                </span>
+              </div>
+              {project.income > 0 && (
+                <p className="text-sm font-bold text-emerald-500">₹{project.income.toLocaleString()} earned</p>
+              )}
+            </div>
+          ))}
+        </div>
+      </div>
+
+      {/* Income Log */}
+      <div>
+        <h4 className="text-xs font-black text-slate-400 uppercase mb-3 flex items-center gap-2">
+          <TrendingUp size={14}/> Income History
+        </h4>
+        
+        {data.income.length === 0 ? (
+          <div className="text-center py-8 text-slate-400">
+            <PiggyBank size={40} className="mx-auto mb-2 opacity-50"/>
+            <p className="text-sm">No income logged yet</p>
+            <p className="text-[10px]">Start earning and track it here!</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {data.income.slice(0, 5).map(inc => (
+              <div key={inc.id} className="flex justify-between items-center p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+                <div>
+                  <p className="text-sm font-bold text-slate-900 dark:text-white">{inc.name}</p>
+                  <p className="text-[10px] text-slate-400">{new Date(inc.date).toLocaleDateString()}</p>
+                </div>
+                <p className="text-sm font-black text-emerald-500">+₹{inc.amount.toLocaleString()}</p>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Add Income */}
+      {!showAddIncome ? (
+        <button 
+          onClick={() => setShowAddIncome(true)}
+          className={`w-full py-3 bg-${accent}-500 text-white rounded-2xl font-bold text-sm flex items-center justify-center gap-2`}
+        >
+          <Plus size={16}/> Log Income
+        </button>
+      ) : (
+        <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-4 space-y-3">
+          <input 
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm"
+            placeholder="Income source (e.g., Freelance project)"
+            value={newIncomeName}
+            onChange={(e) => setNewIncomeName(e.target.value)}
+          />
+          <input 
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm"
+            placeholder="Amount in ₹"
+            type="number"
+            value={newIncomeAmount}
+            onChange={(e) => setNewIncomeAmount(e.target.value)}
+          />
+          <select 
+            className="w-full p-3 rounded-xl bg-slate-50 dark:bg-slate-950 border border-slate-200 dark:border-slate-800 text-sm"
+            value={newIncomeType}
+            onChange={(e) => setNewIncomeType(e.target.value as any)}
+          >
+            <option value="freelance">Freelance</option>
+            <option value="app">App Revenue</option>
+            <option value="job">Job/Internship</option>
+            <option value="other">Other</option>
+          </select>
+          <div className="flex gap-2">
+            <button 
+              onClick={() => {
+                if (newIncomeName && newIncomeAmount) {
+                  actions.addIncome(newIncomeName, parseInt(newIncomeAmount), newIncomeType);
+                  setNewIncomeName('');
+                  setNewIncomeAmount('');
+                  setShowAddIncome(false);
+                }
+              }}
+              className={`flex-1 py-3 bg-emerald-500 text-white rounded-xl font-bold`}
+            >
+              Log ₹{newIncomeAmount || '0'}
+            </button>
+            <button 
+              onClick={() => setShowAddIncome(false)}
+              className="px-4 py-3 bg-slate-200 dark:bg-slate-800 rounded-xl"
+            >
+              <X size={16}/>
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+};
 
 const SettingsTab = ({ data, actions }: TabProps) => {
   const accent = data.settings.accentColor || 'teal';
@@ -438,6 +1008,78 @@ const App: React.FC = () => {
         } : e)
       }));
     },
+    // Pomodoro Actions
+    logPomodoroSession: (subject: string, duration: number, type: 'study' | 'work' | 'skill') => {
+      setData(prev => ({
+        ...prev,
+        pomodoroSessions: [...prev.pomodoroSessions, {
+          id: Math.random().toString(),
+          subject,
+          duration,
+          type,
+          completedAt: new Date().toISOString()
+        }]
+      }));
+    },
+    // NoFap/Discipline Actions
+    incrementNoFapStreak: () => {
+      setData(prev => ({
+        ...prev,
+        discipline: {
+          ...prev.discipline,
+          noFapStreak: prev.discipline.noFapStreak + 1,
+          noFapBestStreak: Math.max(prev.discipline.noFapBestStreak, prev.discipline.noFapStreak + 1)
+        }
+      }));
+    },
+    resetNoFapStreak: () => {
+      setData(prev => ({
+        ...prev,
+        discipline: {
+          ...prev.discipline,
+          noFapStreak: 0,
+          noFapLastRelapse: new Date().toISOString()
+        }
+      }));
+    },
+    // Skills Actions
+    logSkillPractice: (skillId: string, hours: number) => {
+      setData(prev => ({
+        ...prev,
+        skills: prev.skills.map(s => s.id === skillId ? {
+          ...s,
+          hoursLogged: s.hoursLogged + hours,
+          lastPracticed: new Date().toISOString()
+        } : s)
+      }));
+    },
+    addSkill: (name: string, category: SkillCategory) => {
+      const newSkill: Skill = {
+        id: Math.random().toString(),
+        name,
+        category,
+        level: 'beginner',
+        hoursLogged: 0,
+        targetHours: 100,
+        lastPracticed: new Date().toISOString()
+      };
+      setData(prev => ({ ...prev, skills: [...prev.skills, newSkill] }));
+    },
+    // Income Actions
+    addIncome: (name: string, amount: number, type: 'freelance' | 'app' | 'job' | 'other') => {
+      const newIncome: IncomeSource = {
+        id: Math.random().toString(),
+        name,
+        amount,
+        type,
+        date: new Date().toISOString()
+      };
+      setData(prev => ({
+        ...prev,
+        income: [...prev.income, newIncome],
+        totalEarnings: prev.totalEarnings + amount
+      }));
+    },
     setData,
     level,
     accent
@@ -502,9 +1144,15 @@ const App: React.FC = () => {
           <main className="flex-1 p-5 overflow-y-auto">
             {activeTab === 'dashboard' && <div className="animate-in fade-in duration-500">{data.settings.dashboardLayout.map(wid => (widgets as any)[wid])}</div>}
             {activeTab === 'physical' && <PhysicalTab data={data} actions={actions} />}
-            {activeTab === 'intelligence' && <IntelligenceSection data={data} actions={actions} />}
+            {activeTab === 'intelligence' && (
+              <div className="space-y-6">
+                <PomodoroTimer data={data} actions={actions} accent={accent} />
+                <IntelligenceSection data={data} actions={actions} />
+              </div>
+            )}
             {activeTab === 'settings' && <SettingsTab data={data} actions={actions} />}
-            {(activeTab === 'skills' || activeTab === 'wealth') && <div className="text-center py-20 text-slate-400 font-bold uppercase tracking-widest">Protocol Incoming</div>}
+            {activeTab === 'skills' && <SkillsTab data={data} actions={actions} />}
+            {activeTab === 'wealth' && <WealthTab data={data} actions={actions} />}
           </main>
           <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#dbd7d2]/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-300 dark:border-slate-800 p-3 grid grid-cols-6 gap-1 z-50 shadow-2xl">
             <TabButton id="dashboard" icon={LayoutDashboard} label="Home" />
