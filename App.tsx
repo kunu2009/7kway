@@ -5,7 +5,7 @@ import {
 } from 'recharts';
 import { 
   Zap, Brain, Target, DollarSign, Settings as SettingsIcon, 
-  Dumbbell, CheckCircle2, Trophy, Clock, 
+  Dumbbell, CheckCircle2, Trophy, Clock, Home, ArrowRight,
   BookOpen, Music, Share2, ExternalLink, Mail,
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, Shield,
   ArrowUp, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
@@ -1997,10 +1997,30 @@ const SettingsTab = ({ data, actions }: TabProps) => {
 
   return (
     <div className="animate-in fade-in slide-in-from-bottom-4 duration-500 space-y-6">
-      <SectionHeader title="System Configuration" subtitle="Personalize your dashboard" />
+      <SectionHeader title="More" subtitle="Skills, Wealth & Settings" />
+      
+      {/* Quick Access to Skills & Wealth */}
+      <div className="grid grid-cols-2 gap-3">
+        <button 
+          onClick={() => actions.setActiveTab('skills')}
+          className="bg-violet-500/10 border border-violet-500/20 rounded-xl p-4 text-center"
+        >
+          <Target size={24} className="text-violet-500 mx-auto mb-2"/>
+          <p className="text-sm font-bold">Skills</p>
+          <p className="text-[10px] text-slate-400">{data.skills.reduce((a, s) => a + s.hoursLogged, 0)}h logged</p>
+        </button>
+        <button 
+          onClick={() => actions.setActiveTab('wealth')}
+          className="bg-emerald-500/10 border border-emerald-500/20 rounded-xl p-4 text-center"
+        >
+          <Wallet size={24} className="text-emerald-500 mx-auto mb-2"/>
+          <p className="text-sm font-bold">Wealth</p>
+          <p className="text-[10px] text-slate-400">₹{data.totalEarnings.toLocaleString()}</p>
+        </button>
+      </div>
       
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl p-5 shadow-sm">
-          <h4 className="font-bold mb-4 flex items-center gap-2"><Palette size={18} className={`text-${accent}-500`} /> System Accent</h4>
+          <h4 className="font-bold mb-4 flex items-center gap-2"><Palette size={18} className={`text-${accent}-500`} /> Theme Color</h4>
           <div className="flex gap-3">
               {colors.map(c => (
                 <button 
@@ -2603,22 +2623,26 @@ const App: React.FC = () => {
   };
 
   return (
-    <div className={`max-w-md mx-auto min-h-screen bg-[#dbd7d2] dark:bg-slate-950 flex flex-col relative pb-20 shadow-2xl overflow-x-hidden`}>
+    <div className={`max-w-md mx-auto min-h-screen bg-[#f5f3f0] dark:bg-slate-950 flex flex-col relative pb-16 shadow-2xl overflow-x-hidden`}>
       {!data.onboardingCompleted ? (
         <OnboardingOverlay onComplete={handleOnboardingComplete} accent={accent} />
       ) : (
         <>
-          <div className="sticky top-0 z-50 bg-[#dbd7d2]/80 dark:bg-slate-950/80 backdrop-blur-md p-4 border-b border-slate-300 dark:border-slate-800">
-             <div className="flex justify-between items-center mb-2">
-                <div className="flex items-center gap-2">
-                   <div className={`w-8 h-8 bg-${accent}-500 rounded flex items-center justify-center text-white font-black shadow-lg shadow-teal-500/20`}>{level}</div>
-                   <div><p className="text-[10px] font-black uppercase text-slate-500 leading-none">Power Level</p><p className={`text-xs font-black text-${accent}-600 mt-1`}>{xpInCurrentLevel}/1000 XP</p></div>
+          {/* Minimal Header */}
+          <div className="sticky top-0 z-50 bg-[#f5f3f0]/90 dark:bg-slate-950/90 backdrop-blur-md px-4 py-3 border-b border-slate-200 dark:border-slate-800">
+             <div className="flex justify-between items-center">
+                <div className="flex items-center gap-3">
+                   <div className={`w-7 h-7 bg-${accent}-500 rounded-lg flex items-center justify-center text-white font-black text-sm`}>{level}</div>
+                   <div className="flex-1 h-1.5 w-24 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+                     <div className={`h-full bg-${accent}-500`} style={{ width: `${progressPercent}%` }} />
+                   </div>
                 </div>
-                <div className="flex items-center gap-1 bg-orange-500/10 text-orange-500 px-2 py-1 rounded text-[10px] font-black"><Flame size={12}/> {data.stats.streak}</div>
+                <div className="flex items-center gap-1 text-orange-500 text-sm font-black">
+                  <Flame size={14}/> {data.stats.streak}
+                </div>
              </div>
-             <div className="h-1.5 w-full bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden shadow-inner"><div className={`h-full bg-${accent}-500 transition-all duration-1000 ease-out`} style={{ width: `${progressPercent}%` }} /></div>
           </div>
-          <main className="flex-1 p-5 overflow-y-auto">
+          <main className="flex-1 p-4 overflow-y-auto">
             {activeTab === 'dashboard' && <SmartHomeScreen data={data} actions={actions} accent={accent} />}
             {activeTab === 'physical' && <PhysicalTab data={data} actions={actions} />}
             {activeTab === 'intelligence' && (
@@ -2631,13 +2655,24 @@ const App: React.FC = () => {
             {activeTab === 'skills' && <SkillsTab data={data} actions={actions} />}
             {activeTab === 'wealth' && <WealthTab data={data} actions={actions} />}
           </main>
-          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#dbd7d2]/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-300 dark:border-slate-800 p-3 grid grid-cols-6 gap-1 z-50 shadow-2xl">
-            <TabButton id="dashboard" icon={LayoutDashboard} label="Home" />
-            <TabButton id="physical" icon={Dumbbell} label="Body" />
-            <TabButton id="intelligence" icon={Brain} label="Mind" />
-            <TabButton id="skills" icon={Target} label="Skills" />
-            <TabButton id="wealth" icon={DollarSign} label="Wealth" />
-            <TabButton id="settings" icon={SettingsIcon} label="Settings" />
+          {/* Simplified 4-Tab Nav */}
+          <nav className="fixed bottom-0 left-0 right-0 max-w-md mx-auto bg-[#f5f3f0]/95 dark:bg-slate-950/95 backdrop-blur-xl border-t border-slate-200 dark:border-slate-800 px-4 py-2 grid grid-cols-4 gap-2 z-50">
+            <button onClick={() => setActiveTab('dashboard')} className={`flex flex-col items-center py-2 rounded-xl transition-all ${activeTab === 'dashboard' ? `text-${accent}-500` : 'text-slate-400'}`}>
+              <Home size={20} />
+              <span className="text-[9px] mt-0.5 font-medium">Home</span>
+            </button>
+            <button onClick={() => setActiveTab('physical')} className={`flex flex-col items-center py-2 rounded-xl transition-all ${activeTab === 'physical' ? `text-${accent}-500` : 'text-slate-400'}`}>
+              <Dumbbell size={20} />
+              <span className="text-[9px] mt-0.5 font-medium">Body</span>
+            </button>
+            <button onClick={() => setActiveTab('intelligence')} className={`flex flex-col items-center py-2 rounded-xl transition-all ${activeTab === 'intelligence' ? `text-${accent}-500` : 'text-slate-400'}`}>
+              <Brain size={20} />
+              <span className="text-[9px] mt-0.5 font-medium">Mind</span>
+            </button>
+            <button onClick={() => setActiveTab('settings')} className={`flex flex-col items-center py-2 rounded-xl transition-all ${activeTab === 'settings' ? `text-${accent}-500` : 'text-slate-400'}`}>
+              <SettingsIcon size={20} />
+              <span className="text-[9px] mt-0.5 font-medium">More</span>
+            </button>
           </nav>
         </>
       )}
