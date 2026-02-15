@@ -14,9 +14,10 @@ import {
   Palette, Sun, Moon as MoonIcon, Sparkles, Activity, Layers, ListFilter, Info,
   GraduationCap, Play, Pause, SkipForward, Timer, TrendingUp, Wallet, Code,
   Gamepad2, Languages, Guitar, AlertTriangle, Heart, Coffee, Snowflake, Ban,
-  IndianRupee, PiggyBank, Briefcase, Award, Star, CircleDot
+  IndianRupee, PiggyBank, Briefcase, Award, Star, CircleDot,
+  Footprints, Waves, Wind, Bike, Swords, Repeat, Phone
 } from 'lucide-react';
-import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats } from './types';
+import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats, WorkoutSession, Exercise, MuscleGroup } from './types';
 import { loadData, saveData, APP_VERSION } from './db';
 
 // --- Static Data Libraries ---
@@ -326,6 +327,191 @@ const PhysicalTab = ({ data, actions }: TabProps) => {
              ))}
           </div>
       </div>
+
+      {/* Quick Workout Logger */}
+      <WorkoutLogger data={data} actions={actions} accent={accent} />
+    </div>
+  );
+};
+
+// --- WORKOUT LOGGER COMPONENT ---
+const WorkoutLogger = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [isExpanded, setIsExpanded] = useState(false);
+  const [workoutType, setWorkoutType] = useState<'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full' | 'cardio' | 'abs'>('push');
+  const [exercises, setExercises] = useState<Exercise[]>([]);
+  const [currentExercise, setCurrentExercise] = useState({ name: '', sets: 3, reps: 10, weight: 0 });
+
+  const muscleGroupMap: Record<string, MuscleGroup> = {
+    push: 'chest', pull: 'back', legs: 'legs', upper: 'shoulders', lower: 'legs', full: 'chest', cardio: 'cardio', abs: 'abs'
+  };
+
+  const quickExercises: Record<string, string[]> = {
+    push: ['Pushups', 'Bench Press', 'Incline Press', 'Dips', 'Shoulder Press', 'Tricep Extensions'],
+    pull: ['Pullups', 'Rows', 'Lat Pulldown', 'Bicep Curls', 'Face Pulls', 'Deadlifts'],
+    legs: ['Squats', 'Lunges', 'Leg Press', 'Calf Raises', 'Leg Curls', 'Hip Thrusts'],
+    abs: ['Crunches', 'Planks', 'Leg Raises', 'Russian Twists', 'Mountain Climbers', 'Bicycle Crunches'],
+    cardio: ['Running', 'Jump Rope', 'Cycling', 'Burpees', 'High Knees', 'Jumping Jacks'],
+    upper: ['Pushups', 'Pullups', 'Shoulder Press', 'Rows', 'Dips', 'Curls'],
+    lower: ['Squats', 'Deadlifts', 'Lunges', 'Calf Raises', 'Leg Press', 'Hip Thrusts'],
+    full: ['Burpees', 'Thrusters', 'Clean & Press', 'Turkish Getups', 'Pushups', 'Squats']
+  };
+
+  const todayWorkouts = data.workouts.filter(w => w.date.split('T')[0] === new Date().toISOString().split('T')[0]);
+  const totalExercisesToday = todayWorkouts.reduce((acc, w) => acc + w.exercises.length, 0);
+  const thisWeekWorkouts = data.workouts.filter(w => {
+    const workoutDate = new Date(w.date);
+    const today = new Date();
+    const weekAgo = new Date(today.setDate(today.getDate() - 7));
+    return workoutDate >= weekAgo;
+  });
+
+  const addExercise = (name: string) => {
+    const newEx: Exercise = {
+      id: Math.random().toString(),
+      name,
+      muscleGroup: muscleGroupMap[workoutType],
+      sets: currentExercise.sets,
+      reps: currentExercise.reps,
+      weight: currentExercise.weight
+    };
+    setExercises([...exercises, newEx]);
+  };
+
+  const saveWorkout = () => {
+    if (exercises.length === 0) return;
+    const workout: WorkoutSession = {
+      id: Math.random().toString(),
+      date: new Date().toISOString(),
+      exercises,
+      duration: exercises.length * 5, // Estimate 5 min per exercise
+      type: workoutType
+    };
+    actions.logWorkout(workout);
+    actions.addXP(exercises.length * 10, `Workout: ${workoutType.toUpperCase()}`);
+    setExercises([]);
+    setIsExpanded(false);
+  };
+
+  return (
+    <div className="bg-gradient-to-br from-blue-500/10 to-violet-500/10 border border-blue-500/20 rounded-2xl p-5">
+      <div className="flex justify-between items-start mb-4">
+        <div>
+          <h4 className="text-[10px] font-black text-blue-500 uppercase flex items-center gap-1">
+            <Dumbbell size={12}/> Workout Logger
+          </h4>
+          <p className="text-xs text-slate-500 mt-1">Log your gains, track progress</p>
+        </div>
+        <div className="text-right">
+          <p className="text-lg font-black text-blue-500">{thisWeekWorkouts.length}</p>
+          <p className="text-[9px] text-slate-400">this week</p>
+        </div>
+      </div>
+
+      {/* Quick Stats */}
+      <div className="grid grid-cols-3 gap-2 mb-4">
+        <div className="bg-white/50 dark:bg-slate-950/30 p-2 rounded-xl text-center">
+          <p className="text-lg font-black text-slate-900 dark:text-white">{totalExercisesToday}</p>
+          <p className="text-[8px] text-slate-400 uppercase">Today</p>
+        </div>
+        <div className="bg-white/50 dark:bg-slate-950/30 p-2 rounded-xl text-center">
+          <p className="text-lg font-black text-emerald-500">{data.workouts.length}</p>
+          <p className="text-[8px] text-slate-400 uppercase">Total</p>
+        </div>
+        <div className="bg-white/50 dark:bg-slate-950/30 p-2 rounded-xl text-center">
+          <p className="text-lg font-black text-violet-500">{data.physical.pbs?.pushups || 0}</p>
+          <p className="text-[8px] text-slate-400 uppercase">Pushup PB</p>
+        </div>
+      </div>
+
+      <button 
+        onClick={() => setIsExpanded(!isExpanded)}
+        className={`w-full py-3 rounded-xl font-bold text-sm flex items-center justify-center gap-2 ${isExpanded ? 'bg-slate-200 dark:bg-slate-800 text-slate-600' : `bg-${accent}-500 text-white`}`}
+      >
+        {isExpanded ? <><ChevronUp size={16}/> Close Logger</> : <><Plus size={16}/> Log Workout</>}
+      </button>
+
+      {isExpanded && (
+        <div className="mt-4 space-y-4 animate-in fade-in slide-in-from-top-2">
+          {/* Workout Type Selector */}
+          <div className="flex gap-2 overflow-x-auto pb-2">
+            {(['push', 'pull', 'legs', 'abs', 'cardio'] as const).map(type => (
+              <button
+                key={type}
+                onClick={() => setWorkoutType(type)}
+                className={`px-3 py-2 rounded-lg text-[10px] font-black uppercase whitespace-nowrap ${workoutType === type ? `bg-${accent}-500 text-white` : 'bg-slate-100 dark:bg-slate-800'}`}
+              >
+                {type}
+              </button>
+            ))}
+          </div>
+
+          {/* Quick Add Exercises */}
+          <div>
+            <p className="text-[9px] font-bold text-slate-400 mb-2">Quick Add - {workoutType.toUpperCase()}</p>
+            <div className="flex flex-wrap gap-2">
+              {quickExercises[workoutType].map(ex => (
+                <button
+                  key={ex}
+                  onClick={() => addExercise(ex)}
+                  className="px-3 py-1.5 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-700 rounded-lg text-[10px] font-bold hover:border-blue-500 transition-all"
+                >
+                  + {ex}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Sets/Reps/Weight Config */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="p-2 bg-white dark:bg-slate-900 rounded-lg">
+              <p className="text-[8px] text-slate-400 uppercase text-center">Sets</p>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <button onClick={() => setCurrentExercise({...currentExercise, sets: Math.max(1, currentExercise.sets - 1)})} className="p-1 bg-slate-100 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+                <span className="font-black">{currentExercise.sets}</span>
+                <button onClick={() => setCurrentExercise({...currentExercise, sets: currentExercise.sets + 1})} className="p-1 bg-blue-500 text-white rounded"><Plus size={10}/></button>
+              </div>
+            </div>
+            <div className="p-2 bg-white dark:bg-slate-900 rounded-lg">
+              <p className="text-[8px] text-slate-400 uppercase text-center">Reps</p>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <button onClick={() => setCurrentExercise({...currentExercise, reps: Math.max(1, currentExercise.reps - 1)})} className="p-1 bg-slate-100 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+                <span className="font-black">{currentExercise.reps}</span>
+                <button onClick={() => setCurrentExercise({...currentExercise, reps: currentExercise.reps + 1})} className="p-1 bg-blue-500 text-white rounded"><Plus size={10}/></button>
+              </div>
+            </div>
+            <div className="p-2 bg-white dark:bg-slate-900 rounded-lg">
+              <p className="text-[8px] text-slate-400 uppercase text-center">kg</p>
+              <div className="flex items-center justify-center gap-2 mt-1">
+                <button onClick={() => setCurrentExercise({...currentExercise, weight: Math.max(0, currentExercise.weight - 2.5)})} className="p-1 bg-slate-100 dark:bg-slate-800 rounded"><Minus size={10}/></button>
+                <span className="font-black text-sm">{currentExercise.weight}</span>
+                <button onClick={() => setCurrentExercise({...currentExercise, weight: currentExercise.weight + 2.5})} className="p-1 bg-blue-500 text-white rounded"><Plus size={10}/></button>
+              </div>
+            </div>
+          </div>
+
+          {/* Current Workout */}
+          {exercises.length > 0 && (
+            <div className="space-y-2">
+              <p className="text-[9px] font-bold text-slate-400">Current Workout ({exercises.length} exercises)</p>
+              {exercises.map((ex, i) => (
+                <div key={ex.id} className="flex items-center justify-between p-2 bg-white dark:bg-slate-900 rounded-lg">
+                  <span className="text-[10px] font-bold">{ex.name}</span>
+                  <div className="flex items-center gap-2">
+                    <span className="text-[9px] text-slate-400">{ex.sets}x{ex.reps} @ {ex.weight}kg</span>
+                    <button onClick={() => setExercises(exercises.filter((_, idx) => idx !== i))} className="p-1 text-red-500"><Trash2 size={10}/></button>
+                  </div>
+                </div>
+              ))}
+              <button 
+                onClick={saveWorkout}
+                className="w-full py-3 bg-emerald-500 text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2"
+              >
+                <CheckCircle2 size={16}/> Save Workout (+{exercises.length * 10} XP)
+              </button>
+            </div>
+          )}
+        </div>
+      )}
     </div>
   );
 };
@@ -437,8 +623,10 @@ const PomodoroTimer = ({ data, actions, accent }: { data: AppData, actions: any,
 
 // --- NOFAP TRACKER WIDGET ---
 const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [showUrgeSurfing, setShowUrgeSurfing] = useState(false);
   const streak = data.discipline.noFapStreak;
   const bestStreak = data.discipline.noFapBestStreak;
+  const coldShowerStreak = data.discipline.coldShowerStreak || 0;
   
   const getStreakMessage = () => {
     if (streak === 0) return { msg: "Day 0 - Start your journey!", color: 'slate' };
@@ -457,6 +645,15 @@ const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, 
     { days: 30, benefit: 'Improved confidence' },
     { days: 60, benefit: 'Mental clarity boost' },
     { days: 90, benefit: 'Full brain rewire complete' },
+  ];
+
+  const urgeSurfingTasks = [
+    { icon: Dumbbell, task: '20 Pushups NOW!', xp: 15 },
+    { icon: Snowflake, task: '2-min Cold Shower', xp: 25 },
+    { icon: Footprints, task: '10-min Walk Outside', xp: 20 },
+    { icon: Wind, task: 'Deep Breathing (20 breaths)', xp: 10 },
+    { icon: Phone, task: 'Call a friend/family', xp: 15 },
+    { icon: BookOpen, task: 'Read 5 pages of a book', xp: 15 },
   ];
 
   const nextMilestone = benefits.find(b => b.days > streak) || benefits[benefits.length - 1];
@@ -490,7 +687,24 @@ const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, 
         <p className="text-[9px] text-slate-500 mt-2 text-center">🎯 {nextMilestone.benefit}</p>
       </div>
 
-      <div className="grid grid-cols-2 gap-2">
+      {/* Cold Shower Streak */}
+      <div className="flex items-center justify-between p-2 bg-cyan-500/10 rounded-xl mb-3">
+        <div className="flex items-center gap-2">
+          <Snowflake size={14} className="text-cyan-500"/>
+          <span className="text-[10px] font-bold text-cyan-600 dark:text-cyan-400">Cold Shower Streak</span>
+        </div>
+        <div className="flex items-center gap-2">
+          <span className="text-sm font-black text-cyan-500">{coldShowerStreak}</span>
+          <button 
+            onClick={() => actions.incrementColdShower()}
+            className="px-2 py-1 bg-cyan-500 text-white rounded text-[9px] font-bold"
+          >
+            +1
+          </button>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-2 mb-3">
         <button 
           onClick={() => actions.incrementNoFapStreak()}
           className={`py-2.5 bg-emerald-500 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-1`}
@@ -505,11 +719,36 @@ const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, 
         </button>
       </div>
 
-      <div className="mt-3 p-2 bg-orange-500/10 rounded-lg">
-        <p className="text-[9px] text-orange-600 dark:text-orange-400 font-bold text-center">
-          💡 Urge? Do 20 pushups or take a cold shower!
-        </p>
-      </div>
+      {/* Urge Surfing Button */}
+      <button 
+        onClick={() => setShowUrgeSurfing(!showUrgeSurfing)}
+        className="w-full py-2.5 bg-orange-500 text-white rounded-xl text-[10px] font-black flex items-center justify-center gap-1"
+      >
+        <AlertTriangle size={12}/> {showUrgeSurfing ? 'Hide Options' : '🔥 URGE? TAP HERE NOW!'}
+      </button>
+
+      {/* Urge Surfing Tasks */}
+      {showUrgeSurfing && (
+        <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-top-2">
+          <p className="text-[9px] text-slate-500 text-center font-bold">Pick ONE and do it NOW. Urge will pass in 10 min!</p>
+          {urgeSurfingTasks.map((item, i) => (
+            <button 
+              key={i}
+              onClick={() => {
+                actions.addXP(item.xp, `Urge Conquered: ${item.task}`);
+                setShowUrgeSurfing(false);
+              }}
+              className="w-full flex items-center justify-between p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-700 hover:border-orange-500 transition-all"
+            >
+              <div className="flex items-center gap-2">
+                <item.icon size={14} className="text-orange-500"/>
+                <span className="text-[10px] font-bold">{item.task}</span>
+              </div>
+              <span className="text-[9px] font-black text-emerald-500">+{item.xp} XP</span>
+            </button>
+          ))}
+        </div>
+      )}
     </div>
   );
 };
@@ -1143,6 +1382,22 @@ const App: React.FC = () => {
           noFapStreak: 0,
           noFapLastRelapse: new Date().toISOString()
         }
+      }));
+    },
+    incrementColdShower: () => {
+      setData(prev => ({
+        ...prev,
+        discipline: {
+          ...prev.discipline,
+          coldShowerStreak: (prev.discipline.coldShowerStreak || 0) + 1
+        }
+      }));
+    },
+    // Workout Actions
+    logWorkout: (workout: WorkoutSession) => {
+      setData(prev => ({
+        ...prev,
+        workouts: [...prev.workouts, workout]
       }));
     },
     // Skills Actions

@@ -49,6 +49,28 @@ export interface DisciplineStats {
   targetWakeTime: string; // "05:30"
 }
 
+// Workout Types
+export type MuscleGroup = 'chest' | 'back' | 'shoulders' | 'biceps' | 'triceps' | 'legs' | 'abs' | 'cardio';
+
+export interface Exercise {
+  id: string;
+  name: string;
+  muscleGroup: MuscleGroup;
+  sets: number;
+  reps: number;
+  weight: number; // in kg, 0 for bodyweight
+  notes?: string;
+}
+
+export interface WorkoutSession {
+  id: string;
+  date: string;
+  exercises: Exercise[];
+  duration: number; // minutes
+  type: 'push' | 'pull' | 'legs' | 'upper' | 'lower' | 'full' | 'cardio' | 'abs';
+  notes?: string;
+}
+
 export interface UserStats {
   xp: number;
   level: number;
@@ -170,4 +192,5 @@ export interface AppData {
   pomodoroSessions: PomodoroSession[];
   discipline: DisciplineStats;
   totalEarnings: number;
+  workouts: WorkoutSession[];
 }

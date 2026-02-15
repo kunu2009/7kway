@@ -221,6 +221,36 @@ By age 23, Kunal will be:
 - Updated WidgetType to include: discipline, skills, wealth, pomodoro
 - Widget settings expanded with new toggles
 
+### ✅ Implemented on Feb 16, 2026 (Session 3)
+
+#### 10. Workout Logger (COMPLETE)
+- Full workout logging system with exercise tracking
+- Workout types: push, pull, legs, abs, cardio
+- Quick-add exercises per workout type (12 exercises total)
+- Sets, reps, weight configuration per exercise
+- Exercise list display with stats
+- Workout completion with XP rewards (+100 XP per session)
+- Duration tracking and notes
+
+#### 11. Enhanced NoFap Tracker - Urge Surfing (COMPLETE)
+- Urge Surfing button with 6 distraction tasks:
+  - 20 pushups (+10 XP)
+  - 2-min cold shower (+20 XP)
+  - 5-min walk (+15 XP)
+  - Deep breathing (+5 XP)
+  - Call a friend (+10 XP)
+  - Read 5 pages (+15 XP)
+- Cold Shower streak counter integrated
+- Energy redirect suggestions working
+
+#### 12. Data Structure Updates (Session 3)
+- Added `WorkoutSession` interface with exercises, duration, type, notes
+- Added `Exercise` interface with sets, reps, weight, muscleGroup
+- Added `MuscleGroup` type (chest, back, shoulders, biceps, triceps, legs, abs, cardio)
+- Added workouts array to app data
+- Added `logWorkout` action
+- Added `incrementColdShower` action
+
 ---
 
 ## 🎯 YOUR GOALS BREAKDOWN
@@ -273,7 +303,7 @@ By age 23, Kunal will be:
 - [ ] **Nutrition for Height** - Calcium, Vitamin D, Protein targets
 
 #### B. Muscle Building (Biceps, Abs, Overall)
-- [ ] **Workout Logger** - Log exercises, sets, reps, weight
+- [x] **Workout Logger** - Log exercises, sets, reps, weight ✅
 - [ ] **Workout Programs** - Pre-built programs (PPL, Bro Split, Full Body)
 - [ ] **Custom Workout Builder** - Create your own routines
 - [ ] **Exercise Library** - 500+ exercises with videos/GIFs
@@ -466,8 +496,8 @@ By age 23, Kunal will be:
 - [x] **Streak Shame/Pride** - Visual streak that HURTS to break ✅
 - [x] **Recovery Timeline** - Show what happens at 7/14/30/90 days clean ✅
 - [x] **Energy Redirect** - When horny, suggest workout or cold shower ✅
-- [ ] **Urge Surfing Button** - When urge hits, tap for 10-min distraction task
-- [ ] **Dopamine Menu** - Healthy dopamine alternatives (cold shower, walk, music)
+- [x] **Urge Surfing Button** - When urge hits, tap for 10-min distraction task ✅
+- [x] **Dopamine Menu** - Healthy dopamine alternatives (cold shower, walk, music) ✅
 - [ ] **Porn Blocker Integration** - Link to blocking apps
 
 #### D. Accountability & Consequences
