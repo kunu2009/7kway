@@ -146,6 +146,7 @@ const INITIAL_DATA: AppData = {
     noFapLastRelapse: new Date().toISOString(),
     noFapBestStreak: 0,
     coldShowerStreak: 0,
+    coldShowers: 0,
     wakeUpStreak: 0,
     targetWakeTime: '05:30'
   },

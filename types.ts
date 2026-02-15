@@ -45,6 +45,7 @@ export interface DisciplineStats {
   noFapLastRelapse: string;
   noFapBestStreak: number;
   coldShowerStreak: number;
+  coldShowers: number; // total cold showers count
   wakeUpStreak: number; // days woke up on time
   targetWakeTime: string; // "05:30"
 }
