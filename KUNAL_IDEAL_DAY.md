@@ -12,106 +12,90 @@
 - **Current Phase:** Pre-Board Exams (February 2026)
 - **Goals:** Physical transformation, Academic excellence, Discipline mastery, Skill building
 
----
-
-## ⏰ THE IDEAL DAY SCHEDULE
-
-### 🌅 5:30 AM - EARLY RISE (The 5AM Club)
-**Wake up before the world. Zero snooze. Feet on floor.**
-
-- ✅ Check off "Wake Up Streak" in app
-- 🧊 **Cold shower** immediately (builds mental toughness)
-- 🙏 Quick gratitude (1 minute)
-
-> **App Support:** Home screen shows wake-up streak, cold shower button for instant logging
+### 🏠 REALITY CHECK (Constraints)
+- **Late dinner:** Around 12 AM (family schedule)
+- **Sleep time:** 12:30 - 1:00 AM
+- **Home situation:** Small home, can't workout when family is home
+- **Workout window:** 5-7 PM (when mom & brother go out)
+- **Water:** Limited, cold showers not practical
 
 ---
 
-### 🏋️ 6:00 AM - PHYSICAL PROTOCOL (1 Hour)
+## ⏰ THE IDEAL DAY SCHEDULE (REALISTIC VERSION)
 
-**The body is the foundation. Train it daily.**
+### 😴 8:30 AM - WAKE UP (7.5 Hours Sleep)
 
-| Activity | Duration | Purpose |
-|----------|----------|---------|
-| Stretching | 10 min | Flexibility, injury prevention |
-| **Hanging** | 10 min | Height maximization (spinal decompression) |
-| Push/Pull/Legs | 30 min | Muscle building, testosterone |
-| Abs | 10 min | Core strength |
+**Sleep 1 AM → Wake 8:30 AM = Healthy 7.5 hours**
 
-- 💧 Drink **2 glasses water** during workout
-- Log workout in **Physical Tab**
+- First thing: Drink 1 glass water
+- Quick stretch in bed (2 min)
+- Wash face with cold water (mini cold shock)
 
-> **App Support:** 
-> - Hanging Timer widget tracks 10-min daily target
-> - Workout logger with exercise tracking
-> - Water intake counter (target: 8 glasses)
-> - Personal bests tracking
+> **App Support:** Home screen shows wake-up time, water counter starts
 
 ---
 
-### 🍳 7:00 AM - FUEL THE MACHINE
+### 🍳 9:00 AM - BREAKFAST + PLAN
 
-**Breakfast = Brain fuel for studies**
+- Eat breakfast with protein
+- 💧 Water glass #2
+- Review today's study targets in app
+- Check exam countdown
 
-- High protein breakfast (eggs, milk, oats)
-- Log protein intake in app
-- Review today's study plan
-
-> **App Support:** Physical tab tracks daily protein intake
+> **App Support:** Exam countdown banner shows urgency
 
 ---
 
-### 📚 7:30 AM - DEEP STUDY SESSION 1 (2.5 Hours)
+### 📚 9:30 AM - DEEP STUDY SESSION 1 (2.5 Hours)
 
-**Morning brain = Peak performance. Use it for hardest subjects.**
+**Morning brain is fresh even at 9:30!**
 
 **Focus:** Political Science / Economics (exam subjects)
 
 | Time | Activity |
 |------|----------|
-| 7:30-8:30 | Chapter reading + notes |
-| 8:30-9:30 | Practice questions |
-| 9:30-10:00 | Quick revision of weak topics |
+| 9:30-10:30 | Chapter reading + notes |
+| 10:30-11:30 | Practice questions |
+| 11:30-12:00 | Quick revision of weak topics |
 
 - 🍅 Use **Pomodoro Timer** (25 min focus, 5 min break)
 - 📝 Capture key points in **Quick Notes**
-- Mark topics as completed in **Study Tracker**
+- 💪 **Gripper exercise** during breaks (quiet, no space needed)
 
 > **App Support:**
 > - Study Timer with subject selection
 > - Quick Notes (categorized: Economics, Pol Sci, History)
-> - Topic completion tracking per chapter
-> - Weak topic flagging
+> - Topic completion tracking
 
 ---
 
-### ☕ 10:00 AM - BREAK (30 Min)
+### ☕ 12:00 PM - BREAK (30 Min)
 
-- 💧 Glass of water (#3)
-- Light snack
-- **NO PHONE scrolling** - Walk outside instead
-- Quick stretching
+- 💧 Water glass #3
+- Light movement/stretching
+- Gripper sets (build forearm strength quietly)
+- **NO PHONE scrolling**
 
 ---
 
-### 📚 10:30 AM - DEEP STUDY SESSION 2 (2 Hours)
+### 📚 12:30 PM - DEEP STUDY SESSION 2 (2 Hours)
 
 **Focus:** History / Alternate subject
 
 | Time | Activity |
 |------|----------|
-| 10:30-11:30 | New chapter |
-| 11:30-12:30 | Previous year questions |
+| 12:30-1:30 | New chapter |
+| 1:30-2:30 | Previous year questions |
 
 - Continue logging in Study Timer
 - Add important dates/facts to Quick Notes
 
 ---
 
-### 🍽️ 12:30 PM - LUNCH + REST
+### 🍽️ 2:30 PM - LUNCH + REST
 
 - Proper meal with protein
-- 💧 Glass of water (#4)
+- 💧 Water glass #4
 - 20-minute power nap OR light reading
 - **Emergency Panel** if feeling procrastination urge
 
@@ -119,7 +103,7 @@
 
 ---
 
-### 📚 2:00 PM - STUDY SESSION 3 (2 Hours)
+### 📚 3:30 PM - STUDY SESSION 3 (1.5 Hours)
 
 **Focus:** Revision + Weak Topics
 
@@ -129,127 +113,147 @@
 
 ---
 
-### 🎮 4:00 PM - SKILL HOUR
+### 🏋️ 5:00 PM - WORKOUT TIME! (Family Out)
 
-**Life isn't just studies. Build diverse skills.**
+**This is YOUR window. Make it count!**
 
-Pick ONE skill to practice daily:
-- 🎸 Guitar (30 min)
-- ♟️ Chess puzzles (30 min)
-- 💻 Coding/Tech skills
-- 🗣️ English speaking practice
+| Activity | Duration | Purpose |
+|----------|----------|---------|
+| Warm-up | 5 min | Prepare body |
+| **Hanging** | 10-15 min | Height maximization |
+| Push-ups | 10 min | Chest, triceps |
+| Squats | 10 min | Legs, testosterone |
+| Abs | 10 min | Core strength |
+| Pull-ups (if possible) | 5 min | Back, biceps |
+| Stretching | 5 min | Cool down |
 
-> **App Support:** Skills Tab tracks practice hours, skill levels, progress
+- 💧 Water glasses #5, #6 during workout
+- Log workout in **Physical Tab**
 
----
-
-### 🏃 5:00 PM - EVENING PHYSICAL
-
-**Second dose of movement. Active recovery.**
-
-- Evening walk/jog (20-30 min)
-- **Hanging session #2** (5-10 min)
-- 💧 Water (#5, #6)
-
-> **App Support:** Hanging Timer, Step tracking suggestion
+> **App Support:** 
+> - Hanging Timer widget tracks daily target
+> - Workout logger with exercise tracking
+> - Water intake counter
 
 ---
 
-### 📚 5:30 PM - LIGHT STUDY (1.5 Hours)
+### 🚿 6:00 PM - QUICK REFRESH
 
-**Revision mode - No new heavy content**
+- Wash up / shower (whatever water allows)
+- 💧 Water glass #7
+- Fresh clothes
 
-- Flashcard review
+---
+
+### 📚 6:30 PM - EVENING STUDY (1.5 Hours)
+
+**Light revision mode:**
+- Flashcard mental review
 - Quick Notes revision
 - Tomorrow's topics preview
 
 ---
 
-### 🍽️ 7:00 PM - DINNER + FAMILY TIME
+### 🎮 8:00 PM - SKILL/BREAK TIME (1 Hour)
 
+**You need rest too. But make it productive rest:**
+
+Pick ONE:
+- 🎸 Guitar practice (30 min)
+- ♟️ Chess puzzles online
+- 💻 Watch educational content
+- 📖 Read something interesting
+
+> **App Support:** Skills Tab tracks practice hours
+
+---
+
+### 📚 9:00 PM - FINAL STUDY BLOCK (1.5 Hours)
+
+**Last push before wind-down:**
+- Complete any pending topics
+- Quick revision of weak areas
+- Practice 1 sample paper section
+
+---
+
+### 🌙 10:30 PM - WIND DOWN
+
+**Prepare brain for sleep:**
+- Screen brightness down
+- Light reading (non-study)
+- 💧 Water glass #8
+- Log Daily Check-in in app
+
+> **App Support:** Daily Check-in captures mood, completion
+
+---
+
+### 🍽️ 12:00 AM - LATE DINNER
+
+**Family dinner time (this is your reality)**
 - Eat with family
-- 💧 Water (#7)
-- NO screens during dinner
-- Discuss day with parents
+- Keep it light if possible
+- No heavy studying after this
 
 ---
 
-### 📱 7:30 PM - CONTROLLED PHONE TIME (30 Min MAX)
-
-**If you must use phone, use it intentionally:**
-- Reply to messages
-- Check important updates
-- Educational YouTube ONLY
-
-⚠️ **DANGER ZONE** - If urge hits, use **SOS Emergency Mode**
-
-> **App Support:** SOS Overlay with instant motivation, breathing guide, streak reminder
-
----
-
-### 📚 8:00 PM - FINAL STUDY BLOCK (1 Hour)
-
-**Light revision only:**
-- Skim through day's notes
-- Mental recall practice
-- Set tomorrow's goals
-
----
-
-### 🌙 9:00 PM - WIND DOWN PROTOCOL
-
-**Prepare brain for quality sleep:**
-
-| Activity | Duration |
-|----------|----------|
-| Screen off | 9:00 PM |
-| Quick Notes review | 10 min |
-| Journaling/Reflection | 10 min |
-| Reading (non-study) | 20 min |
-| Meditation/Breathing | 10 min |
+### 😴 12:30 - 1:00 AM - SLEEP
 
 - ✅ Mark day complete in app
-- 💧 Final water (#8)
-- Log Daily Check-in
+- Check tomorrow's priorities
+- Lights out
 
-> **App Support:** Daily Check-in captures mood, completion, reflection
-
----
-
-### 😴 10:00 PM - LIGHTS OUT
-
-**8 hours sleep = Tomorrow's performance**
-
-Sleep tracking goal: 10 PM - 5:30 AM (7.5 hours)
+**Target: 7.5 hours minimum sleep**
 
 ---
 
-## 📊 DAILY TARGETS SUMMARY
+## 📊 DAILY TARGETS SUMMARY (ADJUSTED)
 
 | Metric | Target | App Tracking |
 |--------|--------|--------------|
-| Wake Time | 5:30 AM | Wake Streak |
-| Cold Showers | 1 | Cold Shower Counter |
-| Study Hours | 8+ hours | Study Timer |
-| Hanging | 15-20 min | Hanging Timer |
+| Wake Time | 8:30 AM | Check-in |
+| Study Hours | 7+ hours | Study Timer |
+| Hanging | 10-15 min | Hanging Timer |
 | Water | 8 glasses | Water Counter |
-| Workout | 1 session | Workout Log |
+| Workout | 5-6 PM window | Workout Log |
+| Gripper | Throughout day | Quick log |
 | NoFap | Day +1 | Discipline Streak |
-| Sleep | 7.5-8 hours | Check-in |
+| Sleep | 7.5 hours | 1 AM → 8:30 AM |
 
 ---
 
-## 🔥 THE NON-NEGOTIABLES
+## 🔥 THE NON-NEGOTIABLES (REALISTIC)
 
 These happen EVERY day, no excuses:
 
-1. **🧊 Cold Shower** - Mental toughness builder
-2. **🏋️ Morning Workout** - Testosterone, energy
-3. **📐 Hanging** - Height optimization
-4. **📚 6+ Hours Study** - Exam preparation
-5. **💧 8 Glasses Water** - Brain function
+1. **💧 8 Glasses Water** - Brain function, height
+2. **🏋️ 5-6 PM Workout** - Use the window!
+3. **📐 Hanging** - Height optimization (during workout)
+4. **📚 7+ Hours Study** - Exam preparation
+5. **💪 Gripper** - Forearm strength (quiet, anytime)
 6. **🛡️ NoFap** - Energy retention, focus
-7. **😴 10 PM Sleep** - Recovery, growth hormone
+7. **😴 7.5 Hours Sleep** - Recovery, growth hormone
+
+### ❌ REMOVED (Not Practical)
+- ~~Cold showers~~ → Cold water face wash instead
+- ~~5:30 AM wake~~ → 8:30 AM (realistic with late dinner)
+- ~~Morning workout~~ → 5-6 PM when family out
+
+---
+
+## 💪 GRIPPER PROTOCOL (Anytime, Anywhere)
+
+Since you can't do regular workouts when family is home, **gripper is your secret weapon:**
+
+| When | Sets | Purpose |
+|------|------|---------|
+| Morning after wake | 3 sets x 20 | Wake up muscles |
+| Study breaks | 2 sets x 15 | Blood flow to brain |
+| Before workout | 2 sets x 10 | Warm up |
+| Before sleep | 2 sets x 20 | Tire out for sleep |
+
+**Benefits:** Forearm strength, grip power, stress relief, can do silently
 
 ---
 
@@ -260,9 +264,9 @@ These happen EVERY day, no excuses:
 1. **Tap SOS Button** → Instant motivation
 2. **Read your streak** → Remember the progress
 3. **Breathing Exercise** → 4-7-8 technique
-4. **Cold Water on Face** → Shock system
-5. **20 Pushups** → Redirect energy
-6. **Call a friend** → Accountability
+4. **Splash cold water on face** → Shock system
+5. **20 Gripper reps** → Redirect energy
+6. **Leave the room** → Change environment
 
 ---
 
@@ -272,45 +276,39 @@ These happen EVERY day, no excuses:
 - Morning greeting with focus suggestion
 - Exam countdown (days left)
 - Today's tasks preview
-- Quick action buttons (Day ✓, Cold ✓, Water)
+- Quick action buttons (Day ✓, Water)
 - Current streaks at a glance
-- Next milestone motivation
 
 ### Physical Tab
-- Workout logging
+- Workout logging (for 5-6 PM session)
 - Water intake tracking
 - Hanging timer with progress
 - Personal bests
-- Measurements tracking
 
 ### Mind Tab  
 - Study timer with subject selection
 - Topic/Chapter progress tracker
 - Quick Notes by category
 - Exam countdown
-- Pomodoro sessions log
 
 ### Discipline (Built-in)
 - NoFap streak counter
-- Cold shower tracking
-- Wake-up streak
 - SOS Emergency overlay
 - Motivation quotes
 
-### Settings
-- Weekly Review (see progress)
-- Dark mode for night use
-- Sound effects for dopamine hits
-
 ---
 
-## 💪 REMEMBER
+## 🎯 YOUR SCHEDULE TRUTH
 
-> *"You're not building a streak. You're building a MAN."*
+| Old (Unrealistic) | New (Your Reality) |
+|-------------------|-------------------|
+| Wake 5:30 AM | Wake 8:30 AM |
+| Cold shower | Cold face wash |
+| Morning workout | 5-6 PM workout |
+| Sleep 10 PM | Sleep 1 AM |
+| 8 hrs sleep | 7.5 hrs sleep |
 
-Every cold shower, every study session, every rep, every glass of water - it all compounds.
-
-**The 7K App doesn't build the ideal day for you. YOU do. The app just makes it trackable, visible, and rewarding.**
+**This schedule respects your family situation while maximizing every opportunity.**
 
 ---
 
@@ -322,8 +320,8 @@ Every cold shower, every study session, every rep, every glass of water - it all
 | Economics | Feb 22, 2026 | 5 days |
 | History | Feb 27, 2026 | 10 days |
 
-**Every hour counts. Let's go, Kunal.** 🔥
+**POL SCI IS TOMORROW. Focus mode activated!** 🔥
 
 ---
 
-*Generated for Kunal's 7K Improvement System - February 2026*
+*Adjusted for Kunal's real life - February 2026*
