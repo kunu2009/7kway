@@ -179,6 +179,194 @@ const getCurrentTimeFormatted = (): string => {
   });
 };
 
+// --- Celebration System ---
+
+// Confetti particle component
+const ConfettiParticle = ({ delay, color, left }: { delay: number; color: string; left: number }) => (
+  <div 
+    className="absolute w-3 h-3 rounded-sm animate-confetti-fall"
+    style={{
+      left: `${left}%`,
+      backgroundColor: color,
+      animationDelay: `${delay}ms`,
+      transform: `rotate(${Math.random() * 360}deg)`
+    }}
+  />
+);
+
+// Confetti celebration overlay
+const ConfettiCelebration = ({ 
+  isActive, 
+  onComplete,
+  message,
+  subMessage,
+  emoji
+}: { 
+  isActive: boolean; 
+  onComplete: () => void;
+  message: string;
+  subMessage?: string;
+  emoji?: string;
+}) => {
+  useEffect(() => {
+    if (isActive) {
+      const timer = setTimeout(onComplete, 3000);
+      return () => clearTimeout(timer);
+    }
+  }, [isActive, onComplete]);
+
+  if (!isActive) return null;
+
+  const colors = ['#FFD700', '#FF6B6B', '#4ECDC4', '#45B7D1', '#96CEB4', '#FFEAA7', '#DDA0DD', '#98D8C8'];
+  const particles = Array.from({ length: 50 }, (_, i) => ({
+    id: i,
+    delay: Math.random() * 500,
+    color: colors[Math.floor(Math.random() * colors.length)],
+    left: Math.random() * 100
+  }));
+
+  return (
+    <div className="fixed inset-0 z-[200] pointer-events-none overflow-hidden">
+      {/* Confetti particles */}
+      {particles.map(p => (
+        <ConfettiParticle key={p.id} delay={p.delay} color={p.color} left={p.left} />
+      ))}
+      
+      {/* Central celebration message */}
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="bg-white/95 dark:bg-slate-900/95 backdrop-blur-xl rounded-3xl p-8 shadow-2xl text-center animate-bounce-in pointer-events-auto">
+          <div className="text-6xl mb-4">{emoji || '🎉'}</div>
+          <h2 className="text-2xl font-black text-slate-900 dark:text-white mb-2">{message}</h2>
+          {subMessage && <p className="text-slate-500 text-sm">{subMessage}</p>}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Level Up celebration overlay
+const LevelUpCelebration = ({ 
+  isActive, 
+  level,
+  onComplete 
+}: { 
+  isActive: boolean; 
+  level: number;
+  onComplete: () => void;
+}) => {
+  useEffect(() => {
+    if (isActive) {
+      const timer = setTimeout(onComplete, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isActive, onComplete]);
+
+  if (!isActive) return null;
+
+  return (
+    <div className="fixed inset-0 z-[200] bg-gradient-to-br from-amber-500/90 to-orange-600/90 flex items-center justify-center animate-in fade-in duration-300">
+      <div className="text-center">
+        <div className="relative">
+          <div className="text-8xl font-black text-white animate-pulse">{level}</div>
+          <div className="absolute -top-4 -right-4 text-4xl animate-bounce">⬆️</div>
+        </div>
+        <h2 className="text-3xl font-black text-white mt-4 animate-bounce-in">LEVEL UP!</h2>
+        <p className="text-white/80 text-lg mt-2">You're becoming unstoppable</p>
+        <div className="mt-6 flex justify-center gap-2">
+          {['💪', '🔥', '⚡', '🏆', '👑'].map((e, i) => (
+            <span key={i} className="text-3xl animate-bounce" style={{ animationDelay: `${i * 100}ms` }}>{e}</span>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// Streak milestone celebration
+const StreakCelebration = ({ 
+  isActive, 
+  streak,
+  type,
+  onComplete 
+}: { 
+  isActive: boolean; 
+  streak: number;
+  type: 'general' | 'nofap' | 'coldshower';
+  onComplete: () => void;
+}) => {
+  useEffect(() => {
+    if (isActive) {
+      const timer = setTimeout(onComplete, 3500);
+      return () => clearTimeout(timer);
+    }
+  }, [isActive, onComplete]);
+
+  if (!isActive) return null;
+
+  const config = {
+    general: { color: 'from-orange-500 to-red-500', emoji: '🔥', title: 'STREAK MILESTONE!' },
+    nofap: { color: 'from-violet-500 to-purple-600', emoji: '👑', title: 'DISCIPLINE KING!' },
+    coldshower: { color: 'from-cyan-500 to-blue-600', emoji: '🧊', title: 'ICE COLD!' }
+  };
+
+  const { color, emoji, title } = config[type];
+
+  return (
+    <div className={`fixed inset-0 z-[200] bg-gradient-to-br ${color} flex items-center justify-center animate-in fade-in duration-300`}>
+      <div className="text-center">
+        <div className="text-8xl mb-4 animate-bounce">{emoji}</div>
+        <div className="text-6xl font-black text-white">{streak}</div>
+        <p className="text-white/80 text-xl">DAYS</p>
+        <h2 className="text-3xl font-black text-white mt-4">{title}</h2>
+        <p className="text-white/70 text-sm mt-2">Keep going. You're rewriting your brain.</p>
+      </div>
+    </div>
+  );
+};
+
+// Add CSS keyframes to document (run once)
+const injectCelebrationStyles = () => {
+  if (document.getElementById('celebration-styles')) return;
+  
+  const style = document.createElement('style');
+  style.id = 'celebration-styles';
+  style.textContent = `
+    @keyframes confetti-fall {
+      0% {
+        transform: translateY(-100vh) rotate(0deg);
+        opacity: 1;
+      }
+      100% {
+        transform: translateY(100vh) rotate(720deg);
+        opacity: 0;
+      }
+    }
+    
+    @keyframes bounce-in {
+      0% {
+        transform: scale(0);
+        opacity: 0;
+      }
+      50% {
+        transform: scale(1.2);
+      }
+      100% {
+        transform: scale(1);
+        opacity: 1;
+      }
+    }
+    
+    .animate-confetti-fall {
+      animation: confetti-fall 3s ease-in-out forwards;
+    }
+    
+    .animate-bounce-in {
+      animation: bounce-in 0.5s ease-out forwards;
+    }
+  `;
+  document.head.appendChild(style);
+};
+
 // --- Anti-Procrastination Emergency System ---
 
 // 2-Minute Tasks for "I Can't Start" mode
@@ -3087,7 +3275,29 @@ const App: React.FC = () => {
   const [data, setData] = useState<AppData>(() => loadData());
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
   const [showSOS, setShowSOS] = useState(false);
+  
+  // Celebration states
+  const [celebration, setCelebration] = useState<{
+    type: 'confetti' | 'levelup' | 'streak' | null;
+    message?: string;
+    subMessage?: string;
+    emoji?: string;
+    streak?: number;
+    level?: number;
+    streakType?: 'general' | 'nofap' | 'coldshower';
+  }>({ type: null });
+  
+  // Track previous values for milestone detection
+  const prevLevelRef = React.useRef<number>(Math.floor(data.stats.xp / 1000) + 1);
+  const prevNoFapStreakRef = React.useRef<number>(data.discipline.noFapStreak);
+  const prevColdStreakRef = React.useRef<number>(data.discipline.coldShowerStreak || 0);
+  
   const accent = data.settings.accentColor || 'teal';
+
+  // Inject celebration styles on mount
+  useEffect(() => {
+    injectCelebrationStyles();
+  }, []);
 
   // --- Splash Screen Cleanup ---
   useEffect(() => {
@@ -3122,6 +3332,43 @@ const App: React.FC = () => {
   const level = useMemo(() => Math.floor(data.stats.xp / 1000) + 1, [data.stats.xp]);
   const xpInCurrentLevel = useMemo(() => data.stats.xp % 1000, [data.stats.xp]);
   const progressPercent = (xpInCurrentLevel / 1000) * 100;
+
+  // Detect milestone achievements and trigger celebrations
+  useEffect(() => {
+    const noFapMilestones = [7, 14, 30, 60, 90];
+    const coldMilestones = [7, 14, 30];
+    
+    // Level up detection
+    if (level > prevLevelRef.current) {
+      setCelebration({ type: 'levelup', level });
+      prevLevelRef.current = level;
+      return;
+    }
+    
+    // NoFap streak milestone detection
+    const currentNoFap = data.discipline.noFapStreak;
+    if (currentNoFap > prevNoFapStreakRef.current) {
+      if (noFapMilestones.includes(currentNoFap)) {
+        setCelebration({ type: 'streak', streak: currentNoFap, streakType: 'nofap' });
+      }
+      prevNoFapStreakRef.current = currentNoFap;
+      return;
+    }
+    
+    // Cold shower streak detection
+    const currentCold = data.discipline.coldShowerStreak || 0;
+    if (currentCold > prevColdStreakRef.current) {
+      if (coldMilestones.includes(currentCold)) {
+        setCelebration({ type: 'streak', streak: currentCold, streakType: 'coldshower' });
+      }
+      prevColdStreakRef.current = currentCold;
+    }
+  }, [level, data.discipline.noFapStreak, data.discipline.coldShowerStreak]);
+
+  // Helper to trigger custom confetti celebration
+  const triggerCelebration = useCallback((message: string, subMessage?: string, emoji?: string) => {
+    setCelebration({ type: 'confetti', message, subMessage, emoji });
+  }, []);
 
   const actions = useMemo(() => ({
     // XP Action
@@ -3362,9 +3609,10 @@ const App: React.FC = () => {
     },
     setData,
     setActiveTab,
+    triggerCelebration,
     level,
     accent
-  }), [level, accent, setActiveTab]);
+  }), [level, accent, setActiveTab, triggerCelebration]);
 
   const completionRate = useMemo(() => {
     const today = new Date().toISOString().split('T')[0];
@@ -3545,6 +3793,26 @@ const App: React.FC = () => {
         data={data} 
         actions={actions} 
         accent={accent} 
+      />
+      
+      {/* Celebration Overlays */}
+      <ConfettiCelebration 
+        isActive={celebration.type === 'confetti'}
+        onComplete={() => setCelebration({ type: null })}
+        message={celebration.message || 'Amazing!'}
+        subMessage={celebration.subMessage}
+        emoji={celebration.emoji}
+      />
+      <LevelUpCelebration 
+        isActive={celebration.type === 'levelup'}
+        level={celebration.level || level}
+        onComplete={() => setCelebration({ type: null })}
+      />
+      <StreakCelebration 
+        isActive={celebration.type === 'streak'}
+        streak={celebration.streak || 0}
+        type={celebration.streakType || 'general'}
+        onComplete={() => setCelebration({ type: null })}
       />
     </div>
   );
