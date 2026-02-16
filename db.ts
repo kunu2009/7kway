@@ -252,7 +252,8 @@ const INITIAL_DATA: AppData = {
         ]}
       ]
     }
-  ]
+  ],
+  quickNotes: []
 };
 
 export const loadData = (): AppData => {
@@ -298,6 +299,7 @@ export const loadData = (): AppData => {
       checkIns: Array.isArray(parsed.checkIns) ? parsed.checkIns : INITIAL_DATA.checkIns,
       protocols: Array.isArray(parsed.protocols) ? parsed.protocols : INITIAL_DATA.protocols,
       studySubjects: Array.isArray(parsed.studySubjects) ? parsed.studySubjects : INITIAL_DATA.studySubjects,
+      quickNotes: Array.isArray(parsed.quickNotes) ? parsed.quickNotes : INITIAL_DATA.quickNotes,
       totalEarnings: parsed.totalEarnings || 0,
       onboardingCompleted: !!parsed.onboardingCompleted
     };

@@ -244,6 +244,13 @@ export interface UserProfile {
   goal: FitnessGoal;
 }
 
+export interface QuickNote {
+  id: string;
+  content: string;
+  category: string;
+  createdAt: string;
+}
+
 export interface AppData {
   user: UserProfile;
   onboardingCompleted: boolean;
@@ -265,4 +272,5 @@ export interface AppData {
   checkIns: DailyCheckIn[];
   protocols: DailyProtocol[];
   studySubjects: StudySubject[];
+  quickNotes: QuickNote[];
 }

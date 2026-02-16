@@ -3516,12 +3516,12 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
           <div className="flex items-center justify-between">
             <div>
               <p className="text-xs text-slate-500 dark:text-slate-400">⏳ Next Exam</p>
-              <h3 className={`font-bold text-${accent}-600 dark:text-${accent}-400 text-lg`}>{nearestExam.subject}</h3>
-              <p className="text-xs text-slate-500">{nearestExam.date}</p>
+              <h3 className={`font-bold text-${accent}-600 dark:text-${accent}-400 text-lg`}>{nearestExam.exam.subject}</h3>
+              <p className="text-xs text-slate-500">{nearestExam.exam.date}</p>
             </div>
             <div className="text-right">
               <div className={`text-3xl font-black text-${accent}-500`}>
-                {Math.ceil((new Date(nearestExam.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}
+                {nearestExam.daysLeft}
               </div>
               <p className="text-[10px] text-slate-400">days left</p>
             </div>
@@ -3530,7 +3530,7 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
             <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
               <div 
                 className={`h-full bg-gradient-to-r from-${accent}-400 to-${accent}-600 rounded-full transition-all`}
-                style={{ width: `${Math.max(0, Math.min(100, 100 - (Math.ceil((new Date(nearestExam.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) / 60) * 100))}%` }}
+                style={{ width: `${Math.max(0, Math.min(100, 100 - (nearestExam.daysLeft / 60) * 100))}%` }}
               />
             </div>
             <p className="text-[9px] text-center text-slate-400 mt-1">Preparation Progress</p>
