@@ -3625,7 +3625,7 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
             >
               <div className="w-4 h-4 rounded border-2 border-slate-300 dark:border-slate-600 flex-shrink-0"/>
               <span className="text-sm text-slate-700 dark:text-slate-300 truncate">{task.title}</span>
-              {task.priority > 3 && <Star size={12} className="text-amber-400 fill-amber-400 flex-shrink-0"/>}
+              {task.isPriority && <Star size={12} className="text-amber-400 fill-amber-400 flex-shrink-0"/>}
             </button>
           ))}
           {data.tasks.filter(t => !t.completed).length > 3 && (
