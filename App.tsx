@@ -3660,7 +3660,7 @@ const WeeklyReview: React.FC<WeeklyReviewProps> = ({ data, accent, onClose }) =>
   
   // Mood trend
   const weeklyMoods = weeklyCheckIns > 0 
-    ? data.checkIns.filter(c => c.date >= weekAgoStr).map(c => c.morningMood)
+    ? data.checkIns.filter(c => c.date >= weekAgoStr && c.morning?.mood).map(c => c.morning.mood)
     : [];
   const avgMood = weeklyMoods.length > 0 
     ? weeklyMoods.reduce((a, b) => a + b, 0) / weeklyMoods.length 
@@ -3916,18 +3916,6 @@ const App: React.FC = () => {
   }, [data.settings.soundEnabled]);
 
   const actions = useMemo(() => ({
-    // XP Action with sound
-    addXP: (amount: number) => {
-      setData(prev => {
-        if (prev.settings.soundEnabled) {
-          SoundEffects.xpGain();
-        }
-        return {
-          ...prev,
-          stats: { ...prev.stats, xp: prev.stats.xp + amount }
-        };
-      });
-    },
     updatePhysicalStat: (key: keyof PhysicalStats, val: number) => setData(prev => ({ ...prev, physical: { ...prev.physical, [key]: val }})),
     updatePB: (key: keyof PhysicalStats['pbs'], val: number) => setData(prev => ({ 
       ...prev, 
@@ -3940,8 +3928,12 @@ const App: React.FC = () => {
         measurements: { ...(prev.physical.measurements || {}), [key]: val } 
       }
     })),
+    // XP Action with sound and logging
     addXP: (amt: number, lbl: string) => {
       setData(prev => {
+        if (prev.settings.soundEnabled) {
+          SoundEffects.xpGain();
+        }
         const newLog: LogEntry = {
           id: Math.random().toString(),
           timestamp: new Date().toISOString(),
