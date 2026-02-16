@@ -203,6 +203,7 @@ export type AccentColor = 'teal' | 'cyan' | 'violet' | 'rose' | 'orange';
 export interface AppSettings {
   dopamineMode: boolean;
   darkMode: boolean;
+  soundEnabled: boolean;
   accentColor: AccentColor;
   activeSections: {
     physical: boolean;

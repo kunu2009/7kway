@@ -179,6 +179,97 @@ const getCurrentTimeFormatted = (): string => {
   });
 };
 
+// --- Sound Effects System ---
+
+// Audio context singleton
+let audioContext: AudioContext | null = null;
+
+const getAudioContext = (): AudioContext | null => {
+  if (typeof window === 'undefined') return null;
+  if (!audioContext) {
+    try {
+      audioContext = new (window.AudioContext || (window as any).webkitAudioContext)();
+    } catch (e) {
+      console.log('Web Audio API not supported');
+      return null;
+    }
+  }
+  return audioContext;
+};
+
+// Play a tone with given frequency and duration
+const playTone = (frequency: number, duration: number, type: OscillatorType = 'sine', volume: number = 0.3) => {
+  const ctx = getAudioContext();
+  if (!ctx) return;
+  
+  try {
+    const oscillator = ctx.createOscillator();
+    const gainNode = ctx.createGain();
+    
+    oscillator.connect(gainNode);
+    gainNode.connect(ctx.destination);
+    
+    oscillator.type = type;
+    oscillator.frequency.setValueAtTime(frequency, ctx.currentTime);
+    
+    // Envelope
+    gainNode.gain.setValueAtTime(0, ctx.currentTime);
+    gainNode.gain.linearRampToValueAtTime(volume, ctx.currentTime + 0.01);
+    gainNode.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + duration);
+    
+    oscillator.start(ctx.currentTime);
+    oscillator.stop(ctx.currentTime + duration);
+  } catch (e) {
+    // Audio playback failed, silently ignore
+  }
+};
+
+// Sound effect presets
+const SoundEffects = {
+  // Short pleasant ding for XP gain
+  xpGain: () => {
+    playTone(880, 0.1, 'sine', 0.2);
+    setTimeout(() => playTone(1108, 0.15, 'sine', 0.15), 50);
+  },
+  
+  // Triumphant sound for level up
+  levelUp: () => {
+    const notes = [523, 659, 784, 1047]; // C5, E5, G5, C6
+    notes.forEach((freq, i) => {
+      setTimeout(() => playTone(freq, 0.3, 'sine', 0.25), i * 100);
+    });
+  },
+  
+  // Celebratory tone for milestones
+  milestone: () => {
+    playTone(784, 0.15, 'sine', 0.3);
+    setTimeout(() => playTone(988, 0.15, 'sine', 0.25), 100);
+    setTimeout(() => playTone(1175, 0.25, 'sine', 0.2), 200);
+  },
+  
+  // Satisfying click for task completion
+  taskComplete: () => {
+    playTone(600, 0.08, 'square', 0.15);
+    setTimeout(() => playTone(800, 0.1, 'sine', 0.2), 30);
+  },
+  
+  // Button tap feedback
+  tap: () => {
+    playTone(400, 0.05, 'sine', 0.1);
+  },
+  
+  // Error/warning beep
+  error: () => {
+    playTone(200, 0.15, 'sawtooth', 0.2);
+  },
+  
+  // Streak increment
+  streak: () => {
+    playTone(523, 0.1, 'sine', 0.2);
+    setTimeout(() => playTone(659, 0.15, 'sine', 0.2), 80);
+  }
+};
+
 // --- Celebration System ---
 
 // Confetti particle component
@@ -1423,6 +1514,9 @@ const ProtocolWidget = ({ data, actions, accent }: { data: AppData, actions: any
 
   const toggleTask = (taskId: string) => {
     const updatedProtocol = { ...todayProtocol };
+    const task = tasks.find(t => t.id === taskId);
+    const wasCompleted = task?.completed;
+    
     if (activeProtocol === 'morning') {
       updatedProtocol.morningTasks = todayProtocol.morningTasks.map(t => 
         t.id === taskId ? { ...t, completed: !t.completed } : t
@@ -1435,9 +1529,11 @@ const ProtocolWidget = ({ data, actions, accent }: { data: AppData, actions: any
       updatedProtocol.nightScore = updatedProtocol.nightTasks.filter(t => t.completed).reduce((a, t) => a + t.xp, 0);
     }
     
-    const task = tasks.find(t => t.id === taskId);
-    if (task && !task.completed) {
+    if (task && !wasCompleted) {
       actions.addXP(task.xp, `Protocol: ${task.name}`);
+      if (data.settings.soundEnabled) SoundEffects.taskComplete();
+    } else if (data.settings.soundEnabled) {
+      SoundEffects.tap();
     }
     
     actions.saveProtocol(updatedProtocol);
@@ -2143,7 +2239,10 @@ const PomodoroTimer = ({ data, actions, accent }: { data: AppData, actions: any,
         setTimeLeft(prev => prev - 1);
       }, 1000);
     } else if (timeLeft === 0) {
-      // Session complete
+      // Session complete - play sound
+      if (data.settings.soundEnabled) {
+        SoundEffects.milestone();
+      }
       if (!isBreak) {
         actions.addXP(50, `Pomodoro: ${subject}`);
         actions.logPomodoroSession(subject, 25, sessionType);
@@ -2920,6 +3019,33 @@ const SettingsTab = ({ data, actions }: TabProps) => {
           </div>
       </div>
 
+      {/* Sound Effects Toggle */}
+      <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-3">
+            {data.settings.soundEnabled ? <Volume2 size={20} className={`text-${accent}-500`} /> : <VolumeX size={20} className="text-slate-400" />}
+            <div>
+              <p className="text-sm font-bold">Sound Effects</p>
+              <p className="text-[10px] text-slate-400">Audio feedback for achievements</p>
+            </div>
+          </div>
+          <button 
+            onClick={() => {
+              actions.setData((prev: AppData) => ({ 
+                ...prev, 
+                settings: { ...prev.settings, soundEnabled: !prev.settings.soundEnabled }
+              }));
+              if (!data.settings.soundEnabled) {
+                SoundEffects.tap();
+              }
+            }}
+            className={`w-12 h-7 rounded-full transition-all ${data.settings.soundEnabled ? `bg-${accent}-500` : 'bg-slate-300 dark:bg-slate-700'}`}
+          >
+            <div className={`w-5 h-5 rounded-full bg-white shadow-md transition-all ${data.settings.soundEnabled ? 'translate-x-6' : 'translate-x-1'}`} />
+          </button>
+        </div>
+      </div>
+
       {/* Profile Info */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
         <p className="text-sm font-bold mb-3">Profile</p>
@@ -3337,10 +3463,12 @@ const App: React.FC = () => {
   useEffect(() => {
     const noFapMilestones = [7, 14, 30, 60, 90];
     const coldMilestones = [7, 14, 30];
+    const soundOn = data.settings.soundEnabled;
     
     // Level up detection
     if (level > prevLevelRef.current) {
       setCelebration({ type: 'levelup', level });
+      if (soundOn) SoundEffects.levelUp();
       prevLevelRef.current = level;
       return;
     }
@@ -3350,6 +3478,7 @@ const App: React.FC = () => {
     if (currentNoFap > prevNoFapStreakRef.current) {
       if (noFapMilestones.includes(currentNoFap)) {
         setCelebration({ type: 'streak', streak: currentNoFap, streakType: 'nofap' });
+        if (soundOn) SoundEffects.milestone();
       }
       prevNoFapStreakRef.current = currentNoFap;
       return;
@@ -3360,22 +3489,31 @@ const App: React.FC = () => {
     if (currentCold > prevColdStreakRef.current) {
       if (coldMilestones.includes(currentCold)) {
         setCelebration({ type: 'streak', streak: currentCold, streakType: 'coldshower' });
+        if (soundOn) SoundEffects.streak();
       }
       prevColdStreakRef.current = currentCold;
     }
-  }, [level, data.discipline.noFapStreak, data.discipline.coldShowerStreak]);
+  }, [level, data.discipline.noFapStreak, data.discipline.coldShowerStreak, data.settings.soundEnabled]);
 
   // Helper to trigger custom confetti celebration
   const triggerCelebration = useCallback((message: string, subMessage?: string, emoji?: string) => {
     setCelebration({ type: 'confetti', message, subMessage, emoji });
-  }, []);
+    if (data.settings.soundEnabled) SoundEffects.milestone();
+  }, [data.settings.soundEnabled]);
 
   const actions = useMemo(() => ({
-    // XP Action
-    addXP: (amount: number) => setData(prev => ({
-      ...prev,
-      stats: { ...prev.stats, xp: prev.stats.xp + amount }
-    })),
+    // XP Action with sound
+    addXP: (amount: number) => {
+      setData(prev => {
+        if (prev.settings.soundEnabled) {
+          SoundEffects.xpGain();
+        }
+        return {
+          ...prev,
+          stats: { ...prev.stats, xp: prev.stats.xp + amount }
+        };
+      });
+    },
     updatePhysicalStat: (key: keyof PhysicalStats, val: number) => setData(prev => ({ ...prev, physical: { ...prev.physical, [key]: val }})),
     updatePB: (key: keyof PhysicalStats['pbs'], val: number) => setData(prev => ({ 
       ...prev, 
@@ -3569,14 +3707,17 @@ const App: React.FC = () => {
     },
     // Skills Actions
     logSkillPractice: (skillId: string, hours: number) => {
-      setData(prev => ({
-        ...prev,
-        skills: prev.skills.map(s => s.id === skillId ? {
-          ...s,
-          hoursLogged: s.hoursLogged + hours,
-          lastPracticed: new Date().toISOString()
-        } : s)
-      }));
+      setData(prev => {
+        if (prev.settings.soundEnabled) SoundEffects.taskComplete();
+        return {
+          ...prev,
+          skills: prev.skills.map(s => s.id === skillId ? {
+            ...s,
+            hoursLogged: s.hoursLogged + hours,
+            lastPracticed: new Date().toISOString()
+          } : s)
+        };
+      });
     },
     addSkill: (name: string, category: SkillCategory) => {
       const newSkill: Skill = {

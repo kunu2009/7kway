@@ -120,6 +120,7 @@ const INITIAL_DATA: AppData = {
   settings: {
     dopamineMode: false,
     darkMode: true,
+    soundEnabled: true,
     accentColor: 'teal',
     activeSections: {
       physical: true,
