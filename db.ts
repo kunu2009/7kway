@@ -94,7 +94,7 @@ const INITIAL_DATA: AppData = {
   tasks: [
     { id: 't1', title: 'Complete Mewing Routine (10m)', completed: false, isPriority: true, createdAt: new Date().toISOString() },
     { id: 't2', title: 'Hanging Exercises (20 min)', completed: false, isPriority: true, createdAt: new Date().toISOString() },
-    { id: 't3', title: 'Read Economics Chapter 1', completed: false, isPriority: true, createdAt: new Date().toISOString() },
+    { id: 't3', title: 'Iron my clothes', completed: false, isPriority: true, createdAt: new Date().toISOString() },
     { id: 't4', title: 'Apply Sunscreen before going out', completed: false, isPriority: false, createdAt: new Date().toISOString() },
   ],
   physical: {

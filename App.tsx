@@ -3532,6 +3532,114 @@ const ProgressRing: React.FC<ProgressRingProps> = ({
   );
 };
 
+// --- Personal Tasks Widget ---
+interface TasksWidgetProps {
+  data: AppData;
+  actions: any;
+  accent: string;
+}
+
+const TasksWidget: React.FC<TasksWidgetProps> = ({ data, actions, accent }) => {
+  const [newTaskTitle, setNewTaskTitle] = useState('');
+  const [showAdd, setShowAdd] = useState(false);
+
+  const handleAddTask = () => {
+    if (newTaskTitle.trim()) {
+      actions.addTask(newTaskTitle.trim(), true);
+      setNewTaskTitle('');
+      setShowAdd(false);
+      if (data.settings.soundEnabled) SoundEffects.tap();
+    }
+  };
+
+  const handleToggle = (taskId: string) => {
+    actions.toggleTask(taskId);
+    if (data.settings.soundEnabled) SoundEffects.taskComplete();
+  };
+
+  return (
+    <div className="bg-white dark:bg-slate-900 rounded-2xl border border-slate-200 dark:border-slate-800 p-4 mb-6">
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="text-xs font-black text-slate-400 uppercase">📋 Personal Tasks</h4>
+        <button 
+          onClick={() => setShowAdd(!showAdd)}
+          className={`w-6 h-6 rounded-full flex items-center justify-center transition-all ${showAdd ? 'bg-rose-500 text-white rotate-45' : `bg-${accent}-500/20 text-${accent}-500`}`}
+        >
+          <Plus size={14} />
+        </button>
+      </div>
+
+      {showAdd && (
+        <div className="flex gap-2 mb-3">
+          <input
+            type="text"
+            value={newTaskTitle}
+            onChange={e => setNewTaskTitle(e.target.value)}
+            onKeyDown={e => e.key === 'Enter' && handleAddTask()}
+            placeholder="Add a task..."
+            className="flex-1 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 rounded-lg border-0 focus:ring-2 focus:ring-${accent}-500"
+            autoFocus
+          />
+          <button 
+            onClick={handleAddTask}
+            className={`px-3 py-2 bg-${accent}-500 text-white rounded-lg text-xs font-bold`}
+          >
+            Add
+          </button>
+        </div>
+      )}
+
+      <div className="space-y-2 max-h-60 overflow-y-auto">
+        {data.tasks.length === 0 ? (
+          <p className="text-xs text-slate-400 text-center py-4">No tasks yet. Add one!</p>
+        ) : (
+          data.tasks.map(task => (
+            <div 
+              key={task.id} 
+              className={`flex items-center gap-3 p-3 rounded-xl transition-all ${
+                task.completed 
+                  ? 'bg-emerald-500/10 border border-emerald-500/20' 
+                  : task.isPriority 
+                    ? `bg-${accent}-500/5 border border-${accent}-500/20` 
+                    : 'bg-slate-50 dark:bg-slate-800/50 border border-slate-200 dark:border-slate-700'
+              }`}
+            >
+              <button 
+                onClick={() => handleToggle(task.id)}
+                className={`w-5 h-5 rounded-md border-2 flex items-center justify-center transition-all ${
+                  task.completed 
+                    ? 'bg-emerald-500 border-emerald-500 text-white' 
+                    : `border-slate-300 dark:border-slate-600 hover:border-${accent}-500`
+                }`}
+              >
+                {task.completed && <CheckCircle2 size={12} />}
+              </button>
+              <span className={`flex-1 text-xs ${task.completed ? 'line-through text-slate-400' : 'text-slate-700 dark:text-slate-300'}`}>
+                {task.title}
+              </span>
+              {task.isPriority && !task.completed && (
+                <Star size={12} className="text-amber-500" />
+              )}
+              <button 
+                onClick={() => actions.deleteTask(task.id)}
+                className="text-slate-300 hover:text-rose-500 transition-colors"
+              >
+                <X size={12} />
+              </button>
+            </div>
+          ))
+        )}
+      </div>
+
+      {data.tasks.filter(t => t.completed).length > 0 && (
+        <p className="text-[10px] text-emerald-500 mt-2 text-center">
+          ✓ {data.tasks.filter(t => t.completed).length}/{data.tasks.length} completed
+        </p>
+      )}
+    </div>
+  );
+};
+
 // --- Daily Goals Progress Widget ---
 interface DailyGoalsRingProps {
   data: AppData;
@@ -4138,6 +4246,26 @@ const App: React.FC = () => {
       };
       setData(prev => ({ ...prev, skills: [...prev.skills, newSkill] }));
     },
+    // Task Actions
+    addTask: (title: string, isPriority: boolean = false) => {
+      const newTask: Task = {
+        id: Math.random().toString(),
+        title,
+        completed: false,
+        isPriority,
+        createdAt: new Date().toISOString()
+      };
+      setData(prev => ({ ...prev, tasks: [...prev.tasks, newTask] }));
+    },
+    toggleTask: (taskId: string) => {
+      setData(prev => ({
+        ...prev,
+        tasks: prev.tasks.map(t => t.id === taskId ? { ...t, completed: !t.completed } : t)
+      }));
+    },
+    deleteTask: (taskId: string) => {
+      setData(prev => ({ ...prev, tasks: prev.tasks.filter(t => t.id !== taskId) }));
+    },
     // Income Actions
     addIncome: (name: string, amount: number, type: 'freelance' | 'app' | 'job' | 'other') => {
       const newIncome: IncomeSource = {
@@ -4177,7 +4305,7 @@ const App: React.FC = () => {
     })}</div>,
     exams: <div key="exams-w" className="space-y-3 mb-6"><h4 className="text-xs font-black text-slate-400 uppercase tracking-widest">Upcoming Exams</h4>{data.exams.slice(0, 2).map(exam => <ExamItem key={exam.id} exam={exam} onAddMaterial={actions.addStudyMaterial} onDeleteMaterial={actions.deleteStudyMaterial} accent={accent} />)}</div>,
     priority: <div key="priority-w" className="bg-rose-500/10 border border-rose-500/20 p-4 rounded-2xl mb-6"><h4 className="text-[10px] font-black text-rose-500 uppercase mb-2">Priority Board</h4><p className="text-xs font-bold text-slate-700 dark:text-slate-300">Complete Board Prep for 2 hours today.</p></div>,
-    tasks: <div key="tasks-w" className="mb-6"><h4 className="text-xs font-black text-slate-400 uppercase mb-3">Daily Tasks</h4><div className="space-y-2">{data.tasks.map(t => <div key={t.id} className="flex items-center gap-3 p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800"><div className="w-4 h-4 rounded border border-slate-300 dark:border-slate-700" /> <span className="text-xs">{t.title}</span></div>)}</div></div>,
+    tasks: <TasksWidget key="tasks-w" data={data} actions={actions} accent={accent} />,
     calendar: <div key="calendar-w" className="bg-indigo-500/10 border border-indigo-500/20 p-4 rounded-2xl mb-6 text-center"><p className="text-[10px] font-black text-indigo-500 uppercase">System Schedule</p><p className="text-xs font-bold mt-1">{new Date().toDateString()}</p></div>,
     chart: (() => {
       // Generate last 7 days habit completion data
