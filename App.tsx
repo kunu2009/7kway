@@ -15,7 +15,8 @@ import {
   GraduationCap, Play, Pause, SkipForward, Timer, TrendingUp, Wallet, Code,
   Gamepad2, Languages, Guitar, AlertTriangle, Heart, Coffee, Snowflake, Ban,
   IndianRupee, PiggyBank, Briefcase, Award, Star, CircleDot,
-  Footprints, Waves, Wind, Bike, Swords, Repeat, Phone, Sunrise, Sunset, Smile, Meh, Frown
+  Footprints, Waves, Wind, Bike, Swords, Repeat, Phone, Sunrise, Sunset, Smile, Meh, Frown,
+  HelpCircle, Battery, BatteryLow, Rocket, RefreshCcw, Volume2, VolumeX, Crosshair, Hand, Lightbulb
 } from 'lucide-react';
 import { Area, AppData, Habit, LogEntry, WidgetType, Exam, Task, StudyMaterial, AccentColor, FitnessGoal, PhysicalStats, UserProfile, Skill, SkillCategory, IncomeSource, DisciplineStats, WorkoutSession, Exercise, MuscleGroup, DailyCheckIn, DailyProtocol, ProtocolTask, StudySubject, StudyChapter, StudyTopic } from './types';
 import { loadData, saveData, APP_VERSION } from './db';
@@ -120,7 +121,28 @@ const getMotivationalQuote = (): { quote: string; author: string } => {
     { quote: "Don't watch the clock; do what it does. Keep going.", author: "Sam Levenson" },
     { quote: "Discipline is choosing between what you want now and what you want most.", author: "Abraham Lincoln" },
     { quote: "The man who moves a mountain begins by carrying away small stones.", author: "Confucius" },
-    { quote: "Champions keep playing until they get it right.", author: "Billie Jean King" }
+    { quote: "Champions keep playing until they get it right.", author: "Billie Jean King" },
+    { quote: "Every champion was once a contender that refused to give up.", author: "Rocky Balboa" },
+    { quote: "The difference between ordinary and extraordinary is that little extra.", author: "Jimmy Johnson" },
+    { quote: "Work hard in silence. Let success make the noise.", author: "Frank Ocean" },
+    { quote: "Your body can stand almost anything. It's your mind you have to convince.", author: "Unknown" },
+    { quote: "Small daily improvements are the key to staggering long-term results.", author: "Unknown" },
+    { quote: "The only person you should try to be better than is who you were yesterday.", author: "Unknown" },
+    { quote: "Obsessed is a word the lazy use to describe the dedicated.", author: "Unknown" },
+    { quote: "Fall seven times, stand up eight.", author: "Japanese Proverb" },
+    { quote: "A year from now, you'll wish you had started today.", author: "Karen Lamb" },
+    { quote: "Be so good they can't ignore you.", author: "Steve Martin" },
+    { quote: "The harder you work for something, the greater you'll feel when you achieve it.", author: "Unknown" },
+    { quote: "If it doesn't challenge you, it won't change you.", author: "Fred DeVito" },
+    { quote: "Consistency is what transforms average into excellence.", author: "Unknown" },
+    { quote: "You are one decision away from a completely different life.", author: "Unknown" },
+    { quote: "The grind includes days you don't feel like grinding.", author: "Unknown" },
+    { quote: "Your comfort zone will kill your dreams.", author: "Unknown" },
+    { quote: "Results happen over time, not overnight. Work hard, stay consistent.", author: "Unknown" },
+    { quote: "Suffering is the currency of change.", author: "David Goggins" },
+    { quote: "Stay hard.", author: "David Goggins" },
+    { quote: "Discipline equals freedom.", author: "Jocko Willink" },
+    { quote: "Take action, make mistakes, get better.", author: "Unknown" }
   ];
   const today = new Date().getDate();
   return quotes[today % quotes.length];
@@ -155,6 +177,521 @@ const getCurrentTimeFormatted = (): string => {
     minute: '2-digit',
     hour12: true 
   });
+};
+
+// --- Anti-Procrastination Emergency System ---
+
+// 2-Minute Tasks for "I Can't Start" mode
+const TWO_MINUTE_TASKS = [
+  { task: "Open your textbook to today's chapter", icon: BookOpen, xp: 5 },
+  { task: "Do 5 pushups right now", icon: Dumbbell, xp: 10 },
+  { task: "Write down ONE goal for today", icon: Target, xp: 5 },
+  { task: "Drink a glass of water", icon: Droplets, xp: 3 },
+  { task: "Look at your exam date and feel the urgency", icon: CalendarIcon, xp: 5 },
+  { task: "Stand up and stretch for 30 seconds", icon: Activity, xp: 3 },
+  { task: "Close all social media tabs", icon: Ban, xp: 10 },
+  { task: "Take 3 deep breaths", icon: Wind, xp: 3 },
+];
+
+// Mood Booster Activities
+const MOOD_BOOSTERS = [
+  { activity: "10 jumping jacks", benefit: "Quick energy boost", icon: Zap, xp: 15 },
+  { activity: "Step outside for 2 min fresh air", benefit: "Reset your mind", icon: Sunrise, xp: 10 },
+  { activity: "Cold water on face", benefit: "Instant alertness", icon: Snowflake, xp: 10 },
+  { activity: "Listen to ONE motivational song", benefit: "Shift your state", icon: Music, xp: 5 },
+  { activity: "Text someone you care about", benefit: "Human connection", icon: Heart, xp: 5 },
+  { activity: "Look at your goal board", benefit: "Remember your why", icon: Target, xp: 5 },
+];
+
+// SOS Emergency Overlay Component
+const SOSOverlay = ({ 
+  isOpen, 
+  onClose, 
+  data, 
+  actions, 
+  accent 
+}: { 
+  isOpen: boolean; 
+  onClose: () => void; 
+  data: AppData; 
+  actions: any; 
+  accent: string;
+}) => {
+  const [phase, setPhase] = useState<'main' | 'breathing' | 'affirmation' | 'task'>('main');
+  const [breathCount, setBreathCount] = useState(0);
+  const [breathPhase, setBreathPhase] = useState<'inhale' | 'hold' | 'exhale'>('inhale');
+
+  const affirmations = [
+    "I am stronger than my excuses.",
+    "Every expert was once a beginner.",
+    "My circumstances don't define me. My actions do.",
+    "I choose discipline over regret.",
+    "I am building myself into someone unstoppable.",
+    "The pain of discipline weighs ounces, regret weighs tons.",
+    "I don't have to feel like it. I just have to do it.",
+    "2 minutes. That's all I need to start."
+  ];
+
+  const randomAffirmation = affirmations[Math.floor(Math.random() * affirmations.length)];
+  const randomTask = TWO_MINUTE_TASKS[Math.floor(Math.random() * TWO_MINUTE_TASKS.length)];
+  const TaskIcon = randomTask.icon;
+
+  useEffect(() => {
+    if (phase === 'breathing' && breathCount < 3) {
+      const timer = setTimeout(() => {
+        if (breathPhase === 'inhale') {
+          setBreathPhase('hold');
+        } else if (breathPhase === 'hold') {
+          setBreathPhase('exhale');
+        } else {
+          setBreathPhase('inhale');
+          setBreathCount(c => c + 1);
+        }
+      }, breathPhase === 'hold' ? 2000 : 4000);
+      return () => clearTimeout(timer);
+    }
+  }, [phase, breathCount, breathPhase]);
+
+  if (!isOpen) return null;
+
+  return (
+    <div className="fixed inset-0 z-[100] bg-slate-900/98 flex flex-col items-center justify-center p-6 animate-in fade-in duration-300">
+      {/* Close Button */}
+      <button 
+        onClick={onClose}
+        className="absolute top-4 right-4 text-slate-500 hover:text-white p-2"
+      >
+        <X size={24} />
+      </button>
+
+      {phase === 'main' && (
+        <div className="text-center space-y-6 max-w-sm">
+          <div className={`w-20 h-20 mx-auto rounded-full bg-${accent}-500/20 flex items-center justify-center`}>
+            <HelpCircle size={40} className={`text-${accent}-500`} />
+          </div>
+          <h1 className="text-2xl font-black text-white">SOS Mode</h1>
+          <p className="text-slate-400">You opened this because you're struggling. That takes courage. Let me help.</p>
+          
+          <div className="space-y-3 pt-4">
+            <button 
+              onClick={() => setPhase('breathing')}
+              className="w-full py-4 rounded-2xl bg-cyan-500/20 border border-cyan-500/30 text-cyan-400 font-bold flex items-center justify-center gap-3"
+            >
+              <Wind size={20} /> Breathe First (30s)
+            </button>
+            <button 
+              onClick={() => setPhase('affirmation')}
+              className="w-full py-4 rounded-2xl bg-violet-500/20 border border-violet-500/30 text-violet-400 font-bold flex items-center justify-center gap-3"
+            >
+              <Lightbulb size={20} /> I Need Motivation
+            </button>
+            <button 
+              onClick={() => setPhase('task')}
+              className="w-full py-4 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 text-emerald-400 font-bold flex items-center justify-center gap-3"
+            >
+              <Rocket size={20} /> Give Me ONE Task
+            </button>
+          </div>
+
+          <p className="text-xs text-slate-600 pt-4">
+            "The secret of getting ahead is getting started." — Mark Twain
+          </p>
+        </div>
+      )}
+
+      {phase === 'breathing' && (
+        <div className="text-center space-y-8">
+          <div className={`w-32 h-32 mx-auto rounded-full flex items-center justify-center transition-all duration-[4000ms] ${
+            breathPhase === 'inhale' ? 'scale-100 bg-cyan-500/30' : 
+            breathPhase === 'hold' ? 'scale-110 bg-cyan-500/50' : 
+            'scale-90 bg-cyan-500/20'
+          }`}>
+            <p className="text-2xl font-black text-cyan-400 uppercase">{breathPhase}</p>
+          </div>
+          <p className="text-slate-400">Breath {breathCount + 1} of 3</p>
+          {breathCount >= 3 && (
+            <div className="space-y-4">
+              <p className="text-emerald-400 font-bold">You did it. Feel better?</p>
+              <button 
+                onClick={() => { setPhase('task'); setBreathCount(0); }}
+                className={`px-6 py-3 rounded-xl bg-${accent}-500 text-white font-bold`}
+              >
+                Now Give Me a Task
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
+      {phase === 'affirmation' && (
+        <div className="text-center space-y-8 max-w-sm">
+          <div className="w-20 h-20 mx-auto rounded-full bg-violet-500/20 flex items-center justify-center">
+            <Sparkles size={40} className="text-violet-500" />
+          </div>
+          <p className="text-3xl font-black text-white leading-tight">"{randomAffirmation}"</p>
+          <div className="pt-4 space-y-3">
+            <button 
+              onClick={() => { actions.addXP(10); setPhase('task'); }}
+              className={`w-full py-4 rounded-2xl bg-${accent}-500 text-white font-bold`}
+            >
+              I Believe This (+10 XP)
+            </button>
+            <button 
+              onClick={() => setPhase('main')}
+              className="text-slate-500 text-sm"
+            >
+              Show me another
+            </button>
+          </div>
+        </div>
+      )}
+
+      {phase === 'task' && (
+        <div className="text-center space-y-6 max-w-sm">
+          <div className="w-20 h-20 mx-auto rounded-full bg-emerald-500/20 flex items-center justify-center">
+            <TaskIcon size={40} className="text-emerald-500" />
+          </div>
+          <div>
+            <p className="text-xs text-emerald-400 font-bold uppercase mb-2">Your 2-Minute Task</p>
+            <p className="text-2xl font-black text-white">{randomTask.task}</p>
+          </div>
+          <p className="text-slate-400 text-sm">Just this. Nothing else. 2 minutes max.</p>
+          <button 
+            onClick={() => { 
+              actions.addXP(randomTask.xp); 
+              onClose(); 
+            }}
+            className={`w-full py-4 rounded-2xl bg-emerald-500 text-white font-bold text-lg`}
+          >
+            Done (+{randomTask.xp} XP)
+          </button>
+          <button 
+            onClick={() => setPhase('main')}
+            className="text-slate-500 text-sm block mx-auto"
+          >
+            Give me a different task
+          </button>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// Emergency Panel - Shows on Home Screen
+const EmergencyPanel = ({ 
+  data, 
+  actions, 
+  accent,
+  onOpenSOS 
+}: { 
+  data: AppData; 
+  actions: any; 
+  accent: string;
+  onOpenSOS: () => void;
+}) => {
+  const [activeMode, setActiveMode] = useState<'none' | 'cantStart' | 'overwhelmed' | 'relapsed' | 'low'>('none');
+  const [justStartTimer, setJustStartTimer] = useState(0);
+  const [isTimerRunning, setIsTimerRunning] = useState(false);
+
+  // Just Start 2-minute timer
+  useEffect(() => {
+    let interval: any;
+    if (isTimerRunning && justStartTimer < 120) {
+      interval = setInterval(() => {
+        setJustStartTimer(t => t + 1);
+      }, 1000);
+    } else if (justStartTimer >= 120) {
+      setIsTimerRunning(false);
+      actions.addXP(25);
+    }
+    return () => clearInterval(interval);
+  }, [isTimerRunning, justStartTimer]);
+
+  const formatTimer = (secs: number) => {
+    const mins = Math.floor(secs / 60);
+    const s = secs % 60;
+    return `${mins}:${s.toString().padStart(2, '0')}`;
+  };
+
+  // Decision-free next action
+  const getNextAction = () => {
+    const hour = new Date().getHours();
+    const todayProtocol = data.protocols.find(p => p.date === new Date().toISOString().split('T')[0]);
+    const hasWorkedOut = data.workouts.some(w => w.date.split('T')[0] === new Date().toISOString().split('T')[0]);
+    
+    // Morning priorities
+    if (hour >= 5 && hour < 8) {
+      if (!todayProtocol || todayProtocol.morningScore < 50) {
+        return { task: "Complete your morning protocol", tab: 'physical', icon: Sunrise };
+      }
+    }
+    
+    // Study time
+    if (hour >= 8 && hour < 17) {
+      return { task: "Start a 25-min focus session", tab: 'intelligence', icon: BookOpen };
+    }
+    
+    // Evening
+    if (hour >= 17 && hour < 21) {
+      if (!hasWorkedOut) {
+        return { task: "Log today's workout", tab: 'physical', icon: Dumbbell };
+      }
+      return { task: "Review what you learned today", tab: 'intelligence', icon: Brain };
+    }
+    
+    // Night
+    return { task: "Complete your night protocol", tab: 'physical', icon: Moon };
+  };
+
+  const nextAction = getNextAction();
+  const NextIcon = nextAction.icon;
+
+  // Relapse recovery message
+  const handleRelapse = () => {
+    actions.resetNoFapStreak();
+    setActiveMode('relapsed');
+  };
+
+  return (
+    <div className="space-y-4 mt-6">
+      {/* Collapsed View - Emergency Buttons Row */}
+      {activeMode === 'none' && !isTimerRunning && (
+        <>
+          {/* Decision-Free Card */}
+          <div className="bg-gradient-to-r from-violet-500/10 to-purple-500/10 border border-violet-500/20 rounded-2xl p-4">
+            <div className="flex items-center justify-between mb-3">
+              <div className="flex items-center gap-2">
+                <Crosshair size={16} className="text-violet-500" />
+                <span className="text-xs font-bold text-violet-400 uppercase">Decision-Free Mode</span>
+              </div>
+              <span className="text-[9px] text-slate-500">App picks for you</span>
+            </div>
+            <button 
+              onClick={() => actions.setActiveTab(nextAction.tab)}
+              className="w-full flex items-center gap-3 bg-violet-500/20 hover:bg-violet-500/30 rounded-xl p-3 transition-all"
+            >
+              <div className="w-10 h-10 rounded-full bg-violet-500/30 flex items-center justify-center">
+                <NextIcon size={20} className="text-violet-400" />
+              </div>
+              <div className="flex-1 text-left">
+                <p className="text-white font-bold text-sm">{nextAction.task}</p>
+                <p className="text-violet-400 text-xs">Just do this. Nothing else.</p>
+              </div>
+              <ArrowRight size={16} className="text-violet-400" />
+            </button>
+          </div>
+
+          {/* Just Start Timer */}
+          <button 
+            onClick={() => setIsTimerRunning(true)}
+            className={`w-full py-4 rounded-2xl bg-gradient-to-r from-emerald-500/20 to-teal-500/20 border border-emerald-500/30 flex items-center justify-center gap-3`}
+          >
+            <Rocket size={20} className="text-emerald-400" />
+            <span className="text-emerald-400 font-bold">Just Start: 2 Minutes</span>
+          </button>
+
+          {/* Emergency Buttons Grid */}
+          <div className="grid grid-cols-4 gap-2">
+            <button 
+              onClick={() => setActiveMode('cantStart')}
+              className="bg-orange-500/10 rounded-xl p-3 text-center"
+            >
+              <BatteryLow size={18} className="text-orange-500 mx-auto mb-1" />
+              <p className="text-[8px] font-bold text-orange-400">Can't Start</p>
+            </button>
+            <button 
+              onClick={() => setActiveMode('overwhelmed')}
+              className="bg-rose-500/10 rounded-xl p-3 text-center"
+            >
+              <AlertTriangle size={18} className="text-rose-500 mx-auto mb-1" />
+              <p className="text-[8px] font-bold text-rose-400">Overwhelm</p>
+            </button>
+            <button 
+              onClick={() => setActiveMode('low')}
+              className="bg-blue-500/10 rounded-xl p-3 text-center"
+            >
+              <Heart size={18} className="text-blue-500 mx-auto mb-1" />
+              <p className="text-[8px] font-bold text-blue-400">Low Mood</p>
+            </button>
+            <button 
+              onClick={onOpenSOS}
+              className="bg-red-500/10 rounded-xl p-3 text-center"
+            >
+              <HelpCircle size={18} className="text-red-500 mx-auto mb-1" />
+              <p className="text-[8px] font-bold text-red-400">SOS</p>
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* Just Start Timer Running */}
+      {isTimerRunning && (
+        <div className="bg-gradient-to-br from-emerald-500/20 to-teal-500/20 border-2 border-emerald-500/50 rounded-2xl p-6 text-center">
+          <p className="text-emerald-400 text-xs font-bold uppercase mb-2">Just Start Timer</p>
+          <p className="text-5xl font-black text-white mb-2">{formatTimer(justStartTimer)}</p>
+          <div className="w-full h-2 bg-slate-800 rounded-full overflow-hidden mb-4">
+            <div 
+              className="h-full bg-emerald-500 transition-all" 
+              style={{ width: `${(justStartTimer / 120) * 100}%` }} 
+            />
+          </div>
+          <p className="text-slate-400 text-sm mb-4">
+            {justStartTimer < 120 
+              ? "Just keep going. Don't think. Do." 
+              : "🎉 You did it! +25 XP"
+            }
+          </p>
+          {justStartTimer < 120 && (
+            <button 
+              onClick={() => { setIsTimerRunning(false); setJustStartTimer(0); }}
+              className="text-slate-500 text-xs"
+            >
+              Cancel
+            </button>
+          )}
+          {justStartTimer >= 120 && (
+            <button 
+              onClick={() => setJustStartTimer(0)}
+              className={`px-6 py-2 bg-emerald-500 text-white rounded-xl font-bold`}
+            >
+              Done! Keep Going?
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Can't Start Mode */}
+      {activeMode === 'cantStart' && (
+        <div className="bg-orange-500/10 border border-orange-500/30 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-orange-400 font-bold flex items-center gap-2">
+              <BatteryLow size={18} /> Can't Start?
+            </h3>
+            <button onClick={() => setActiveMode('none')} className="text-slate-500">
+              <X size={18} />
+            </button>
+          </div>
+          <p className="text-slate-400 text-sm mb-4">Here's your TINY task. Just do this one thing:</p>
+          {(() => {
+            const task = TWO_MINUTE_TASKS[Math.floor(Math.random() * TWO_MINUTE_TASKS.length)];
+            const TIcon = task.icon;
+            return (
+              <div className="bg-slate-900/50 rounded-xl p-4 text-center">
+                <TIcon size={32} className="text-orange-400 mx-auto mb-3" />
+                <p className="text-white font-bold mb-4">{task.task}</p>
+                <button 
+                  onClick={() => { actions.addXP(task.xp); setActiveMode('none'); }}
+                  className="px-6 py-3 bg-orange-500 text-white rounded-xl font-bold"
+                >
+                  Done (+{task.xp} XP)
+                </button>
+              </div>
+            );
+          })()}
+        </div>
+      )}
+
+      {/* Overwhelmed Mode */}
+      {activeMode === 'overwhelmed' && (
+        <div className="bg-rose-500/10 border border-rose-500/30 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-rose-400 font-bold flex items-center gap-2">
+              <AlertTriangle size={18} /> Feeling Overwhelmed?
+            </h3>
+            <button onClick={() => setActiveMode('none')} className="text-slate-500">
+              <X size={18} />
+            </button>
+          </div>
+          <div className="space-y-3">
+            <p className="text-white font-bold text-center py-4">
+              Forget everything else.<br/>
+              Your ONLY task right now:
+            </p>
+            <div className="bg-slate-900/50 rounded-xl p-4 text-center">
+              <BookOpen size={32} className="text-rose-400 mx-auto mb-3" />
+              <p className="text-xl font-black text-white">Open your textbook.</p>
+              <p className="text-slate-400 text-sm mt-2">That's it. Just open it.</p>
+            </div>
+            <button 
+              onClick={() => { actions.addXP(15); setActiveMode('none'); }}
+              className="w-full py-3 bg-rose-500 text-white rounded-xl font-bold"
+            >
+              I Opened It (+15 XP)
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Low Mood Mode */}
+      {activeMode === 'low' && (
+        <div className="bg-blue-500/10 border border-blue-500/30 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-blue-400 font-bold flex items-center gap-2">
+              <Heart size={18} /> Feeling Low?
+            </h3>
+            <button onClick={() => setActiveMode('none')} className="text-slate-500">
+              <X size={18} />
+            </button>
+          </div>
+          <p className="text-slate-400 text-sm mb-4">Pick ONE mood booster:</p>
+          <div className="space-y-2">
+            {MOOD_BOOSTERS.slice(0, 4).map((boost, i) => {
+              const BIcon = boost.icon;
+              return (
+                <button 
+                  key={i}
+                  onClick={() => { actions.addXP(boost.xp); setActiveMode('none'); }}
+                  className="w-full flex items-center gap-3 bg-slate-900/50 hover:bg-slate-800/50 rounded-xl p-3 transition-all"
+                >
+                  <BIcon size={20} className="text-blue-400" />
+                  <div className="flex-1 text-left">
+                    <p className="text-white font-bold text-sm">{boost.activity}</p>
+                    <p className="text-slate-400 text-xs">{boost.benefit}</p>
+                  </div>
+                  <span className="text-blue-400 text-xs font-bold">+{boost.xp} XP</span>
+                </button>
+              );
+            })}
+          </div>
+        </div>
+      )}
+
+      {/* Relapsed Recovery */}
+      {activeMode === 'relapsed' && (
+        <div className="bg-violet-500/10 border border-violet-500/30 rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-4">
+            <h3 className="text-violet-400 font-bold flex items-center gap-2">
+              <RefreshCcw size={18} /> Fresh Start
+            </h3>
+            <button onClick={() => setActiveMode('none')} className="text-slate-500">
+              <X size={18} />
+            </button>
+          </div>
+          <div className="text-center py-4">
+            <p className="text-white font-bold text-lg mb-2">No shame. Just restart.</p>
+            <p className="text-slate-400 text-sm mb-4">
+              Every master has failed more times than the beginner has tried.
+            </p>
+            <div className="bg-slate-900/50 rounded-xl p-4 mb-4">
+              <p className="text-violet-400 text-xs font-bold uppercase mb-2">Your Recovery Plan</p>
+              <ul className="text-left text-sm text-slate-300 space-y-2">
+                <li>✓ Day 1-7: Build the habit back</li>
+                <li>✓ Day 7-14: Brain starts healing</li>
+                <li>✓ Day 14-30: Energy returns</li>
+                <li>✓ Day 30-90: Full rewire</li>
+              </ul>
+            </div>
+            <button 
+              onClick={() => setActiveMode('none')}
+              className="px-6 py-3 bg-violet-500 text-white rounded-xl font-bold"
+            >
+              I'm Back. Day 1.
+            </button>
+          </div>
+        </div>
+      )}
+    </div>
+  );
 };
 
 // --- Sub-Components ---
@@ -357,6 +894,37 @@ const MindTab = ({ data, actions }: TabProps) => {
   const todaySessions = data.pomodoroSessions.filter(s => s.completedAt.split('T')[0] === today).length;
   const todayCheckIn = data.checkIns.find(c => c.date === today);
   
+  // Calculate focus streak (consecutive days with at least one session)
+  const calculateFocusStreak = () => {
+    let streak = 0;
+    const checkDate = new Date();
+    
+    while (true) {
+      const dateStr = checkDate.toISOString().split('T')[0];
+      const hasSession = data.pomodoroSessions.some(s => s.completedAt.split('T')[0] === dateStr);
+      
+      if (hasSession) {
+        streak++;
+        checkDate.setDate(checkDate.getDate() - 1);
+      } else {
+        // If today and no session yet, check yesterday
+        if (streak === 0) {
+          checkDate.setDate(checkDate.getDate() - 1);
+          const yesterdayStr = checkDate.toISOString().split('T')[0];
+          const hadYesterday = data.pomodoroSessions.some(s => s.completedAt.split('T')[0] === yesterdayStr);
+          if (hadYesterday) {
+            streak++;
+            checkDate.setDate(checkDate.getDate() - 1);
+            continue;
+          }
+        }
+        break;
+      }
+    }
+    return streak;
+  };
+  const focusStreak = calculateFocusStreak();
+  
   // Get nearest exam
   const nearestExam = data.exams.reduce((nearest, exam) => {
     const daysLeft = Math.ceil((new Date(exam.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24));
@@ -396,6 +964,10 @@ const MindTab = ({ data, actions }: TabProps) => {
         <div className="flex-1 bg-blue-500/10 rounded-xl p-3 text-center">
           <p className="text-2xl font-black text-blue-500">{todaySessions}</p>
           <p className="text-[9px] text-slate-400">Focus Today</p>
+        </div>
+        <div className="flex-1 bg-orange-500/10 rounded-xl p-3 text-center">
+          <p className="text-2xl font-black text-orange-500">{focusStreak}</p>
+          <p className="text-[9px] text-slate-400">Focus Streak</p>
         </div>
         <div className="flex-1 bg-amber-500/10 rounded-xl p-3 text-center">
           <p className="text-2xl font-black text-amber-500">{todayCheckIn?.morning.completed ? '✓' : '○'}</p>
@@ -1466,9 +2038,31 @@ const PomodoroTimer = ({ data, actions, accent }: { data: AppData, actions: any,
 // --- NOFAP TRACKER WIDGET ---
 const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
   const [showUrgeSurfing, setShowUrgeSurfing] = useState(false);
+  const [urgeTimer, setUrgeTimer] = useState(0); // seconds remaining
+  const [urgeTimerActive, setUrgeTimerActive] = useState(false);
   const streak = data.discipline.noFapStreak;
   const bestStreak = data.discipline.noFapBestStreak;
   const coldShowerStreak = data.discipline.coldShowerStreak || 0;
+
+  // Urge Timer Effect
+  useEffect(() => {
+    if (urgeTimerActive && urgeTimer > 0) {
+      const interval = setInterval(() => {
+        setUrgeTimer(t => t - 1);
+      }, 1000);
+      return () => clearInterval(interval);
+    }
+    if (urgeTimer === 0 && urgeTimerActive) {
+      setUrgeTimerActive(false);
+      actions.addXP(50, 'Urge Conquered! 💪');
+    }
+  }, [urgeTimer, urgeTimerActive]);
+
+  const startUrgeTimer = (minutes: number) => {
+    setUrgeTimer(minutes * 60);
+    setUrgeTimerActive(true);
+    setShowUrgeSurfing(false);
+  };
   
   const getStreakMessage = () => {
     if (streak === 0) return { msg: "Day 0 - Start your journey!", color: 'slate' };
@@ -1500,8 +2094,40 @@ const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, 
 
   const nextMilestone = benefits.find(b => b.days > streak) || benefits[benefits.length - 1];
 
+  // If urge timer is active, show the countdown
+  if (urgeTimerActive) {
+    const minutes = Math.floor(urgeTimer / 60);
+    const seconds = urgeTimer % 60;
+    return (
+      <div className="bg-gradient-to-br from-orange-500/20 to-rose-500/20 border-2 border-orange-500/50 rounded-2xl p-6 text-center">
+        <p className="text-[10px] font-black text-orange-500 uppercase mb-2">🔥 URGE SURFING</p>
+        <p className="text-5xl font-black text-slate-900 dark:text-white mb-2">
+          {minutes}:{seconds.toString().padStart(2, '0')}
+        </p>
+        <p className="text-sm text-slate-500 mb-4">Breathe. This will pass.</p>
+        <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden mb-4">
+          <div 
+            className="h-full bg-gradient-to-r from-orange-500 to-rose-500 transition-all"
+            style={{ width: `${100 - (urgeTimer / 600) * 100}%` }}
+          />
+        </div>
+        <div className="grid grid-cols-3 gap-2 text-[9px] text-slate-500">
+          <div>😤 Breathe deep</div>
+          <div>💪 Stay strong</div>
+          <div>🧠 You control this</div>
+        </div>
+        <button 
+          onClick={() => { setUrgeTimerActive(false); setUrgeTimer(0); }}
+          className="mt-4 text-[10px] text-slate-400 underline"
+        >
+          Cancel Timer
+        </button>
+      </div>
+    );
+  }
+
   return (
-    <div className={`bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-rose-500/20 rounded-2xl p-5 mb-6`}>
+    <div className={`bg-gradient-to-br from-rose-500/10 to-orange-500/10 border border-rose-500/20 rounded-2xl p-5`}>
       <div className="flex justify-between items-start mb-4">
         <div>
           <h4 className="text-[10px] font-black text-rose-500 uppercase flex items-center gap-1">
@@ -1569,11 +2195,36 @@ const NoFapTracker = ({ data, actions, accent }: { data: AppData, actions: any, 
         <AlertTriangle size={12}/> {showUrgeSurfing ? 'Hide Options' : '🔥 URGE? TAP HERE NOW!'}
       </button>
 
-      {/* Urge Surfing Tasks */}
+      {/* Urge Surfing Options */}
       {showUrgeSurfing && (
-        <div className="mt-3 space-y-2 animate-in fade-in slide-in-from-top-2">
-          <p className="text-[9px] text-slate-500 text-center font-bold">Pick ONE and do it NOW. Urge will pass in 10 min!</p>
-          {urgeSurfingTasks.map((item, i) => (
+        <div className="mt-3 space-y-3 animate-in fade-in slide-in-from-top-2">
+          {/* Quick Timer Options */}
+          <div className="grid grid-cols-3 gap-2">
+            <button 
+              onClick={() => startUrgeTimer(5)}
+              className="py-3 bg-orange-500/10 border border-orange-500/30 rounded-xl text-center"
+            >
+              <p className="text-lg font-black text-orange-500">5</p>
+              <p className="text-[8px] text-slate-400">minutes</p>
+            </button>
+            <button 
+              onClick={() => startUrgeTimer(10)}
+              className="py-3 bg-orange-500/20 border-2 border-orange-500/50 rounded-xl text-center"
+            >
+              <p className="text-lg font-black text-orange-500">10</p>
+              <p className="text-[8px] text-slate-400">minutes</p>
+            </button>
+            <button 
+              onClick={() => startUrgeTimer(15)}
+              className="py-3 bg-orange-500/10 border border-orange-500/30 rounded-xl text-center"
+            >
+              <p className="text-lg font-black text-orange-500">15</p>
+              <p className="text-[8px] text-slate-400">minutes</p>
+            </button>
+          </div>
+          
+          <p className="text-[9px] text-slate-500 text-center font-bold">Or do something NOW:</p>
+          {urgeSurfingTasks.slice(0, 3).map((item, i) => (
             <button 
               key={i}
               onClick={() => {
@@ -2012,8 +2663,41 @@ const SettingsTab = ({ data, actions }: TabProps) => {
   const accent = data.settings.accentColor || 'teal';
   const colors: AccentColor[] = ['teal', 'cyan', 'violet', 'rose', 'orange'];
 
+  // Calculate weekly stats
+  const weekAgo = new Date();
+  weekAgo.setDate(weekAgo.getDate() - 7);
+  const weekAgoStr = weekAgo.toISOString().split('T')[0];
+  
+  const weeklyWorkouts = data.workouts.filter(w => w.date >= weekAgoStr).length;
+  const weeklyPomodoros = data.pomodoroSessions.filter(s => s.completedAt >= weekAgoStr).length;
+  const weeklyCheckIns = data.checkIns.filter(c => c.date >= weekAgoStr && c.morning.completed).length;
+  const weeklyProtocols = data.protocols.filter(p => p.date >= weekAgoStr).length;
+
   return (
     <div className="space-y-4">
+      {/* Weekly Summary */}
+      <div className="bg-gradient-to-br from-blue-500/10 to-violet-500/10 border border-blue-500/20 rounded-xl p-4">
+        <p className="text-[10px] font-black text-blue-500 uppercase mb-3">📊 This Week</p>
+        <div className="grid grid-cols-4 gap-2">
+          <div className="text-center">
+            <p className="text-xl font-black text-slate-900 dark:text-white">{weeklyWorkouts}</p>
+            <p className="text-[8px] text-slate-400">Workouts</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-black text-slate-900 dark:text-white">{weeklyPomodoros}</p>
+            <p className="text-[8px] text-slate-400">Focus</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-black text-slate-900 dark:text-white">{weeklyCheckIns}</p>
+            <p className="text-[8px] text-slate-400">Check-ins</p>
+          </div>
+          <div className="text-center">
+            <p className="text-xl font-black text-slate-900 dark:text-white">{weeklyProtocols}</p>
+            <p className="text-[8px] text-slate-400">Protocols</p>
+          </div>
+        </div>
+      </div>
+
       {/* Quick Access to Skills & Wealth */}
       <div className="grid grid-cols-2 gap-3">
         <button 
@@ -2143,9 +2827,10 @@ const OnboardingOverlay = ({ onComplete, accent }: { onComplete: (userData: any)
 };
 
 // --- SMART HOME SCREEN (Time-Aware) ---
-const SmartHomeScreen = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+const SmartHomeScreen = ({ data, actions, accent, onOpenSOS }: { data: AppData, actions: any, accent: string, onOpenSOS: () => void }) => {
   const timePeriod = getTimePeriod();
   const currentHour = new Date().getHours();
+  const quote = getMotivationalQuote();
   
   // Simple greeting
   const getSimpleGreeting = () => {
@@ -2227,36 +2912,172 @@ const SmartHomeScreen = ({ data, actions, accent }: { data: AppData, actions: an
     );
   }
 
+  // Generate last 7 days for mini heatmap
+  const last7Days = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date();
+    date.setDate(date.getDate() - (6 - i));
+    const dateStr = date.toISOString().split('T')[0];
+    const hasProtocol = data.protocols.some(p => p.date === dateStr);
+    const hasWorkout = data.workouts.some(w => w.date.split('T')[0] === dateStr);
+    const hasCheckIn = data.checkIns.some(c => c.date === dateStr);
+    return {
+      day: ['S', 'M', 'T', 'W', 'T', 'F', 'S'][date.getDay()],
+      active: hasProtocol || hasWorkout || hasCheckIn,
+      isToday: i === 6
+    };
+  });
+
   return (
-    <div className="flex flex-col min-h-[75vh]">
+    <div className="space-y-6">
       {/* Greeting - Minimal */}
-      <div className="text-center pt-8 pb-6">
+      <div className="text-center pt-4 pb-2">
         <h1 className="text-2xl font-bold text-slate-800 dark:text-white">
           {getSimpleGreeting()}, {data.user.name || 'Champion'}
         </h1>
         <p className="text-sm text-slate-400 mt-1">{getCurrentDateFormatted()}</p>
       </div>
 
-      {/* ONE Focus Card - Large & Tappable */}
-      <div className="flex-1 flex items-center justify-center px-4">
-        <button 
-          onClick={focus.action}
-          className={`w-full max-w-sm bg-${focus.color}-500/10 border-2 border-${focus.color}-500/30 rounded-3xl p-8 text-center transition-transform active:scale-[0.98]`}
-        >
-          <FocusIcon size={48} className={`text-${focus.color}-500 mx-auto mb-4`}/>
-          <h2 className="text-xl font-bold text-slate-900 dark:text-white mb-1">{focus.title}</h2>
-          <p className="text-sm text-slate-500">{focus.subtitle}</p>
-          <div className={`mt-6 inline-flex items-center gap-2 px-4 py-2 bg-${focus.color}-500 text-white rounded-full text-sm font-bold`}>
-            Start <ArrowRight size={14}/>
+      {/* Daily Quote */}
+      <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl text-center">
+        <p className="text-sm italic text-slate-600 dark:text-slate-300">"{quote.quote}"</p>
+        <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">— {quote.author}</p>
+      </div>
+
+      {/* Mini Week Heatmap */}
+      <div className="flex justify-center gap-2">
+        {last7Days.map((d, i) => (
+          <div key={i} className="text-center">
+            <p className="text-[9px] text-slate-400 mb-1">{d.day}</p>
+            <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${
+              d.isToday 
+                ? d.active ? `bg-${accent}-500 text-white` : `border-2 border-${accent}-500 text-${accent}-500`
+                : d.active ? 'bg-emerald-500/20 text-emerald-500' : 'bg-slate-100 dark:bg-slate-800 text-slate-300'
+            }`}>
+              {d.active ? '✓' : '·'}
+            </div>
           </div>
+        ))}
+      </div>
+
+      {/* ONE Focus Card - Large & Tappable */}
+      <button 
+        onClick={focus.action}
+        className={`w-full bg-${focus.color}-500/10 border-2 border-${focus.color}-500/30 rounded-2xl p-6 text-center transition-transform active:scale-[0.98]`}
+      >
+        <FocusIcon size={40} className={`text-${focus.color}-500 mx-auto mb-3`}/>
+        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{focus.title}</h2>
+        <p className="text-sm text-slate-500">{focus.subtitle}</p>
+        <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 bg-${focus.color}-500 text-white rounded-full text-sm font-bold`}>
+          Start <ArrowRight size={14}/>
+        </div>
+      </button>
+
+      {/* Quick Actions Grid */}
+      <div className="grid grid-cols-4 gap-2">
+        <button 
+          onClick={() => actions.incrementNoFapStreak()}
+          className="bg-violet-500/10 rounded-xl p-3 text-center"
+        >
+          <Shield size={18} className="text-violet-500 mx-auto mb-1"/>
+          <p className="text-[9px] font-bold">Day Done</p>
+        </button>
+        <button 
+          onClick={() => actions.incrementColdShower()}
+          className="bg-cyan-500/10 rounded-xl p-3 text-center"
+        >
+          <Snowflake size={18} className="text-cyan-500 mx-auto mb-1"/>
+          <p className="text-[9px] font-bold">Cold</p>
+        </button>
+        <button 
+          onClick={() => actions.updatePhysicalStat('waterIntake', data.physical.waterIntake + 1)}
+          className="bg-blue-500/10 rounded-xl p-3 text-center"
+        >
+          <Droplets size={18} className="text-blue-500 mx-auto mb-1"/>
+          <p className="text-[9px] font-bold">{data.physical.waterIntake}gl</p>
+        </button>
+        <button 
+          onClick={() => actions.setActiveTab('intelligence')}
+          className="bg-orange-500/10 rounded-xl p-3 text-center"
+        >
+          <Timer size={18} className="text-orange-500 mx-auto mb-1"/>
+          <p className="text-[9px] font-bold">Focus</p>
         </button>
       </div>
 
-      {/* ONE Stat - Bottom */}
-      <div className="text-center py-6">
-        <p className="text-4xl font-black text-orange-500">{data.stats.streak}</p>
-        <p className="text-xs text-slate-400">day streak</p>
+      {/* Stats Row */}
+      <div className="flex justify-around py-3 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
+        <div className="text-center">
+          <p className="text-xl font-black text-orange-500">{data.stats.streak}</p>
+          <p className="text-[8px] text-slate-400">STREAK</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-black text-violet-500">{data.discipline.noFapStreak}</p>
+          <p className="text-[8px] text-slate-400">CLEAN</p>
+        </div>
+        <div className="text-center">
+          <p className="text-xl font-black text-emerald-500">{Math.floor(data.stats.xp / 1000) + 1}</p>
+          <p className="text-[8px] text-slate-400">LEVEL</p>
+        </div>
+        {nearestExam && (
+          <div className="text-center">
+            <p className={`text-xl font-black ${nearestExam.daysLeft <= 7 ? 'text-rose-500' : 'text-blue-500'}`}>{nearestExam.daysLeft}</p>
+            <p className="text-[8px] text-slate-400">EXAM</p>
+          </div>
+        )}
       </div>
+
+      {/* Milestones */}
+      {(() => {
+        const milestones = [
+          { days: 7, title: 'One Week', emoji: '🔥', unlocked: data.discipline.noFapStreak >= 7 },
+          { days: 14, title: 'Two Weeks', emoji: '💪', unlocked: data.discipline.noFapStreak >= 14 },
+          { days: 30, title: 'One Month', emoji: '🏆', unlocked: data.discipline.noFapStreak >= 30 },
+          { days: 60, title: 'Two Months', emoji: '⚡', unlocked: data.discipline.noFapStreak >= 60 },
+          { days: 90, title: 'Reboot', emoji: '👑', unlocked: data.discipline.noFapStreak >= 90 }
+        ];
+        const nextMilestone = milestones.find(m => !m.unlocked);
+        const unlockedCount = milestones.filter(m => m.unlocked).length;
+        
+        if (unlockedCount > 0 || nextMilestone) {
+          return (
+            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
+              <div className="flex items-center justify-between mb-2">
+                <p className="text-[10px] font-bold text-slate-400 uppercase">Milestones</p>
+                <p className="text-[10px] text-slate-400">{unlockedCount}/5</p>
+              </div>
+              <div className="flex gap-2 justify-center">
+                {milestones.map((m, i) => (
+                  <div 
+                    key={i} 
+                    className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
+                      m.unlocked 
+                        ? 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg' 
+                        : 'bg-slate-100 dark:bg-slate-800 opacity-40'
+                    }`}
+                    title={m.title}
+                  >
+                    {m.emoji}
+                  </div>
+                ))}
+              </div>
+              {nextMilestone && (
+                <p className="text-center text-[10px] text-slate-400 mt-2">
+                  {nextMilestone.days - data.discipline.noFapStreak} days to {nextMilestone.title}
+                </p>
+              )}
+            </div>
+          );
+        }
+        return null;
+      })()}
+
+      {/* Emergency Panel - Anti-Procrastination System */}
+      <EmergencyPanel 
+        data={data} 
+        actions={actions} 
+        accent={accent}
+        onOpenSOS={onOpenSOS}
+      />
     </div>
   );
 };
@@ -2265,6 +3086,7 @@ const SmartHomeScreen = ({ data, actions, accent }: { data: AppData, actions: an
 const App: React.FC = () => {
   const [data, setData] = useState<AppData>(() => loadData());
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
+  const [showSOS, setShowSOS] = useState(false);
   const accent = data.settings.accentColor || 'teal';
 
   // --- Splash Screen Cleanup ---
@@ -2302,6 +3124,11 @@ const App: React.FC = () => {
   const progressPercent = (xpInCurrentLevel / 1000) * 100;
 
   const actions = useMemo(() => ({
+    // XP Action
+    addXP: (amount: number) => setData(prev => ({
+      ...prev,
+      stats: { ...prev.stats, xp: prev.stats.xp + amount }
+    })),
     updatePhysicalStat: (key: keyof PhysicalStats, val: number) => setData(prev => ({ ...prev, physical: { ...prev.physical, [key]: val }})),
     updatePB: (key: keyof PhysicalStats['pbs'], val: number) => setData(prev => ({ 
       ...prev, 
@@ -2683,7 +3510,7 @@ const App: React.FC = () => {
              </div>
           </div>
           <main className="flex-1 p-4 overflow-y-auto">
-            {activeTab === 'dashboard' && <SmartHomeScreen data={data} actions={actions} accent={accent} />}
+            {activeTab === 'dashboard' && <SmartHomeScreen data={data} actions={actions} accent={accent} onOpenSOS={() => setShowSOS(true)} />}
             {activeTab === 'physical' && <PhysicalTab data={data} actions={actions} />}
             {activeTab === 'intelligence' && <MindTab data={data} actions={actions} />}
             {activeTab === 'settings' && <SettingsTab data={data} actions={actions} />}
@@ -2711,6 +3538,14 @@ const App: React.FC = () => {
           </nav>
         </>
       )}
+      {/* SOS Emergency Overlay */}
+      <SOSOverlay 
+        isOpen={showSOS} 
+        onClose={() => setShowSOS(false)} 
+        data={data} 
+        actions={actions} 
+        accent={accent} 
+      />
     </div>
   );
 };
