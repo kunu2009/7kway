@@ -12,7 +12,19 @@
 - **Current Phase:** Pre-Board Exams (February 2026)
 - **Goals:** Physical transformation, Academic excellence, Discipline mastery, Skill building
 
-### 🏠 REALITY CHECK (Constraints)
+### � ACADEMIC TARGET: 85%+ IN BOARDS
+
+| Subject | Target | Priority | Strategy |
+|---------|--------|----------|----------|
+| **Political Science** | 90+ | 🔴 HIGH | NCERT mastery + PYQs |
+| **Economics** | 90+ | 🔴 HIGH | Concepts + Numericals |
+| **History** | 85+ | 🟡 MEDIUM | Dates, events, maps |
+| English | 85+ | 🟢 NORMAL | Writing practice |
+| Other | 80+ | 🟢 NORMAL | Consistent revision |
+
+**Why 85%+?** Opens doors for top colleges, scholarships, self-confidence boost!
+
+### �🏠 REALITY CHECK (Constraints)
 - **Late dinner:** Around 12 AM (family schedule)
 - **Sleep time:** 12:30 - 1:00 AM
 - **Home situation:** Small home, can't workout when family is home
@@ -50,7 +62,7 @@
 
 **Morning brain is fresh even at 9:30!**
 
-**Focus:** Political Science / Economics (exam subjects)
+**Focus:** Political Science / Economics (HIGH PRIORITY SUBJECTS)
 
 | Time | Activity |
 |------|----------|
@@ -61,6 +73,40 @@
 - 🍅 Use **Pomodoro Timer** (25 min focus, 5 min break)
 - 📝 Capture key points in **Quick Notes**
 - 💪 **Gripper exercise** during breaks (quiet, no space needed)
+
+#### 📘 POLITICAL SCIENCE STRATEGY (Target: 90+)
+
+| Component | Marks | How to Score |
+|-----------|-------|--------------|
+| 1-mark MCQs | 16 | NCERT line-by-line reading |
+| 2-mark | 10 | Key terms, definitions |
+| 4-mark | 24 | Point-wise answers (4 points) |
+| 6-mark | 30 | Detailed answers (6 points + examples) |
+
+**What to Master:**
+- All NCERT chapters (word-to-word for MCQs)
+- Contemporary World Politics (Cold War, Bipolarity, US Hegemony)
+- Politics in India since Independence
+- Important dates, treaties, organizations
+- Map work (if applicable)
+
+**Daily Pol Sci Target:** 2 chapters revision + 20 PYQs
+
+#### 📊 ECONOMICS STRATEGY (Target: 90+)
+
+| Component | Marks | How to Score |
+|-----------|-------|--------------|
+| MCQs | 16 | Concepts + calculations |
+| Numericals | 20 | Practice, practice, practice |
+| Theory | 44 | NCERT + diagrams |
+
+**What to Master:**
+- **Macro:** National Income, Money & Banking, Govt Budget, BOP
+- **Micro:** Demand/Supply, Elasticity, Producer Theory, Market Forms
+- All formulas (learn by heart)
+- Diagrams (draw daily)
+
+**Daily Eco Target:** 1 chapter + 10 numericals + 10 theory Qs
 
 > **App Support:**
 > - Study Timer with subject selection
@@ -272,6 +318,28 @@ Pick ONE:
 | Gripper | Throughout day | Quick log |
 | NoFap | Day +1 | Discipline Streak |
 | Sleep | 7.5 hours | 1 AM → 8:30 AM |
+
+### 📖 DAILY STUDY ALLOCATION (For 85%+)
+
+| Subject | Hours | When | Focus |
+|---------|-------|------|-------|
+| **Political Science** | 2.5 hrs | Morning | NCERT + PYQs |
+| **Economics** | 2.5 hrs | Afternoon | Theory + Numericals |
+| History | 1.5 hrs | Evening | Dates + Maps |
+| Revision/Others | 1 hr | Night | Weak topics |
+| **TOTAL** | **7.5 hrs** | | |
+
+### 📅 WEEKLY SUBJECT CYCLE
+
+| Day | Morning Focus | Afternoon Focus |
+|-----|---------------|-----------------|
+| Mon | Pol Sci Ch 1-3 | Economics Macro |
+| Tue | Pol Sci Ch 4-6 | Economics Micro |
+| Wed | **Full Pol Sci PYQs** | Economics Numericals |
+| Thu | Pol Sci Ch 7-9 | Economics Diagrams |
+| Fri | **Sample Paper** | **Sample Paper** |
+| Sat | Weak Topics | Weak Topics |
+| Sun | Full Revision | Full Revision |
 
 ---
 
