@@ -1040,6 +1040,228 @@ const ExamItem = ({ exam, onAddMaterial, onDeleteMaterial, accent }: {
   );
 };
 
+// --- HANGING TIMER COMPONENT ---
+const HangingTimer = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [isActive, setIsActive] = useState(false);
+  const [seconds, setSeconds] = useState(0);
+  const [sessionSaved, setSessionSaved] = useState(false);
+
+  useEffect(() => {
+    let interval: ReturnType<typeof setInterval>;
+    if (isActive) {
+      interval = setInterval(() => {
+        setSeconds(s => s + 1);
+      }, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [isActive]);
+
+  const formatTime = (totalSeconds: number) => {
+    const mins = Math.floor(totalSeconds / 60);
+    const secs = totalSeconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  };
+
+  const saveSession = () => {
+    if (seconds >= 30) { // At least 30 seconds to count
+      const minutes = Math.round(seconds / 60 * 10) / 10; // Round to 0.1
+      actions.updatePhysicalStat('hangingMinutes', (data.physical.hangingMinutes || 0) + minutes);
+      actions.addXP(Math.floor(seconds / 10), `Hanging: ${formatTime(seconds)}`);
+      setSessionSaved(true);
+      if (data.settings.soundEnabled) SoundEffects.milestone();
+      setTimeout(() => {
+        setSessionSaved(false);
+        setSeconds(0);
+        setIsActive(false);
+      }, 1500);
+    }
+  };
+
+  const targetSeconds = 10 * 60; // 10 minute target
+  const progress = Math.min((seconds / targetSeconds) * 100, 100);
+
+  return (
+    <div className="bg-gradient-to-br from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl p-4">
+      <div className="flex justify-between items-center mb-3">
+        <div>
+          <h4 className="text-[10px] font-black text-amber-500 uppercase">🏋️ Hanging Timer</h4>
+          <p className="text-[9px] text-slate-400">Spine decompression • Height max</p>
+        </div>
+        <div className="text-right">
+          <p className="text-xs font-bold text-slate-600 dark:text-slate-400">{data.physical.hangingMinutes || 0} min</p>
+          <p className="text-[9px] text-slate-400">today</p>
+        </div>
+      </div>
+
+      {/* Timer Display */}
+      <div className="text-center mb-3">
+        <div className={`text-4xl font-black transition-all ${isActive ? 'text-amber-500 scale-105' : 'text-slate-700 dark:text-slate-300'}`}>
+          {formatTime(seconds)}
+        </div>
+        <div className="h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full mt-2 overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-amber-500 to-orange-500 transition-all duration-1000"
+            style={{ width: `${progress}%` }}
+          />
+        </div>
+        <p className="text-[9px] text-slate-400 mt-1">Target: 10 minutes</p>
+      </div>
+
+      {/* Controls */}
+      <div className="flex gap-2">
+        <button 
+          onClick={() => setIsActive(!isActive)}
+          className={`flex-1 py-2.5 rounded-lg font-bold text-white flex items-center justify-center gap-2 transition-all ${
+            isActive ? 'bg-rose-500' : 'bg-amber-500'
+          }`}
+        >
+          {isActive ? <><Pause size={14}/> Pause</> : <><Play size={14}/> {seconds > 0 ? 'Resume' : 'Start'}</>}
+        </button>
+        {seconds > 0 && !isActive && (
+          <button 
+            onClick={saveSession}
+            disabled={sessionSaved}
+            className={`px-4 py-2.5 rounded-lg font-bold transition-all ${
+              sessionSaved 
+                ? 'bg-emerald-500 text-white' 
+                : 'bg-emerald-500/20 text-emerald-500 hover:bg-emerald-500 hover:text-white'
+            }`}
+          >
+            {sessionSaved ? '✓ Saved!' : 'Save'}
+          </button>
+        )}
+        {seconds > 0 && (
+          <button 
+            onClick={() => { setSeconds(0); setIsActive(false); }}
+            className="px-3 py-2.5 bg-slate-200 dark:bg-slate-800 rounded-lg"
+          >
+            <RotateCcw size={14}/>
+          </button>
+        )}
+      </div>
+
+      {/* Quick Tips */}
+      {!isActive && seconds === 0 && (
+        <div className="mt-3 p-2 bg-amber-500/10 rounded-lg">
+          <p className="text-[9px] text-amber-600 dark:text-amber-400">
+            💡 Hang from a bar with relaxed shoulders. Breathe deeply. 
+            This decompresses your spine and may help maximize height.
+          </p>
+        </div>
+      )}
+    </div>
+  );
+};
+
+// --- QUICK NOTES COMPONENT ---
+const QuickNotes = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [note, setNote] = useState('');
+  const [category, setCategory] = useState<string>('general');
+  const [showNotes, setShowNotes] = useState(false);
+
+  const categories = [
+    { id: 'general', label: '📝 General', color: 'slate' },
+    { id: 'economics', label: '📊 Economics', color: 'blue' },
+    { id: 'polsci', label: '⚖️ Pol Sci', color: 'violet' },
+    { id: 'history', label: '📜 History', color: 'amber' },
+    { id: 'law', label: '⚖️ Law', color: 'rose' },
+  ];
+
+  const addNote = () => {
+    if (note.trim()) {
+      const newNote = {
+        id: Math.random().toString(),
+        content: note.trim(),
+        category,
+        createdAt: new Date().toISOString()
+      };
+      actions.setData((prev: AppData) => ({
+        ...prev,
+        quickNotes: [...(prev.quickNotes || []), newNote]
+      }));
+      setNote('');
+      if (data.settings.soundEnabled) SoundEffects.tap();
+    }
+  };
+
+  const deleteNote = (noteId: string) => {
+    actions.setData((prev: AppData) => ({
+      ...prev,
+      quickNotes: (prev.quickNotes || []).filter((n: any) => n.id !== noteId)
+    }));
+  };
+
+  const notes = (data as any).quickNotes || [];
+  const filteredNotes = showNotes ? notes.filter((n: any) => n.category === category || category === 'general') : [];
+
+  return (
+    <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
+      <div className="flex justify-between items-center mb-3">
+        <h4 className="text-[10px] font-black text-slate-400 uppercase">📝 Quick Notes</h4>
+        <button 
+          onClick={() => setShowNotes(!showNotes)}
+          className={`text-xs font-bold ${showNotes ? `text-${accent}-500` : 'text-slate-400'}`}
+        >
+          {showNotes ? 'Hide' : `View (${notes.length})`}
+        </button>
+      </div>
+
+      {/* Category Selector */}
+      <div className="flex gap-1 mb-3 overflow-x-auto">
+        {categories.map(cat => (
+          <button
+            key={cat.id}
+            onClick={() => setCategory(cat.id)}
+            className={`px-2 py-1 rounded-lg text-[9px] font-bold whitespace-nowrap transition-all ${
+              category === cat.id 
+                ? `bg-${cat.color}-500 text-white` 
+                : `bg-${cat.color}-500/10 text-${cat.color}-500`
+            }`}
+          >
+            {cat.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Note Input */}
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={note}
+          onChange={e => setNote(e.target.value)}
+          onKeyDown={e => e.key === 'Enter' && addNote()}
+          placeholder="Jot down a quick note..."
+          className="flex-1 px-3 py-2 text-xs bg-slate-100 dark:bg-slate-800 rounded-lg border-0 focus:ring-2 focus:ring-${accent}-500"
+        />
+        <button 
+          onClick={addNote}
+          className={`px-3 py-2 bg-${accent}-500 text-white rounded-lg`}
+        >
+          <Plus size={14}/>
+        </button>
+      </div>
+
+      {/* Notes List */}
+      {showNotes && (
+        <div className="mt-3 space-y-2 max-h-40 overflow-y-auto">
+          {filteredNotes.length === 0 ? (
+            <p className="text-xs text-slate-400 text-center py-2">No notes yet</p>
+          ) : (
+            filteredNotes.map((n: any) => (
+              <div key={n.id} className="flex items-start gap-2 p-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+                <span className="flex-1 text-xs text-slate-700 dark:text-slate-300">{n.content}</span>
+                <button onClick={() => deleteNote(n.id)} className="text-slate-300 hover:text-rose-500">
+                  <X size={12}/>
+                </button>
+              </div>
+            ))
+          )}
+        </div>
+      )}
+    </div>
+  );
+};
+
 // --- Specialized Tab Components ---
 interface TabProps {
   data: AppData;
@@ -1160,6 +1382,9 @@ const PhysicalTab = ({ data, actions }: TabProps) => {
         </div>
         <span className="text-sm font-black text-cyan-500">+25 XP</span>
       </button>
+
+      {/* Hanging Timer */}
+      <HangingTimer data={data} actions={actions} accent={accent} />
     </div>
   );
 };
@@ -1283,6 +1508,11 @@ const MindTab = ({ data, actions }: TabProps) => {
           </div>
         </Section>
       )}
+
+      {/* Quick Notes */}
+      <Section id="notes" title="Quick Notes" icon={Lightbulb} color="teal">
+        <QuickNotes data={data} actions={actions} accent={accent} />
+      </Section>
     </div>
   );
 };
@@ -3239,8 +3469,18 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
         <Moon size={48} className="text-violet-500 mb-4"/>
         <h2 className="text-xl font-bold text-slate-700 dark:text-slate-300 mb-1">Sleep Time</h2>
         <p className="text-sm text-slate-500 mb-8">Growth happens while you rest</p>
-        <p className="text-5xl font-black text-violet-500">{data.discipline.noFapStreak}</p>
-        <p className="text-xs text-slate-400">day streak</p>
+        <div className="relative">
+          <div className="absolute -inset-8 animate-pulse">
+            <div className="text-6xl">🔥</div>
+          </div>
+          <p className="text-6xl font-black text-violet-500 relative z-10">{data.discipline.noFapStreak}</p>
+        </div>
+        <p className="text-xs text-slate-400 mt-2">day streak</p>
+        <div className="mt-6 flex gap-2">
+          {Array.from({ length: Math.min(7, data.discipline.noFapStreak) }).map((_, i) => (
+            <span key={i} className="animate-bounce text-2xl" style={{ animationDelay: `${i * 100}ms` }}>🔥</span>
+          ))}
+        </div>
       </div>
     );
   }
@@ -3269,6 +3509,34 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
         </h1>
         <p className="text-sm text-slate-400 mt-1">{getCurrentDateFormatted()}</p>
       </div>
+
+      {/* Exam Countdown Banner */}
+      {nearestExam && (
+        <div className={`bg-gradient-to-r from-${accent}-500/20 to-${accent}-600/10 border border-${accent}-500/30 rounded-xl p-4`}>
+          <div className="flex items-center justify-between">
+            <div>
+              <p className="text-xs text-slate-500 dark:text-slate-400">⏳ Next Exam</p>
+              <h3 className={`font-bold text-${accent}-600 dark:text-${accent}-400 text-lg`}>{nearestExam.subject}</h3>
+              <p className="text-xs text-slate-500">{nearestExam.date}</p>
+            </div>
+            <div className="text-right">
+              <div className={`text-3xl font-black text-${accent}-500`}>
+                {Math.ceil((new Date(nearestExam.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24))}
+              </div>
+              <p className="text-[10px] text-slate-400">days left</p>
+            </div>
+          </div>
+          <div className="mt-3">
+            <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
+              <div 
+                className={`h-full bg-gradient-to-r from-${accent}-400 to-${accent}-600 rounded-full transition-all`}
+                style={{ width: `${Math.max(0, Math.min(100, 100 - (Math.ceil((new Date(nearestExam.date).getTime() - Date.now()) / (1000 * 60 * 60 * 24)) / 60) * 100))}%` }}
+              />
+            </div>
+            <p className="text-[9px] text-center text-slate-400 mt-1">Preparation Progress</p>
+          </div>
+        </div>
+      )}
 
       {/* Daily Quote */}
       <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl text-center">
