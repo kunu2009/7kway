@@ -1153,6 +1153,382 @@ const HangingTimer = ({ data, actions, accent }: { data: AppData, actions: any, 
   );
 };
 
+// --- STUDY TARGETS DASHBOARD (85%+ Goal) ---
+const StudyTargetsDashboard = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const subjects = [
+    { name: 'Political Science', target: 90, color: 'violet', priority: 'HIGH', tips: ['NCERT line-by-line', '20 PYQs daily', 'Point-wise answers'] },
+    { name: 'Economics', target: 90, color: 'blue', priority: 'HIGH', tips: ['Numericals daily', 'All formulas', 'Diagrams practice'] },
+    { name: 'History', target: 85, color: 'amber', priority: 'MEDIUM', tips: ['Dates & events', 'Map work', 'Timeline revision'] },
+  ];
+
+  const dailyAllocation = [
+    { subject: 'Political Science', hours: 2.5, time: '9:30 AM', focus: 'NCERT + PYQs' },
+    { subject: 'Economics', hours: 2.5, time: '12:30 PM', focus: 'Theory + Numericals' },
+    { subject: 'History', hours: 1.5, time: '6:30 PM', focus: 'Dates + Maps' },
+    { subject: 'Revision', hours: 1, time: '9:00 PM', focus: 'Weak topics' },
+  ];
+
+  const todaySessions = data.pomodoroSessions.filter(s => 
+    s.completedAt.split('T')[0] === new Date().toISOString().split('T')[0]
+  );
+  const totalStudyMins = todaySessions.reduce((acc, s) => acc + s.duration, 0);
+  const targetMins = 7.5 * 60; // 7.5 hours target
+
+  return (
+    <div className="space-y-4">
+      {/* Target Header */}
+      <div className="text-center p-4 bg-gradient-to-r from-emerald-500/10 to-teal-500/10 rounded-xl border border-emerald-500/20">
+        <p className="text-3xl font-black text-emerald-500">85%+</p>
+        <p className="text-xs text-slate-500">Board Exam Target</p>
+        <div className="mt-2 flex justify-center gap-4 text-xs">
+          <span className="text-violet-500 font-bold">Pol Sci: 90+</span>
+          <span className="text-blue-500 font-bold">Eco: 90+</span>
+          <span className="text-amber-500 font-bold">History: 85+</span>
+        </div>
+      </div>
+
+      {/* Today's Progress */}
+      <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div className="flex justify-between items-center mb-2">
+          <span className="text-xs font-bold text-slate-500">Today's Study</span>
+          <span className="text-sm font-black text-emerald-500">{Math.floor(totalStudyMins / 60)}h {totalStudyMins % 60}m / 7.5h</span>
+        </div>
+        <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+          <div 
+            className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all"
+            style={{ width: `${Math.min(100, (totalStudyMins / targetMins) * 100)}%` }}
+          />
+        </div>
+      </div>
+
+      {/* Subject Cards */}
+      <div className="space-y-2">
+        {subjects.map(sub => (
+          <div key={sub.name} className={`p-3 bg-${sub.color}-500/10 border border-${sub.color}-500/20 rounded-xl`}>
+            <div className="flex justify-between items-center">
+              <div>
+                <p className="font-bold text-sm">{sub.name}</p>
+                <p className={`text-[9px] ${sub.priority === 'HIGH' ? 'text-rose-500' : 'text-amber-500'} font-bold`}>
+                  🎯 {sub.priority} PRIORITY
+                </p>
+              </div>
+              <div className="text-right">
+                <p className={`text-2xl font-black text-${sub.color}-500`}>{sub.target}+</p>
+                <p className="text-[9px] text-slate-400">target</p>
+              </div>
+            </div>
+            <div className="mt-2 flex flex-wrap gap-1">
+              {sub.tips.map((tip, i) => (
+                <span key={i} className="text-[9px] px-2 py-0.5 bg-white dark:bg-slate-800 rounded-full text-slate-500">
+                  {tip}
+                </span>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+
+      {/* Daily Allocation */}
+      <div className="p-3 bg-white dark:bg-slate-900 rounded-xl border border-slate-200 dark:border-slate-800">
+        <p className="text-[10px] font-bold text-slate-400 uppercase mb-2">📅 Daily Study Plan</p>
+        <div className="space-y-1.5">
+          {dailyAllocation.map((slot, i) => (
+            <div key={i} className="flex items-center justify-between py-1.5 border-b border-slate-100 dark:border-slate-800 last:border-0">
+              <div className="flex items-center gap-2">
+                <span className="text-[10px] text-slate-400 w-14">{slot.time}</span>
+                <span className="text-xs font-medium">{slot.subject}</span>
+              </div>
+              <div className="flex items-center gap-2">
+                <span className="text-[9px] text-slate-400">{slot.focus}</span>
+                <span className="text-xs font-bold text-emerald-500">{slot.hours}h</span>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- FULL BODY WORKOUT ROUTINE ---
+const FullBodyWorkoutRoutine = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [completedExercises, setCompletedExercises] = useState<string[]>([]);
+  
+  const workoutSections = [
+    { 
+      name: 'PUSH', 
+      duration: '10 min', 
+      color: 'rose',
+      exercises: [
+        { name: 'Regular Push-ups', sets: 3, reps: 15, target: 'Chest, triceps' },
+        { name: 'Diamond Push-ups', sets: 3, reps: 10, target: 'Inner chest' },
+        { name: 'Decline Push-ups', sets: 3, reps: 12, target: 'Upper chest' },
+      ]
+    },
+    { 
+      name: 'LEGS', 
+      duration: '10 min', 
+      color: 'blue',
+      exercises: [
+        { name: 'Bulgarian Split Squat', sets: 3, reps: 10, target: 'Quads, glutes' },
+        { name: 'Squats', sets: 3, reps: 20, target: 'Full legs' },
+        { name: 'Calf Raises', sets: 3, reps: 25, target: 'Calves' },
+      ]
+    },
+    { 
+      name: 'CORE', 
+      duration: '10 min', 
+      color: 'orange',
+      exercises: [
+        { name: 'Leg Raises', sets: 3, reps: 15, target: 'Lower abs' },
+        { name: 'Crunches', sets: 3, reps: 20, target: 'Upper abs' },
+        { name: 'Plank', sets: 3, reps: 30, target: 'Full core (30s)' },
+      ]
+    },
+    { 
+      name: 'FOREARMS', 
+      duration: '5 min', 
+      color: 'emerald',
+      exercises: [
+        { name: 'Wrist Curls', sets: 3, reps: 20, target: 'Flexors' },
+        { name: 'Reverse Wrist Curls', sets: 3, reps: 20, target: 'Extensors' },
+        { name: "Farmer's Walk", sets: 2, reps: 30, target: 'Grip (30s)' },
+      ]
+    },
+    { 
+      name: 'INTERNAL', 
+      duration: '2 min', 
+      color: 'violet',
+      exercises: [
+        { name: 'Kegels', sets: 3, reps: 15, target: 'Pelvic floor (hold 5s)' },
+      ]
+    },
+  ];
+
+  const toggleExercise = (name: string) => {
+    if (completedExercises.includes(name)) {
+      setCompletedExercises(prev => prev.filter(e => e !== name));
+    } else {
+      setCompletedExercises(prev => [...prev, name]);
+      if (data.settings.soundEnabled) SoundEffects.tap();
+    }
+  };
+
+  const totalExercises = workoutSections.reduce((acc, s) => acc + s.exercises.length, 0);
+  const progress = (completedExercises.length / totalExercises) * 100;
+
+  return (
+    <div className="space-y-3">
+      {/* Progress */}
+      <div className="flex items-center justify-between p-3 bg-slate-100 dark:bg-slate-800 rounded-xl">
+        <span className="text-xs font-bold">Workout Progress</span>
+        <span className="text-sm font-black text-emerald-500">{completedExercises.length}/{totalExercises}</span>
+      </div>
+      <div className="h-2 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden -mt-2">
+        <div className="h-full bg-gradient-to-r from-emerald-400 to-teal-500 transition-all" style={{ width: `${progress}%` }}/>
+      </div>
+
+      {/* Sections */}
+      {workoutSections.map(section => (
+        <div key={section.name} className={`border border-${section.color}-500/20 rounded-xl overflow-hidden`}>
+          <div className={`px-3 py-2 bg-${section.color}-500/10 flex justify-between items-center`}>
+            <span className={`text-xs font-black text-${section.color}-500`}>{section.name}</span>
+            <span className="text-[10px] text-slate-400">{section.duration}</span>
+          </div>
+          <div className="p-2 space-y-1">
+            {section.exercises.map(ex => (
+              <button
+                key={ex.name}
+                onClick={() => toggleExercise(ex.name)}
+                className={`w-full flex items-center justify-between p-2 rounded-lg transition-all ${
+                  completedExercises.includes(ex.name) 
+                    ? 'bg-emerald-500/20 line-through opacity-60' 
+                    : 'bg-white dark:bg-slate-900'
+                }`}
+              >
+                <div className="flex items-center gap-2">
+                  <div className={`w-4 h-4 rounded border-2 flex items-center justify-center ${
+                    completedExercises.includes(ex.name) ? 'bg-emerald-500 border-emerald-500' : 'border-slate-300'
+                  }`}>
+                    {completedExercises.includes(ex.name) && <CheckCircle2 size={10} className="text-white"/>}
+                  </div>
+                  <span className="text-xs font-medium">{ex.name}</span>
+                </div>
+                <div className="text-right">
+                  <span className="text-[10px] text-slate-500">{ex.sets}x{ex.reps}</span>
+                  <p className="text-[8px] text-slate-400">{ex.target}</p>
+                </div>
+              </button>
+            ))}
+          </div>
+        </div>
+      ))}
+
+      {/* Complete Workout Button */}
+      {completedExercises.length === totalExercises && (
+        <button 
+          onClick={() => {
+            actions.addXP(100, 'Completed full workout! 💪');
+            setCompletedExercises([]);
+          }}
+          className="w-full py-3 bg-gradient-to-r from-emerald-500 to-teal-500 text-white font-bold rounded-xl"
+        >
+          🎉 Complete Workout (+100 XP)
+        </button>
+      )}
+    </div>
+  );
+};
+
+// --- FACE EXERCISES TRACKER ---
+const FaceExercisesTracker = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [completed, setCompleted] = useState<string[]>([]);
+  
+  const exercises = [
+    { name: 'Mewing', duration: '2 min hold', benefit: 'Jawline definition', icon: '👅' },
+    { name: 'Jaw Clenches', duration: '20 reps', benefit: 'Sharper jaw', icon: '😬' },
+    { name: 'Chin Lifts', duration: '15 reps', benefit: 'Reduces double chin', icon: '🔝' },
+    { name: 'Cheek Puffs', duration: '10 each side', benefit: 'Cheekbone definition', icon: '🎈' },
+    { name: 'Fish Face', duration: '10s x 5', benefit: 'Cheek muscles', icon: '🐟' },
+    { name: 'Neck Stretches', duration: '30s each', benefit: 'Posture & neck', icon: '🦒' },
+  ];
+
+  const toggle = (name: string) => {
+    if (completed.includes(name)) {
+      setCompleted(prev => prev.filter(e => e !== name));
+    } else {
+      setCompleted(prev => [...prev, name]);
+      if (data.settings.soundEnabled) SoundEffects.tap();
+    }
+  };
+
+  return (
+    <div className="space-y-2">
+      <div className="flex justify-between items-center mb-2">
+        <span className="text-xs font-bold text-slate-500">😎 Face Exercises</span>
+        <span className="text-xs font-black text-rose-500">{completed.length}/{exercises.length}</span>
+      </div>
+      {exercises.map(ex => (
+        <button
+          key={ex.name}
+          onClick={() => toggle(ex.name)}
+          className={`w-full flex items-center justify-between p-2.5 rounded-lg transition-all ${
+            completed.includes(ex.name) ? 'bg-rose-500/20' : 'bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            <span className="text-lg">{ex.icon}</span>
+            <div className="text-left">
+              <p className={`text-xs font-medium ${completed.includes(ex.name) ? 'line-through opacity-60' : ''}`}>{ex.name}</p>
+              <p className="text-[9px] text-slate-400">{ex.benefit}</p>
+            </div>
+          </div>
+          <span className="text-[10px] text-slate-500">{ex.duration}</span>
+        </button>
+      ))}
+      {completed.length === exercises.length && (
+        <div className="text-center py-2 text-emerald-500 text-xs font-bold">✨ Face routine complete!</div>
+      )}
+    </div>
+  );
+};
+
+// --- GRIPPER TRACKER ---
+const GripperTracker = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
+  const [sets, setSets] = useState(0);
+  const target = 10; // 10 sets throughout day
+
+  const addSet = () => {
+    setSets(prev => prev + 1);
+    if (data.settings.soundEnabled) SoundEffects.tap();
+    if (sets + 1 >= target) {
+      actions.addXP(30, 'Gripper goal reached! 💪');
+    }
+  };
+
+  return (
+    <div className="p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-xl">
+      <div className="flex items-center justify-between">
+        <div>
+          <p className="text-xs font-bold">💪 Gripper Sets</p>
+          <p className="text-[9px] text-slate-400">Silent workout, anytime</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <div className="text-center">
+            <p className="text-xl font-black text-emerald-500">{sets}</p>
+            <p className="text-[8px] text-slate-400">/{target} sets</p>
+          </div>
+          <button 
+            onClick={addSet}
+            className="px-4 py-2 bg-emerald-500 text-white font-bold rounded-lg text-sm"
+          >
+            +1 Set
+          </button>
+        </div>
+      </div>
+      <div className="mt-2 h-1.5 bg-slate-200 dark:bg-slate-800 rounded-full overflow-hidden">
+        <div className="h-full bg-emerald-500 transition-all" style={{ width: `${(sets / target) * 100}%` }}/>
+      </div>
+    </div>
+  );
+};
+
+// --- DAILY SCHEDULE VIEW ---
+const DailyScheduleView = ({ data, accent }: { data: AppData, accent: string }) => {
+  const currentHour = new Date().getHours();
+  
+  const schedule = [
+    { time: '8:30', label: 'Wake Up', icon: '😴', done: currentHour >= 9 },
+    { time: '9:00', label: 'Breakfast + Plan', icon: '🍳', done: currentHour >= 9 },
+    { time: '9:30', label: 'Study: Pol Sci/Eco', icon: '📚', done: currentHour >= 12 },
+    { time: '12:00', label: 'Break + Gripper', icon: '☕', done: currentHour >= 12 },
+    { time: '12:30', label: 'Study: History', icon: '📚', done: currentHour >= 14 },
+    { time: '2:30', label: 'Lunch + Rest', icon: '🍽️', done: currentHour >= 15 },
+    { time: '3:30', label: 'Study: Revision', icon: '📚', done: currentHour >= 17 },
+    { time: '5:00', label: 'WORKOUT TIME!', icon: '🏋️', done: currentHour >= 18, highlight: currentHour >= 17 && currentHour < 19 },
+    { time: '6:30', label: 'Evening Study', icon: '📖', done: currentHour >= 20 },
+    { time: '8:00', label: 'Skill/Break', icon: '🎮', done: currentHour >= 21 },
+    { time: '9:00', label: 'Final Study', icon: '📚', done: currentHour >= 22 },
+    { time: '10:30', label: 'Wind Down', icon: '🌙', done: currentHour >= 23 },
+    { time: '12:00', label: 'Dinner', icon: '🍽️', done: currentHour >= 0 && currentHour < 8 },
+    { time: '1:00', label: 'Sleep', icon: '😴', done: false },
+  ];
+
+  // Find current activity
+  const currentIndex = schedule.findIndex((s, i) => {
+    const nextItem = schedule[i + 1];
+    const thisHour = parseInt(s.time.split(':')[0]);
+    const nextHour = nextItem ? parseInt(nextItem.time.split(':')[0]) : 24;
+    return currentHour >= thisHour && currentHour < nextHour;
+  });
+
+  return (
+    <div className="space-y-1">
+      {schedule.map((item, i) => (
+        <div 
+          key={i}
+          className={`flex items-center gap-3 p-2 rounded-lg transition-all ${
+            i === currentIndex 
+              ? `bg-${accent}-500/20 border border-${accent}-500/30` 
+              : item.done 
+                ? 'opacity-50' 
+                : ''
+          } ${item.highlight ? 'bg-amber-500/20 border border-amber-500/30' : ''}`}
+        >
+          <span className="text-[10px] text-slate-400 w-10">{item.time}</span>
+          <span className="text-lg">{item.icon}</span>
+          <span className={`text-xs ${i === currentIndex ? 'font-bold' : ''} ${item.done ? 'line-through' : ''}`}>
+            {item.label}
+          </span>
+          {i === currentIndex && (
+            <span className={`ml-auto text-[9px] px-2 py-0.5 bg-${accent}-500 text-white rounded-full`}>NOW</span>
+          )}
+        </div>
+      ))}
+    </div>
+  );
+};
+
 // --- QUICK NOTES COMPONENT ---
 const QuickNotes = ({ data, actions, accent }: { data: AppData, actions: any, accent: string }) => {
   const [note, setNote] = useState('');
@@ -1385,6 +1761,19 @@ const PhysicalTab = ({ data, actions }: TabProps) => {
 
       {/* Hanging Timer */}
       <HangingTimer data={data} actions={actions} accent={accent} />
+
+      {/* Full Body Workout Routine */}
+      <Section id="fullbody" title="Full Body Routine" icon={Flame} color="rose">
+        <FullBodyWorkoutRoutine data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* Face Exercises */}
+      <Section id="face" title="Face Exercises" icon={ScanFace} color="pink">
+        <FaceExercisesTracker data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* Gripper Tracker */}
+      <GripperTracker data={data} actions={actions} accent={accent} />
     </div>
   );
 };
@@ -1490,8 +1879,18 @@ const MindTab = ({ data, actions }: TabProps) => {
         <PomodoroTimer data={data} actions={actions} accent={accent} />
       </Section>
 
+      {/* 85%+ Study Targets */}
+      <Section id="targets" title="85%+ Target" icon={Target} color="emerald">
+        <StudyTargetsDashboard data={data} actions={actions} accent={accent} />
+      </Section>
+
+      {/* Today's Schedule */}
+      <Section id="schedule" title="Today's Schedule" icon={CalendarIcon} color="orange">
+        <DailyScheduleView data={data} accent={accent} />
+      </Section>
+
       {/* Daily Check-in */}
-      <Section id="checkin" title="Daily Check-in" icon={CalendarIcon} color="amber" stat={todayCheckIn?.morning.completed ? '✓' : ''}>
+      <Section id="checkin" title="Daily Check-in" icon={Sunrise} color="amber" stat={todayCheckIn?.morning.completed ? '✓' : ''}>
         <DailyCheckInWidget data={data} actions={actions} accent={accent} />
       </Section>
 
