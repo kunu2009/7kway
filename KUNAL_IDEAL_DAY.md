@@ -115,29 +115,67 @@
 
 ### 🏋️ 5:00 PM - WORKOUT TIME! (Family Out)
 
-**This is YOUR window. Make it count!**
+**This is YOUR window. Make it count! Full 1-hour session.**
 
-| Activity | Duration | Purpose |
+#### 💪 FULL BODY ROUTINE (55 Min)
+
+**WARM-UP (5 min)**
+- Jumping jacks x 30
+- Arm circles x 20
+- Leg swings x 15 each
+
+**PUSH (10 min)**
+| Exercise | Sets x Reps | Target |
+|----------|-------------|--------|
+| Regular Push-ups | 3 x 15 | Chest, triceps |
+| Diamond Push-ups | 3 x 10 | Inner chest, triceps |
+| Decline Push-ups | 3 x 12 | Upper chest |
+
+**LEGS (10 min)**
+| Exercise | Sets x Reps | Target |
+|----------|-------------|--------|
+| Bulgarian Split Squat | 3 x 10 each leg | Quads, glutes |
+| Squats | 3 x 20 | Full legs |
+| Calf Raises | 3 x 25 | Calves |
+
+**CORE (10 min)**
+| Exercise | Sets x Reps | Target |
+|----------|-------------|--------|
+| Leg Raises | 3 x 15 | Lower abs |
+| Crunches | 3 x 20 | Upper abs |
+| Plank | 3 x 30 sec | Full core |
+
+**FOREARMS & GRIP (5 min)**
+| Exercise | Sets x Reps | Target |
+|----------|-------------|--------|
+| Wrist Curls | 3 x 20 | Forearm flexors |
+| Reverse Wrist Curls | 3 x 20 | Forearm extensors |
+| Farmer's Walk | 2 x 30 sec | Grip, traps |
+
+**HEIGHT & SPINE (10 min)**
+| Exercise | Duration | Purpose |
 |----------|----------|---------|
-| Warm-up | 5 min | Prepare body |
-| **Hanging** | 10-15 min | Height maximization |
-| Push-ups | 10 min | Chest, triceps |
-| Squats | 10 min | Legs, testosterone |
-| Abs | 10 min | Core strength |
-| Pull-ups (if possible) | 5 min | Back, biceps |
-| **Face Exercises** | 5 min | Jawline, cheekbones |
-| Stretching | 5 min | Cool down |
+| **Hanging** | 10-15 min total | Spinal decompression |
+| Cobra Stretch | 30 sec x 3 | Spine flexibility |
 
-#### 😎 FACE EXERCISE ROUTINE (5 Min)
+**INTERNAL STRENGTH (2 min)**
+| Exercise | Sets x Reps | Benefits |
+|----------|-------------|----------|
+| **Kegels** | 3 x 15 (hold 5 sec) | Pelvic floor, energy control |
 
+**FACE EXERCISES (5 min)**
 | Exercise | Reps | Benefits |
 |----------|------|----------|
-| **Mewing** | Hold 2 min | Jawline definition, proper tongue posture |
-| **Jaw clenches** | 20 reps | Masseter muscles, sharper jaw |
-| **Chin lifts** | 15 reps | Reduces double chin |
-| **Cheek puffs** | 10 each side | Cheekbone definition |
-| **Fish face** | Hold 10 sec x 5 | Cheek muscles |
-| **Neck stretches** | 30 sec each | Posture, neck definition |
+| **Mewing** | Hold 2 min | Jawline definition |
+| Jaw clenches | 20 reps | Sharper jaw |
+| Chin lifts | 15 reps | Reduces double chin |
+| Cheek puffs | 10 each side | Cheekbone definition |
+| Fish face | Hold 10 sec x 5 | Cheek muscles |
+| Neck stretches | 30 sec each | Posture |
+
+**COOL DOWN (3 min)**
+- Full body stretch
+- Deep breathing
 
 **Pro tip:** Practice mewing throughout the day - tongue on roof of mouth!
 
