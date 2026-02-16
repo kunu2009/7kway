@@ -8,7 +8,7 @@ import {
   Dumbbell, CheckCircle2, Trophy, Clock, Home, ArrowRight,
   BookOpen, Music, Share2, ExternalLink, Mail,
   LayoutDashboard, Flame, Box, Calendar as CalendarIcon, Shield,
-  ArrowUp, Plus, Trash2, ChevronDown, ChevronUp, Flag, CheckSquare, Square,
+  ArrowUp, Plus, Trash2, ChevronDown, ChevronUp, ChevronRight, Flag, CheckSquare, Square,
   RotateCcw, X, Eye, EyeOff,
   Droplets, Moon, Utensils, Scale, Minus, UserCircle, ScanFace, Ruler, Weight,
   Palette, Sun, Moon as MoonIcon, Sparkles, Activity, Layers, ListFilter, Info,
@@ -2946,7 +2946,7 @@ const WealthTab = ({ data, actions }: TabProps) => {
   );
 };
 
-const SettingsTab = ({ data, actions }: TabProps) => {
+const SettingsTab = ({ data, actions, onShowWeeklyReview }: TabProps & { onShowWeeklyReview?: () => void }) => {
   const accent = data.settings.accentColor || 'teal';
   const colors: AccentColor[] = ['teal', 'cyan', 'violet', 'rose', 'orange'];
 
@@ -3046,6 +3046,25 @@ const SettingsTab = ({ data, actions }: TabProps) => {
         </div>
       </div>
 
+      {/* Weekly Review Button */}
+      {onShowWeeklyReview && (
+        <button 
+          onClick={onShowWeeklyReview}
+          className={`w-full bg-gradient-to-r from-${accent}-500/10 to-${accent}-600/10 border border-${accent}-500/30 rounded-xl p-4 flex items-center justify-between`}
+        >
+          <div className="flex items-center gap-3">
+            <div className={`w-10 h-10 rounded-full bg-${accent}-500/20 flex items-center justify-center`}>
+              <TrendingUp size={20} className={`text-${accent}-500`} />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold">Weekly Review</p>
+              <p className="text-[10px] text-slate-400">See your progress summary</p>
+            </div>
+          </div>
+          <ChevronRight size={20} className="text-slate-400" />
+        </button>
+      )}
+
       {/* Profile Info */}
       <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-4">
         <p className="text-sm font-bold mb-3">Profile</p>
@@ -3141,7 +3160,7 @@ const OnboardingOverlay = ({ onComplete, accent }: { onComplete: (userData: any)
 };
 
 // --- SMART HOME SCREEN (Time-Aware) ---
-const SmartHomeScreen = ({ data, actions, accent, onOpenSOS }: { data: AppData, actions: any, accent: string, onOpenSOS: () => void }) => {
+const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview }: { data: AppData, actions: any, accent: string, onOpenSOS: () => void, onShowWeeklyReview?: () => void }) => {
   const timePeriod = getTimePeriod();
   const currentHour = new Date().getHours();
   const quote = getMotivationalQuote();
@@ -3256,6 +3275,9 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS }: { data: AppData, 
         <p className="text-sm italic text-slate-600 dark:text-slate-300">"{quote.quote}"</p>
         <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">— {quote.author}</p>
       </div>
+
+      {/* Daily Goals Progress Ring */}
+      <DailyGoalsRing data={data} accent={accent} />
 
       {/* Mini Week Heatmap */}
       <div className="flex justify-center gap-2">
@@ -3392,6 +3414,397 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS }: { data: AppData, 
         accent={accent}
         onOpenSOS={onOpenSOS}
       />
+
+      {/* Weekly Review Quick Access */}
+      {onShowWeeklyReview && (
+        <button 
+          onClick={onShowWeeklyReview}
+          className="w-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-3 flex items-center justify-between"
+        >
+          <div className="flex items-center gap-3">
+            <TrendingUp size={18} className="text-purple-500" />
+            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Weekly Review</span>
+          </div>
+          <ChevronRight size={16} className="text-slate-400" />
+        </button>
+      )}
+    </div>
+  );
+};
+
+// --- Animated Progress Ring Component ---
+interface ProgressRingProps {
+  progress: number; // 0-100
+  size?: number; // SVG size in pixels
+  strokeWidth?: number;
+  color?: string; // Tailwind color class or hex
+  bgColor?: string;
+  showPercent?: boolean;
+  label?: string;
+  icon?: React.ReactNode;
+  animated?: boolean;
+}
+
+const ProgressRing: React.FC<ProgressRingProps> = ({
+  progress,
+  size = 80,
+  strokeWidth = 6,
+  color = 'text-indigo-500',
+  bgColor = 'text-slate-200 dark:text-slate-700',
+  showPercent = true,
+  label,
+  icon,
+  animated = true
+}) => {
+  const [displayProgress, setDisplayProgress] = useState(animated ? 0 : progress);
+  
+  useEffect(() => {
+    if (!animated) {
+      setDisplayProgress(progress);
+      return;
+    }
+    
+    // Animate progress from 0 to target
+    let start: number | null = null;
+    const duration = 1000; // 1 second animation
+    
+    const animate = (timestamp: number) => {
+      if (!start) start = timestamp;
+      const elapsed = timestamp - start;
+      const progressRatio = Math.min(elapsed / duration, 1);
+      
+      // Easing function (ease-out)
+      const eased = 1 - Math.pow(1 - progressRatio, 3);
+      setDisplayProgress(eased * progress);
+      
+      if (progressRatio < 1) {
+        requestAnimationFrame(animate);
+      }
+    };
+    
+    requestAnimationFrame(animate);
+  }, [progress, animated]);
+
+  const radius = (size - strokeWidth) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const strokeDashoffset = circumference - (displayProgress / 100) * circumference;
+  
+  return (
+    <div className="relative inline-flex flex-col items-center">
+      <svg width={size} height={size} className="transform -rotate-90">
+        {/* Background circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          className={`stroke-current ${bgColor}`}
+        />
+        {/* Progress circle */}
+        <circle
+          cx={size / 2}
+          cy={size / 2}
+          r={radius}
+          fill="transparent"
+          strokeWidth={strokeWidth}
+          strokeLinecap="round"
+          className={`stroke-current ${color} transition-all duration-300`}
+          style={{
+            strokeDasharray: circumference,
+            strokeDashoffset: strokeDashoffset
+          }}
+        />
+      </svg>
+      {/* Center content */}
+      <div className="absolute inset-0 flex flex-col items-center justify-center">
+        {icon && <div className="mb-0.5">{icon}</div>}
+        {showPercent && !icon && (
+          <span className={`font-bold ${size >= 80 ? 'text-lg' : 'text-sm'}`}>
+            {Math.round(displayProgress)}%
+          </span>
+        )}
+      </div>
+      {label && (
+        <span className="text-xs text-slate-500 mt-1 text-center">{label}</span>
+      )}
+    </div>
+  );
+};
+
+// --- Daily Goals Progress Widget ---
+interface DailyGoalsRingProps {
+  data: AppData;
+  accent: string;
+}
+
+const DailyGoalsRing: React.FC<DailyGoalsRingProps> = ({ data, accent }) => {
+  const today = new Date().toISOString().split('T')[0];
+  
+  // Calculate daily progress metrics
+  const todayProtocol = data.protocols.find(p => p.date === today);
+  const morningComplete = todayProtocol?.morningTasks.filter(t => t.completed).length || 0;
+  const morningTotal = todayProtocol?.morningTasks.length || 6;
+  const nightComplete = todayProtocol?.nightTasks.filter(t => t.completed).length || 0;
+  const nightTotal = todayProtocol?.nightTasks.length || 6;
+  
+  const todayPomodoros = data.pomodoroSessions.filter(s => s.completedAt.split('T')[0] === today).length;
+  const pomodoroGoal = 4;
+  
+  const todayCheckin = data.checkIns.find(c => c.date === today);
+  const hasCheckin = !!todayCheckin;
+  
+  const todayWorkout = data.workouts.find(w => w.date === today);
+  const hasWorkout = !!todayWorkout;
+  
+  // Calculate overall daily score
+  const protocolProgress = ((morningComplete + nightComplete) / (morningTotal + nightTotal)) * 100;
+  const pomodoroProgress = Math.min((todayPomodoros / pomodoroGoal) * 100, 100);
+  const checkinProgress = hasCheckin ? 100 : 0;
+  const workoutProgress = hasWorkout ? 100 : 0;
+  
+  const overallProgress = (protocolProgress + pomodoroProgress + checkinProgress + workoutProgress) / 4;
+  
+  return (
+    <div className="bg-white dark:bg-slate-800 rounded-2xl p-4 shadow-sm border border-slate-200 dark:border-slate-700">
+      <h4 className="text-xs font-bold text-slate-600 dark:text-slate-400 mb-3 text-center">TODAY'S PROGRESS</h4>
+      
+      <div className="flex justify-center mb-4">
+        <ProgressRing 
+          progress={overallProgress}
+          size={100}
+          strokeWidth={8}
+          color={`text-${accent}-500`}
+          showPercent={true}
+        />
+      </div>
+      
+      <div className="grid grid-cols-4 gap-2">
+        <div className="flex flex-col items-center">
+          <ProgressRing 
+            progress={protocolProgress}
+            size={48}
+            strokeWidth={4}
+            color="text-amber-500"
+            showPercent={false}
+            icon={<Sun size={14} className="text-amber-500" />}
+          />
+          <span className="text-[10px] text-slate-500 mt-1">Protocol</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <ProgressRing 
+            progress={pomodoroProgress}
+            size={48}
+            strokeWidth={4}
+            color="text-rose-500"
+            showPercent={false}
+            icon={<Timer size={14} className="text-rose-500" />}
+          />
+          <span className="text-[10px] text-slate-500 mt-1">Focus</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <ProgressRing 
+            progress={checkinProgress}
+            size={48}
+            strokeWidth={4}
+            color="text-teal-500"
+            showPercent={false}
+            icon={<CheckCircle2 size={14} className="text-teal-500" />}
+          />
+          <span className="text-[10px] text-slate-500 mt-1">Check-in</span>
+        </div>
+        <div className="flex flex-col items-center">
+          <ProgressRing 
+            progress={workoutProgress}
+            size={48}
+            strokeWidth={4}
+            color="text-emerald-500"
+            showPercent={false}
+            icon={<Dumbbell size={14} className="text-emerald-500" />}
+          />
+          <span className="text-[10px] text-slate-500 mt-1">Workout</span>
+        </div>
+      </div>
+    </div>
+  );
+};
+
+// --- Weekly Review Component ---
+interface WeeklyReviewProps {
+  data: AppData;
+  accent: string;
+  onClose: () => void;
+}
+
+const WeeklyReview: React.FC<WeeklyReviewProps> = ({ data, accent, onClose }) => {
+  const today = new Date();
+  const weekAgo = new Date(today.getTime() - 7 * 24 * 60 * 60 * 1000);
+  const weekAgoStr = weekAgo.toISOString().split('T')[0];
+  
+  // Calculate weekly stats
+  const weeklyPomodoros = data.pomodoroSessions.filter(s => s.completedAt >= weekAgoStr).length;
+  const weeklyWorkouts = data.workouts.filter(w => w.date >= weekAgoStr).length;
+  const weeklyCheckIns = data.checkIns.filter(c => c.date >= weekAgoStr).length;
+  
+  // Weekly protocol completion
+  const weeklyProtocols = data.protocols.filter(p => p.date >= weekAgoStr);
+  const totalProtocolTasks = weeklyProtocols.reduce((acc, p) => {
+    const morningComplete = p.morningTasks.filter(t => t.completed).length;
+    const nightComplete = p.nightTasks.filter(t => t.completed).length;
+    return acc + morningComplete + nightComplete;
+  }, 0);
+  const totalPossibleTasks = weeklyProtocols.length * 12; // 6 morning + 6 night
+  
+  // Calculate XP earned this week
+  const weeklyXP = weeklyPomodoros * 50 + weeklyWorkouts * 100 + weeklyCheckIns * 25 + totalProtocolTasks * 15;
+  
+  // Mood trend
+  const weeklyMoods = weeklyCheckIns > 0 
+    ? data.checkIns.filter(c => c.date >= weekAgoStr).map(c => c.morningMood)
+    : [];
+  const avgMood = weeklyMoods.length > 0 
+    ? weeklyMoods.reduce((a, b) => a + b, 0) / weeklyMoods.length 
+    : 0;
+  
+  // Best day calculation
+  const dayStats = weeklyProtocols.map(p => ({
+    date: p.date,
+    score: p.morningTasks.filter(t => t.completed).length + p.nightTasks.filter(t => t.completed).length
+  }));
+  const bestDay = dayStats.length > 0 
+    ? dayStats.reduce((best, cur) => cur.score > best.score ? cur : best, dayStats[0])
+    : null;
+  
+  const getMoodEmoji = (mood: number) => {
+    if (mood >= 8) return '😄';
+    if (mood >= 6) return '🙂';
+    if (mood >= 4) return '😐';
+    if (mood >= 2) return '😔';
+    return '😢';
+  };
+  
+  const formatDate = (dateStr: string) => {
+    const d = new Date(dateStr);
+    return d.toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+  };
+
+  return (
+    <div className="fixed inset-0 bg-black/70 backdrop-blur-sm z-[100] flex items-center justify-center p-4">
+      <div className="bg-white dark:bg-slate-900 rounded-3xl w-full max-w-md max-h-[85vh] overflow-y-auto shadow-2xl">
+        {/* Header */}
+        <div className={`bg-gradient-to-br from-${accent}-500 to-${accent}-600 p-6 text-white rounded-t-3xl`}>
+          <div className="flex justify-between items-start">
+            <div>
+              <h2 className="text-2xl font-black">📊 Weekly Review</h2>
+              <p className="text-white/80 text-sm mt-1">
+                {formatDate(weekAgoStr)} - {formatDate(today.toISOString().split('T')[0])}
+              </p>
+            </div>
+            <button onClick={onClose} className="text-white/80 hover:text-white">
+              <X size={24} />
+            </button>
+          </div>
+        </div>
+        
+        {/* Content */}
+        <div className="p-6 space-y-6">
+          {/* XP Earned */}
+          <div className="text-center">
+            <p className="text-4xl font-black text-amber-500">+{weeklyXP} XP</p>
+            <p className="text-sm text-slate-500">earned this week</p>
+          </div>
+          
+          {/* Stats Grid */}
+          <div className="grid grid-cols-2 gap-4">
+            <div className="bg-rose-500/10 rounded-2xl p-4 text-center">
+              <p className="text-3xl font-black text-rose-500">{weeklyPomodoros}</p>
+              <p className="text-xs text-slate-500 mt-1">Focus Sessions</p>
+              <p className="text-[10px] text-rose-500">{Math.round(weeklyPomodoros * 25 / 60)}h focused</p>
+            </div>
+            <div className="bg-emerald-500/10 rounded-2xl p-4 text-center">
+              <p className="text-3xl font-black text-emerald-500">{weeklyWorkouts}</p>
+              <p className="text-xs text-slate-500 mt-1">Workouts</p>
+              <p className="text-[10px] text-emerald-500">{weeklyWorkouts >= 4 ? '💪 Great!' : 'Keep going!'}</p>
+            </div>
+            <div className="bg-amber-500/10 rounded-2xl p-4 text-center">
+              <p className="text-3xl font-black text-amber-500">{totalProtocolTasks}</p>
+              <p className="text-xs text-slate-500 mt-1">Protocol Tasks</p>
+              <p className="text-[10px] text-amber-500">
+                {totalPossibleTasks > 0 ? Math.round((totalProtocolTasks / totalPossibleTasks) * 100) : 0}% completed
+              </p>
+            </div>
+            <div className="bg-teal-500/10 rounded-2xl p-4 text-center">
+              <p className="text-3xl font-black text-teal-500">{weeklyCheckIns}</p>
+              <p className="text-xs text-slate-500 mt-1">Check-ins</p>
+              <p className="text-[10px] text-teal-500">{weeklyCheckIns}/7 days</p>
+            </div>
+          </div>
+          
+          {/* Mood Trend */}
+          {avgMood > 0 && (
+            <div className="bg-violet-500/10 rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-xs font-bold text-violet-500 uppercase">Average Mood</p>
+                  <p className="text-2xl font-black text-slate-900 dark:text-white mt-1">
+                    {avgMood.toFixed(1)}/10 {getMoodEmoji(avgMood)}
+                  </p>
+                </div>
+                <div className="text-4xl">{getMoodEmoji(avgMood)}</div>
+              </div>
+            </div>
+          )}
+          
+          {/* Best Day */}
+          {bestDay && bestDay.score > 0 && (
+            <div className="bg-gradient-to-r from-amber-500/10 to-orange-500/10 rounded-2xl p-4 border border-amber-500/20">
+              <p className="text-xs font-bold text-amber-600 uppercase mb-1">🏆 Best Day</p>
+              <p className="font-bold text-slate-900 dark:text-white">{formatDate(bestDay.date)}</p>
+              <p className="text-sm text-slate-500">{bestDay.score} tasks completed</p>
+            </div>
+          )}
+          
+          {/* Streaks */}
+          <div className="bg-slate-100 dark:bg-slate-800 rounded-2xl p-4">
+            <p className="text-xs font-bold text-slate-600 dark:text-slate-400 uppercase mb-3">Current Streaks</p>
+            <div className="flex justify-around">
+              <div className="text-center">
+                <p className="text-2xl font-black text-orange-500">🔥 {data.stats.streak}</p>
+                <p className="text-[10px] text-slate-500">Active Streak</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-black text-violet-500">👑 {data.discipline.noFapStreak}</p>
+                <p className="text-[10px] text-slate-500">NoFap</p>
+              </div>
+              <div className="text-center">
+                <p className="text-2xl font-black text-cyan-500">🧊 {data.discipline.coldShowerStreak || 0}</p>
+                <p className="text-[10px] text-slate-500">Cold Showers</p>
+              </div>
+            </div>
+          </div>
+          
+          {/* Encouragement */}
+          <div className="text-center py-4">
+            <p className="text-lg font-bold text-slate-900 dark:text-white">
+              {weeklyXP >= 500 ? '🎉 Amazing week, champion!' : 
+               weeklyXP >= 300 ? '💪 Solid progress!' : 
+               weeklyXP >= 100 ? '📈 Building momentum!' : 
+               '🌱 Every step counts!'}
+            </p>
+            <p className="text-sm text-slate-500 mt-1">
+              Keep showing up. That's how champions are made.
+            </p>
+          </div>
+          
+          {/* Close Button */}
+          <button
+            onClick={onClose}
+            className={`w-full py-3 bg-${accent}-500 text-white rounded-xl font-bold hover:bg-${accent}-600 transition-colors`}
+          >
+            Let's Crush Next Week 🚀
+          </button>
+        </div>
+      </div>
     </div>
   );
 };
@@ -3401,6 +3814,7 @@ const App: React.FC = () => {
   const [data, setData] = useState<AppData>(() => loadData());
   const [activeTab, setActiveTab] = useState<'dashboard' | 'physical' | 'intelligence' | 'skills' | 'wealth' | 'settings'>('dashboard');
   const [showSOS, setShowSOS] = useState(false);
+  const [showWeeklyReview, setShowWeeklyReview] = useState(false);
   
   // Celebration states
   const [celebration, setCelebration] = useState<{
@@ -3899,10 +4313,10 @@ const App: React.FC = () => {
              </div>
           </div>
           <main className="flex-1 p-4 overflow-y-auto">
-            {activeTab === 'dashboard' && <SmartHomeScreen data={data} actions={actions} accent={accent} onOpenSOS={() => setShowSOS(true)} />}
+            {activeTab === 'dashboard' && <SmartHomeScreen data={data} actions={actions} accent={accent} onOpenSOS={() => setShowSOS(true)} onShowWeeklyReview={() => setShowWeeklyReview(true)} />}
             {activeTab === 'physical' && <PhysicalTab data={data} actions={actions} />}
             {activeTab === 'intelligence' && <MindTab data={data} actions={actions} />}
-            {activeTab === 'settings' && <SettingsTab data={data} actions={actions} />}
+            {activeTab === 'settings' && <SettingsTab data={data} actions={actions} onShowWeeklyReview={() => setShowWeeklyReview(true)} />}
             {activeTab === 'skills' && <SkillsTab data={data} actions={actions} />}
             {activeTab === 'wealth' && <WealthTab data={data} actions={actions} />}
           </main>
@@ -3935,6 +4349,15 @@ const App: React.FC = () => {
         actions={actions} 
         accent={accent} 
       />
+      
+      {/* Weekly Review Modal */}
+      {showWeeklyReview && (
+        <WeeklyReview 
+          data={data}
+          accent={accent}
+          onClose={() => setShowWeeklyReview(false)}
+        />
+      )}
       
       {/* Celebration Overlays */}
       <ConfettiCelebration 
