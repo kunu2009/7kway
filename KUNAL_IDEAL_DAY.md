@@ -125,7 +125,21 @@
 | Squats | 10 min | Legs, testosterone |
 | Abs | 10 min | Core strength |
 | Pull-ups (if possible) | 5 min | Back, biceps |
+| **Face Exercises** | 5 min | Jawline, cheekbones |
 | Stretching | 5 min | Cool down |
+
+#### 😎 FACE EXERCISE ROUTINE (5 Min)
+
+| Exercise | Reps | Benefits |
+|----------|------|----------|
+| **Mewing** | Hold 2 min | Jawline definition, proper tongue posture |
+| **Jaw clenches** | 20 reps | Masseter muscles, sharper jaw |
+| **Chin lifts** | 15 reps | Reduces double chin |
+| **Cheek puffs** | 10 each side | Cheekbone definition |
+| **Fish face** | Hold 10 sec x 5 | Cheek muscles |
+| **Neck stretches** | 30 sec each | Posture, neck definition |
+
+**Pro tip:** Practice mewing throughout the day - tongue on roof of mouth!
 
 - 💧 Water glasses #5, #6 during workout
 - Log workout in **Physical Tab**
