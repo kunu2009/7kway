@@ -3510,39 +3510,29 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
         <p className="text-sm text-slate-400 mt-1">{getCurrentDateFormatted()}</p>
       </div>
 
-      {/* Exam Countdown Banner */}
-      {nearestExam && (
-        <div className={`bg-gradient-to-r from-${accent}-500/20 to-${accent}-600/10 border border-${accent}-500/30 rounded-xl p-4`}>
-          <div className="flex items-center justify-between">
+      {/* Exam Countdown Banner - Minimal */}
+      {nearestExam && nearestExam.daysLeft <= 30 && (
+        <div className="flex items-center justify-between px-4 py-3 bg-rose-500/10 border border-rose-500/20 rounded-xl">
+          <div className="flex items-center gap-3">
+            <div className="text-2xl">📚</div>
             <div>
-              <p className="text-xs text-slate-500 dark:text-slate-400">⏳ Next Exam</p>
-              <h3 className={`font-bold text-${accent}-600 dark:text-${accent}-400 text-lg`}>{nearestExam.exam.subject}</h3>
+              <p className="text-sm font-bold text-slate-800 dark:text-white">{nearestExam.exam.subject}</p>
               <p className="text-xs text-slate-500">{nearestExam.exam.date}</p>
             </div>
-            <div className="text-right">
-              <div className={`text-3xl font-black text-${accent}-500`}>
-                {nearestExam.daysLeft}
-              </div>
-              <p className="text-[10px] text-slate-400">days left</p>
-            </div>
           </div>
-          <div className="mt-3">
-            <div className="h-1.5 bg-slate-200 dark:bg-slate-700 rounded-full overflow-hidden">
-              <div 
-                className={`h-full bg-gradient-to-r from-${accent}-400 to-${accent}-600 rounded-full transition-all`}
-                style={{ width: `${Math.max(0, Math.min(100, 100 - (nearestExam.daysLeft / 60) * 100))}%` }}
-              />
-            </div>
-            <p className="text-[9px] text-center text-slate-400 mt-1">Preparation Progress</p>
+          <div className="text-right">
+            <p className={`text-2xl font-black ${nearestExam.daysLeft <= 7 ? 'text-rose-500' : 'text-amber-500'}`}>
+              {nearestExam.daysLeft}
+            </p>
+            <p className="text-[9px] text-slate-400">days</p>
           </div>
         </div>
       )}
 
-      {/* Daily Quote */}
-      <div className="px-4 py-3 bg-gradient-to-r from-amber-500/10 to-orange-500/10 border border-amber-500/20 rounded-xl text-center">
-        <p className="text-sm italic text-slate-600 dark:text-slate-300">"{quote.quote}"</p>
-        <p className="text-[10px] text-amber-600 dark:text-amber-400 mt-1">— {quote.author}</p>
-      </div>
+      {/* Daily Quote - Minimal */}
+      <p className="text-center text-sm italic text-slate-500 dark:text-slate-400 px-4">
+        "{quote.quote}" <span className="text-xs">— {quote.author}</span>
+      </p>
 
       {/* Daily Goals Progress Ring */}
       <DailyGoalsRing data={data} accent={accent} />
@@ -3563,116 +3553,113 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
         ))}
       </div>
 
-      {/* ONE Focus Card - Large & Tappable */}
+      {/* ONE Focus Card - Clean */}
       <button 
         onClick={focus.action}
-        className={`w-full bg-${focus.color}-500/10 border-2 border-${focus.color}-500/30 rounded-2xl p-6 text-center transition-transform active:scale-[0.98]`}
+        className={`w-full bg-${focus.color}-500/10 border border-${focus.color}-500/20 rounded-xl p-4 flex items-center gap-4 transition-transform active:scale-[0.99]`}
       >
-        <FocusIcon size={40} className={`text-${focus.color}-500 mx-auto mb-3`}/>
-        <h2 className="text-lg font-bold text-slate-900 dark:text-white mb-1">{focus.title}</h2>
-        <p className="text-sm text-slate-500">{focus.subtitle}</p>
-        <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 bg-${focus.color}-500 text-white rounded-full text-sm font-bold`}>
-          Start <ArrowRight size={14}/>
+        <div className={`w-12 h-12 rounded-xl bg-${focus.color}-500/20 flex items-center justify-center`}>
+          <FocusIcon size={24} className={`text-${focus.color}-500`}/>
         </div>
+        <div className="flex-1 text-left">
+          <h2 className="text-base font-bold text-slate-900 dark:text-white">{focus.title}</h2>
+          <p className="text-xs text-slate-500">{focus.subtitle}</p>
+        </div>
+        <ArrowRight size={18} className={`text-${focus.color}-500`}/>
       </button>
 
-      {/* Quick Actions Grid */}
-      <div className="grid grid-cols-4 gap-2">
+      {/* Quick Actions - Minimal */}
+      <div className="flex gap-2">
         <button 
           onClick={() => actions.incrementNoFapStreak()}
-          className="bg-violet-500/10 rounded-xl p-3 text-center"
+          className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-xl py-3 flex items-center justify-center gap-2"
         >
-          <Shield size={18} className="text-violet-500 mx-auto mb-1"/>
-          <p className="text-[9px] font-bold">Day Done</p>
+          <Shield size={16} className="text-violet-500"/>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Day ✓</span>
         </button>
         <button 
           onClick={() => actions.incrementColdShower()}
-          className="bg-cyan-500/10 rounded-xl p-3 text-center"
+          className="flex-1 bg-slate-100 dark:bg-slate-800 rounded-xl py-3 flex items-center justify-center gap-2"
         >
-          <Snowflake size={18} className="text-cyan-500 mx-auto mb-1"/>
-          <p className="text-[9px] font-bold">Cold</p>
+          <Snowflake size={16} className="text-cyan-500"/>
+          <span className="text-xs font-bold text-slate-700 dark:text-slate-300">Cold ✓</span>
         </button>
         <button 
           onClick={() => actions.updatePhysicalStat('waterIntake', data.physical.waterIntake + 1)}
-          className="bg-blue-500/10 rounded-xl p-3 text-center"
+          className="bg-slate-100 dark:bg-slate-800 rounded-xl py-3 px-4 flex items-center gap-2"
         >
-          <Droplets size={18} className="text-blue-500 mx-auto mb-1"/>
-          <p className="text-[9px] font-bold">{data.physical.waterIntake}gl</p>
-        </button>
-        <button 
-          onClick={() => actions.setActiveTab('intelligence')}
-          className="bg-orange-500/10 rounded-xl p-3 text-center"
-        >
-          <Timer size={18} className="text-orange-500 mx-auto mb-1"/>
-          <p className="text-[9px] font-bold">Focus</p>
+          <Droplets size={16} className="text-blue-500"/>
+          <span className="text-xs font-bold text-blue-500">{data.physical.waterIntake}/8</span>
         </button>
       </div>
 
-      {/* Stats Row */}
-      <div className="flex justify-around py-3 bg-slate-100 dark:bg-slate-900/50 rounded-xl">
+      {/* Stats - Clean Row */}
+      <div className="flex justify-between px-2">
         <div className="text-center">
-          <p className="text-xl font-black text-orange-500">{data.stats.streak}</p>
-          <p className="text-[8px] text-slate-400">STREAK</p>
+          <p className="text-lg font-black text-emerald-500">{data.stats.streak}</p>
+          <p className="text-[9px] text-slate-400">streak</p>
         </div>
         <div className="text-center">
-          <p className="text-xl font-black text-violet-500">{data.discipline.noFapStreak}</p>
-          <p className="text-[8px] text-slate-400">CLEAN</p>
+          <p className="text-lg font-black text-violet-500">{data.discipline.noFapStreak}</p>
+          <p className="text-[9px] text-slate-400">clean</p>
         </div>
         <div className="text-center">
-          <p className="text-xl font-black text-emerald-500">{Math.floor(data.stats.xp / 1000) + 1}</p>
-          <p className="text-[8px] text-slate-400">LEVEL</p>
+          <p className="text-lg font-black text-cyan-500">{data.discipline.coldShowers}</p>
+          <p className="text-[9px] text-slate-400">cold</p>
         </div>
-        {nearestExam && (
-          <div className="text-center">
-            <p className={`text-xl font-black ${nearestExam.daysLeft <= 7 ? 'text-rose-500' : 'text-blue-500'}`}>{nearestExam.daysLeft}</p>
-            <p className="text-[8px] text-slate-400">EXAM</p>
-          </div>
-        )}
+        <div className="text-center">
+          <p className="text-lg font-black text-orange-500">Lv{Math.floor(data.stats.xp / 1000) + 1}</p>
+          <p className="text-[9px] text-slate-400">level</p>
+        </div>
       </div>
 
-      {/* Milestones */}
+      {/* Today's Tasks - Minimal */}
+      {data.tasks.filter(t => !t.completed).length > 0 && (
+        <div className="space-y-1.5">
+          <p className="text-[10px] font-bold text-slate-400 uppercase px-1">Today</p>
+          {data.tasks.filter(t => !t.completed).slice(0, 3).map(task => (
+            <button 
+              key={task.id}
+              onClick={() => actions.toggleTaskComplete(task.id)}
+              className="w-full flex items-center gap-2 px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg text-left"
+            >
+              <div className="w-4 h-4 rounded border-2 border-slate-300 dark:border-slate-600 flex-shrink-0"/>
+              <span className="text-sm text-slate-700 dark:text-slate-300 truncate">{task.title}</span>
+              {task.priority > 3 && <Star size={12} className="text-amber-400 fill-amber-400 flex-shrink-0"/>}
+            </button>
+          ))}
+          {data.tasks.filter(t => !t.completed).length > 3 && (
+            <p className="text-[10px] text-center text-slate-400">+{data.tasks.filter(t => !t.completed).length - 3} more</p>
+          )}
+        </div>
+      )}
+
+      {/* Next Milestone - Simple */}
       {(() => {
         const milestones = [
-          { days: 7, title: 'One Week', emoji: '🔥', unlocked: data.discipline.noFapStreak >= 7 },
-          { days: 14, title: 'Two Weeks', emoji: '💪', unlocked: data.discipline.noFapStreak >= 14 },
-          { days: 30, title: 'One Month', emoji: '🏆', unlocked: data.discipline.noFapStreak >= 30 },
-          { days: 60, title: 'Two Months', emoji: '⚡', unlocked: data.discipline.noFapStreak >= 60 },
-          { days: 90, title: 'Reboot', emoji: '👑', unlocked: data.discipline.noFapStreak >= 90 }
+          { days: 7, title: '1 Week', emoji: '🔥' },
+          { days: 14, title: '2 Weeks', emoji: '💪' },
+          { days: 30, title: '1 Month', emoji: '🏆' },
+          { days: 60, title: '2 Months', emoji: '⚡' },
+          { days: 90, title: 'Reboot', emoji: '👑' }
         ];
-        const nextMilestone = milestones.find(m => !m.unlocked);
-        const unlockedCount = milestones.filter(m => m.unlocked).length;
+        const nextMilestone = milestones.find(m => data.discipline.noFapStreak < m.days);
         
-        if (unlockedCount > 0 || nextMilestone) {
+        if (nextMilestone) {
+          const daysToGo = nextMilestone.days - data.discipline.noFapStreak;
           return (
-            <div className="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-xl p-3">
-              <div className="flex items-center justify-between mb-2">
-                <p className="text-[10px] font-bold text-slate-400 uppercase">Milestones</p>
-                <p className="text-[10px] text-slate-400">{unlockedCount}/5</p>
-              </div>
-              <div className="flex gap-2 justify-center">
-                {milestones.map((m, i) => (
-                  <div 
-                    key={i} 
-                    className={`w-10 h-10 rounded-full flex items-center justify-center text-lg ${
-                      m.unlocked 
-                        ? 'bg-gradient-to-br from-amber-400 to-orange-500 shadow-lg' 
-                        : 'bg-slate-100 dark:bg-slate-800 opacity-40'
-                    }`}
-                    title={m.title}
-                  >
-                    {m.emoji}
-                  </div>
-                ))}
-              </div>
-              {nextMilestone && (
-                <p className="text-center text-[10px] text-slate-400 mt-2">
-                  {nextMilestone.days - data.discipline.noFapStreak} days to {nextMilestone.title}
-                </p>
-              )}
+            <div className="flex items-center justify-between px-3 py-2 bg-slate-50 dark:bg-slate-800/50 rounded-lg">
+              <span className="text-xs text-slate-500">Next: {nextMilestone.emoji} {nextMilestone.title}</span>
+              <span className="text-xs font-bold text-violet-500">{daysToGo} days</span>
             </div>
           );
         }
-        return null;
+        return (
+          <div className="text-center py-2">
+            <span className="text-lg">👑</span>
+            <p className="text-xs text-amber-500 font-bold">Rebooted!</p>
+          </div>
+        );
       })()}
 
       {/* Emergency Panel - Anti-Procrastination System */}
@@ -3683,17 +3670,13 @@ const SmartHomeScreen = ({ data, actions, accent, onOpenSOS, onShowWeeklyReview 
         onOpenSOS={onOpenSOS}
       />
 
-      {/* Weekly Review Quick Access */}
+      {/* Weekly Review - Minimal Link */}
       {onShowWeeklyReview && (
         <button 
           onClick={onShowWeeklyReview}
-          className="w-full bg-gradient-to-r from-purple-500/10 to-pink-500/10 border border-purple-500/20 rounded-xl p-3 flex items-center justify-between"
+          className="w-full text-center py-2 text-xs text-slate-400 hover:text-slate-600 dark:hover:text-slate-300"
         >
-          <div className="flex items-center gap-3">
-            <TrendingUp size={18} className="text-purple-500" />
-            <span className="text-sm font-medium text-slate-700 dark:text-slate-300">Weekly Review</span>
-          </div>
-          <ChevronRight size={16} className="text-slate-400" />
+          📊 View Weekly Review
         </button>
       )}
     </div>
